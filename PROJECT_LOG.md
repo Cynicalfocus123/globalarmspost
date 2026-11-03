@@ -171,6 +171,11 @@ Every change must keep the code:
 
 ## Change log
 
+### 2026-11-03 — Step 1 approved
+- The owner approved step 1 (commit `4f56b4d`). Task list v10: F18 logo, F4 header, F6 phone menu, B10 menu data, B14 migrations, P10 live build + verify, P14 `site_link()`, P8 test suite, P11 first push and P7 (approval to build) are **Done**.
+- Split out so Done stays true: the 301 redirects from old WordPress links stay in F12; testing on MySQL is the new task **P15** (Not started).
+- Still Pending: P1–P6 (project docs, research, stack, code standards, setup, task list) and F11 (site look, partly built). B13 (installer) and B16 (two-step login, audit log) are partly started in step 1 but still Not started overall.
+
 ### 2026-11-03 — Phase 1, step 1: page shell, header, footer, logo
 - **Logo (F18)**, built by `npm run build:logo` from the original (kept as it is):
   - white border trimmed (1536 × 1024 → 1403 × 448), background made transparent, so it works on white, dark and red
