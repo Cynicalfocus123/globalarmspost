@@ -1,0 +1,11 @@
+node_modules/
+test-results/
+test-data/
+playwright-report/
+
+# server data: never in git, never overwritten by the live sync
+public/app/config.php
+public/uploads/*
+!public/uploads/.htaccess
+public/storage/*
+!public/storage/.htaccess
