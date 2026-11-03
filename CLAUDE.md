@@ -5,7 +5,7 @@ News site for globalarmspost.com: a PHP frontend plus an admin backend. Repo: ht
 Full history, status and the wireframe notes are in `PROJECT_LOG.md`. Read it before starting work.
 
 ## Hard rules (same as PROJECT_LOG.md; keep both in sync)
-1. **Never delete anything.** Sync only adds or overwrites. List stale files so the owner can decide. Any deletion needs the owner's yes to that exact deletion first.
+1. **Never delete anything.** Sync only adds or overwrites. List stale files so the owner can decide. Any deletion needs the owner's yes to that exact deletion first. Exception: old task list Excel versions are deleted on every build (rule 7).
 2. **Two separate folders**, both updated on every change:
    - `git/`: source, pushed to GitHub.
    - `live/`: the Hostinger `public_html` mirror, built from `git/public/` with proper addresses (rule 9). Never overwrite `app/config.php`, `uploads/` or `storage/`.
@@ -13,7 +13,7 @@ Full history, status and the wireframe notes are in `PROJECT_LOG.md`. Read it be
 4. Every update shows a wireframe, the GitHub link, the changes, and the Actions run.
 5. **Every time a task is updated or finished, update all `.md` files** (`PROJECT_LOG.md`, `CLAUDE.md`, `README.md` and any other `.md`) in the same change, so they always match the code.
 6. **Show every code change in the Claude app's diff panel** (split view, right side) before committing. Work inside `git/` (the repo root), mark new files with `git add -N`, then open the diff pane.
-7. **Keep the task list Excel up to date.** Edit `docs/tasks.json`, bump `version`, and run `python scripts/build-tasks.py`. It writes `../Claude outputs/Global Arms Post task list <date> v<N>.xlsx`. Statuses:
+7. **Keep the task list Excel up to date.** Edit `docs/tasks.json`, bump `version`, and run `python scripts/build-tasks.py`. It writes `../Claude outputs/Global Arms Post task list <date> v<N>.xlsx` and deletes the older versions, so only the latest Excel is left (owner's rule, 2026-11-03). Statuses:
    - **Not started:** not begun.
    - **Pending:** started but not finished.
    - **Done:** finished **and approved by the owner** (code also tested, committed and pushed), and then only on the Done tab. Nothing is Done without the owner's approval.

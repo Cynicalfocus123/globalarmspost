@@ -2,6 +2,8 @@
 
 Usage: python scripts/build-tasks.py [output.xlsx]
 Default output: ../Claude outputs/Global Arms Post task list <date> v<version>.xlsx
+Only the latest version is kept: older "Global Arms Post task list ... .xlsx" files in that
+folder are deleted after each build (owner's rule, 2026-11-03).
 
 Tabs: Frontend, Backend, Project (open tasks only), then Done, Pending, Not started.
 Status rules: Not started = not begun; Pending = started but not finished;
@@ -168,6 +170,13 @@ def main():
     counts = {s: sum(t["status"] == s for t in tasks) for s in STATUSES}
     print(out)
     print(counts)
+    # Hard rule 7 (owner, 2026-11-03): only the latest task list is kept. Older versions
+    # of this task list (same name pattern, same folder) are deleted after the new one is saved.
+    if len(sys.argv) == 1:
+        for old in out.parent.glob(f"{name} task list * v*.xlsx"):
+            if old != out:
+                old.unlink()
+                print("deleted old version:", old.name)
 
 
 if __name__ == "__main__":

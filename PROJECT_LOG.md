@@ -9,7 +9,7 @@ Newest entry first. Wireframes: [docs/wireframes.html](docs/wireframes.html)
 - GitHub Actions: https://github.com/Cynicalfocus123/globalarmspost/actions (not set up yet)
 
 ## Hard rules
-1. **Never delete anything.** Sync only adds or overwrites. Stale files are listed so a person can decide. Any deletion needs the owner's yes to that exact deletion first.
+1. **Never delete anything.** Sync only adds or overwrites. Stale files are listed so a person can decide. Any deletion needs the owner's yes to that exact deletion first. **One exception (owner's rule, 2026-11-03):** old versions of the task list Excel are deleted every time a new one is built (rule 7).
 2. **Two separate folders**, both updated on every change:
    - `git/`: source code. This is the repo pushed to GitHub.
    - `live/`: the Hostinger mirror for `public_html`. It is the contents of `git/public/`. Sync never overwrites the server's own data: `app/config.php`, `uploads/`, `storage/`.
@@ -17,7 +17,7 @@ Newest entry first. Wireframes: [docs/wireframes.html](docs/wireframes.html)
 4. Every update shows a wireframe, the GitHub link, the changes, and the Actions run.
 5. **Every time a task is updated or finished, update all `.md` files** (`PROJECT_LOG.md`, `CLAUDE.md`, `README.md` and any other `.md` in the project) in the same change, so they always match the code. (Owner's rule, 2026-11-03.)
 6. **Show every code change in the Claude app's diff panel** (split view, right side) before it is committed. The Claude session works inside `git/`, so the app finds the repository. New files are marked with `git add -N` so they show in the diff too. (Owner's rule, 2026-11-03.)
-7. **Keep the task list Excel up to date** (`Claude outputs/Global Arms Post task list <date> v<N>.xlsx`, built from `docs/tasks.json` by `python scripts/build-tasks.py`). Every new task goes in. Each rebuild gets a new version number. Status rules (owner's rule, 2026-11-03):
+7. **Keep the task list Excel up to date** (`Claude outputs/Global Arms Post task list <date> v<N>.xlsx`, built from `docs/tasks.json` by `python scripts/build-tasks.py`). Every new task goes in. Each rebuild gets a new version number. **Only the latest Excel is kept:** every build deletes the older task list versions in `Claude outputs/` (owner's rule, 2026-11-03). Status rules (owner's rule, 2026-11-03):
    - **Not started:** not begun yet.
    - **Pending:** started but not finished, or waiting for something.
    - **Done:** finished **and approved by the owner** (code also tested, committed and pushed). It is then removed from Not started and Pending and appears only on the Done tab.
@@ -170,6 +170,11 @@ Every change must keep the code:
 ---
 
 ## Change log
+
+### 2026-11-03 — New rule: keep only the latest task list Excel
+- Owner's rule: delete the old task list Excel files every time, leaving only the latest. Added to hard rules 1 and 7.
+- Deleted (owner's request): task list v1–v9 in `Claude outputs/`. Kept: v10, then replaced by v11 for this change.
+- `scripts/build-tasks.py` now deletes older versions after it saves the new one.
 
 ### 2026-11-03 — Step 1 approved
 - The owner approved step 1 (commit `4f56b4d`). Task list v10: F18 logo, F4 header, F6 phone menu, B10 menu data, B14 migrations, P10 live build + verify, P14 `site_link()`, P8 test suite, P11 first push and P7 (approval to build) are **Done**.
