@@ -6,7 +6,7 @@ declare(strict_types=1);
  *
  *   route      git/ copy (hash)         live/ copy (path)
  *   home       /#home                   /home
- *   category   /#asia, /#regions/asia   /asia
+ *   category   /#asia, /#regions/asia   /asia          (?page=2 for older stories)
  *   article    /#news/{slug}            /{category}/{slug}
  *   tag        /#tag/usa                /tag/usa
  *   search     /#search?q=              /search?q=
@@ -20,11 +20,12 @@ function site_link(string $route, array $p = []): string
     $hash = build_info()['link_mode'] === 'hash';
     $slug = rawurlencode($p['slug'] ?? '');
     $query = isset($p['q']) && $p['q'] !== '' ? '?q=' . rawurlencode($p['q']) : '';
+    $page = isset($p['page']) && (int) $p['page'] > 1 ? '?page=' . (int) $p['page'] : '';
     return match ($route) {
         'home' => $hash ? '/#home' : '/home',
-        'category' => $hash
+        'category' => ($hash
             ? '/#' . (($p['parent'] ?? '') !== '' ? rawurlencode($p['parent']) . '/' : '') . $slug
-            : '/' . $slug,
+            : '/' . $slug) . $page,
         'article' => $hash ? '/#news/' . $slug : '/' . rawurlencode($p['category'] ?? '') . '/' . $slug,
         'tag' => ($hash ? '/#tag/' : '/tag/') . $slug,
         'search' => ($hash ? '/#search' : '/search') . $query,

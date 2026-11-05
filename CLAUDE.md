@@ -35,7 +35,7 @@ Every change keeps the code **customizable** (settings in the admin, theme token
 - security headers, no third-party scripts, audit log
 
 ## Testing
-- `npm test` runs `tests/site.spec.ts` on 18 projects (git/live × Chromium/Firefox/WebKit × phone/tablet/desktop) against the real PHP server (`tests/serve.mjs`) and SQLite. Each run writes new folders in `test-data/` and `test-results/`; nothing is deleted.
+- `npm test` runs `tests/site.spec.ts` and `tests/stories.spec.ts` on 18 projects (git/live × Chromium/Firefox/WebKit × phone/tablet/desktop) against the real PHP server (`tests/serve.mjs`) and SQLite, loaded with sample stories (`tests/seed-demo.php`, test database only). Test ports 8190/8191; the preview (`.claude/launch.json`) uses 8091. Each run writes new folders in `test-data/` and `test-results/`; nothing is deleted.
 - Test phone, tablet AND desktop (Chromium, Firefox, WebKit; 320–1920 px), against the real running PHP server and database. Check that values were really saved, not just status codes.
 - Run the full suite 4 times. Stop when all 4 runs pass.
 - Each report lists every skipped test by name with its reason.
@@ -45,7 +45,7 @@ Every change keeps the code **customizable** (settings in the admin, theme token
 - White page background everywhere, with no gray bands. Section header: serif title, divider, **See more** button. Red back-to-top button.
 - Homepage layouts: `hero`, `hero_grid`, `list`, `grid`, `overlay_list`, `lead_grid`, `lead_list`, `headlines` (described in `PROJECT_LOG.md` → Design rules).
 - Logo: the globe + soldier + jet logo (`site image/logo/globalarmspost-logo-original.webp`) in header and footer, served trimmed and transparent as AVIF + WebP 1x/2x with a PNG fallback (task F18).
-- Header: centred logo on top, red category menu below it. No date bar, no social links. Built in the admin (any links, submenus under any parent).
+- Header (2026-11-05): one white row, logo left, dark menu text, icons right; red only as an accent; search is a small box under the icon. No date bar, no social links. Built in the admin (any links, submenus under any parent).
 - Phones: every section is one big rounded photo story, then headline + date rows with a small photo on the right. No grids on phones.
 - Category page: posts grouped by day under a plain text date heading ("Today · Tuesday, 3 November 2026", no calendar box); each story shows its time. Smart search: own word index; joined or spaced words, word forms, typo fixing, ranking, highlights (details in `PROJECT_LOG.md`).
 - Article page: headline, author, date + updated, Aa and Share buttons, photo gallery with captions, Summary bullet box, body, credits line, topic chips, share row, then "More in {category}" and "Latest news" (full list in `PROJECT_LOG.md` → Design rules → Article page).

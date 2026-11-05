@@ -37,10 +37,13 @@ if (copy === 'live') {
 const config = join(TMP, 'config.php');
 const db = join(TMP, 'site.sqlite').replaceAll('\\', '/');
 writeFileSync(config, `<?php\nreturn ['db' => ['driver' => 'sqlite', 'path' => '${db}'], 'debug' => true];\n`);
-writeFileSync(join(ROOT, 'test-data', `${copy}.json`), JSON.stringify({ config, docroot, ext }));
+// One note per server (copy + port), so the preview and the tests never read each other's database.
+writeFileSync(join(ROOT, 'test-data', `${copy}-${port}.json`), JSON.stringify({ config, docroot, ext }));
 
 const env = { ...process.env, GAP_CONFIG: config };
 execFileSync(PHP, [...ext, join(docroot, 'app', 'cli', 'migrate.php')], { env, stdio: 'inherit' });
+// Sample stories and photos (test database only; photos go to <docroot>/uploads/demo, which git ignores).
+execFileSync(PHP, [...ext, join(ROOT, 'tests', 'seed-demo.php'), docroot], { env, stdio: 'inherit' });
 
 if (!existsSync(docroot)) process.exit(1);
 

@@ -22,26 +22,23 @@ $items = function (array $list, int $depth) use (&$items): string {
 };
 ?>
 <header class="site-header">
-  <div class="logo-row">
+  <div class="hdr">
+    <button class="icon-btn menu-toggle" type="button" aria-expanded="false" aria-controls="main-menu" aria-label="Open menu">
+      <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </button>
     <?= view('logo', ['site' => $site, 'logo' => $logo, 'class' => 'logo', 'eager' => true]) ?>
-  </div>
-  <nav class="menu-bar" aria-label="Main">
-    <div class="menu-inner">
-      <button class="icon-btn menu-toggle" type="button" aria-expanded="false" aria-controls="main-menu" aria-label="Open menu">
-        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
-      </button>
-      <?= view('logo', ['site' => $site, 'logo' => $logo, 'class' => 'logo logo-bar', 'eager' => true]) ?>
+    <nav class="menu-bar" aria-label="Main">
       <ul class="menu" id="main-menu"><?= $items($menu, 0) ?></ul>
-      <div class="tools">
-        <button class="icon-btn theme-toggle" type="button" aria-pressed="false" aria-label="Dark mode">
-          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
-        </button>
-        <button class="icon-btn search-toggle" type="button" aria-expanded="false" aria-controls="site-search" aria-label="Search">
-          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="m16 16 4.5 4.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
-        </button>
-      </div>
+    </nav>
+    <div class="tools">
+      <button class="icon-btn theme-toggle" type="button" aria-pressed="false" aria-label="Dark mode">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+      </button>
+      <button class="icon-btn search-toggle" type="button" aria-expanded="false" aria-controls="site-search" aria-label="Search">
+        <svg viewBox="0 0 24 24" width="21" height="21" aria-hidden="true"><circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="m16 16 4.5 4.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+      </button>
     </div>
-  </nav>
+  </div>
   <form class="search-box" id="site-search" role="search" action="<?= e(site_link('search')) ?>" method="get" hidden>
     <label class="sr-only" for="q">Search news</label>
     <input id="q" name="q" type="search" placeholder="Search news" autocomplete="off" maxlength="120">

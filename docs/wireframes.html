@@ -59,13 +59,55 @@ h2.sec{font:600 20px/1.3 Georgia,serif;margin:40px 0 4px}
 .mh b{font:600 16px Georgia,serif}
 .mh span{font-size:11px;color:var(--red);font-weight:600}
 .ph>.mh:first-child{margin-top:0;padding-top:0;border-top:0}
+.a-shell{display:grid;grid-template-columns:130px minmax(0,1fr);min-height:300px}
+.a-side{border-right:1px solid var(--line);padding:12px 8px;background:#fafafa}
+.a-nav{font-size:11px;padding:5px 8px;border-radius:6px;margin:1px 0}
+.a-nav.on{background:#fff;font-weight:600;box-shadow:inset 3px 0 0 var(--red)}
+.a-main{padding:12px 14px;min-width:0}
+.a-btn{display:inline-block;background:var(--red);color:#fff;border-radius:999px;padding:4px 12px;font-size:11px;font-weight:600}
+.a-btn2{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:3px 10px;font-size:11px}
+.a-lbl{font-size:10px;color:var(--mute);margin:6px 0 2px}
+.a-in{height:22px;border:1px solid #d6d6d6;border-radius:6px;background:#fff}
+.a-cb,.a-rd{width:11px;height:11px;border:1px solid #999;border-radius:3px;display:inline-block;flex:none}
+.a-rd{border-radius:50%}
+.a-cb.on,.a-rd.on{background:var(--ink);border-color:var(--ink)}
+.a-chk{display:flex;gap:6px;align-items:center;font-size:10px;margin:5px 0}
+.a-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:10px 0}
+.a-stat{border:1px solid var(--line);border-radius:10px;padding:8px}
+.a-stat b{display:block;font:600 18px Georgia,serif}
+.a-stat span{font-size:10px;color:var(--mute)}
+.a-cols{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.a-h{font-size:11px;font-weight:600;margin:0 0 4px}
+.a-li{display:flex;gap:8px;align-items:center;padding:5px 0;border-bottom:1px solid var(--line)}
+.a-pill{display:inline-block;font-size:9px;font-weight:600;border-radius:999px;padding:1px 7px;white-space:nowrap}
+.a-pill.pub{background:#e6f4ea;color:#1e7b34}.a-pill.sch{background:#e8effd;color:#1a56c4}.a-pill.dr{background:#f1f1f1;color:#555}
+.a-tab{font-size:10px;border:1px solid var(--line);border-radius:999px;padding:2px 9px;white-space:nowrap}
+.a-tab.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.a-tr{display:grid;grid-template-columns:36px minmax(0,1fr) 70px 70px 80px;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid var(--line);font-size:10px}
+.a-th{font-weight:600;color:var(--mute)}
+.a-ed{display:grid;grid-template-columns:minmax(0,1fr) 190px;gap:14px}
+.a-tool{display:flex;gap:4px;flex-wrap:wrap;border:1px solid var(--line);border-radius:8px;padding:4px;margin:8px 0;font-size:10px}
+.a-tool>*{padding:2px 6px;border-radius:4px;background:#f6f6f6;font-style:normal}
+.a-box{border:1px solid var(--line);border-radius:10px;padding:8px;margin:8px 0}
+.a-panel .a-box:first-child{margin-top:0}
+.a-seg{display:flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;font-size:10px}
+.a-seg span{flex:1;text-align:center;padding:3px}
+.a-seg .on{background:var(--ink);color:#fff}
+.a-tabbar{display:flex;justify-content:space-between;border-top:1px solid var(--line);margin:10px -10px -10px;padding:8px 12px;font-size:10px;border-radius:0 0 18px 18px}
+.a-tabbar .on{color:var(--red);font-weight:600}
+.a-sec{display:flex;gap:8px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:8px;margin:6px 0;font-size:11px;flex-wrap:wrap}
+.a-sec.on{border-color:var(--ink);box-shadow:0 0 0 1px var(--ink)}
+.a-grip{color:#999;cursor:grab}
+.a-range{height:6px;background:#eee;border-radius:99px;margin:4px 0 2px}
+.a-range span{display:block;height:6px;width:66%;background:var(--red);border-radius:99px}
+@media(max-width:700px){.a-shell{grid-template-columns:1fr}.a-side{display:none}.a-ed,.a-cols{grid-template-columns:1fr}.a-tr{grid-template-columns:30px minmax(0,1fr) 60px}.a-tr>span:nth-child(3),.a-tr>span:nth-child(5){display:none}}
 .foot{color:var(--mute);font-size:12px;margin-top:8px;line-height:1.5}
 </style>
 </head>
 <body>
 <main>
 <h1>Global Arms Post: wireframes</h1>
-<p class="lead">For review. White page everywhere. The yellow labels are the settings the admin controls in the backend. Approved by the owner 2026-11-03. Step 1 (header, footer, logo) is built; the rest is not built yet.</p>
+<p class="lead">For review. White page everywhere. The yellow labels are the settings the admin controls in the backend. Approved by the owner 2026-11-03. Steps 1–2 (header, homepage, category and story pages) are built. Section 5 (admin) is new, for approval.</p>
 
 <!-- 1. Homepage -->
 <h2 class="sec">1. Homepage</h2>
@@ -73,10 +115,7 @@ h2.sec{font:600 20px/1.3 Georgia,serif;margin:40px 0 4px}
 <div class="row">
 <div><div class="lb">Desktop, 1440 px</div>
 <div class="pg flush">
-  <div style="text-align:center;padding:12px 0"><picture><source type="image/avif" srcset="../public/assets/img/logo/logo-1x.avif 1x, ../public/assets/img/logo/logo-2x.avif 2x"><img src="../public/assets/img/logo/logo-1x.webp" srcset="../public/assets/img/logo/logo-2x.webp 2x" width="200" height="64" alt="Global Arms Post logo" style="display:inline-block;max-width:100%;height:auto"></picture></div>
-  <div class="red" style="display:flex;gap:16px;align-items:center;padding:8px 12px;font-size:11px;font-weight:600;flex-wrap:wrap">
-    <span>HOME</span><span>LAND</span><span>AIR</span><span>SPACE</span><span>NAVAL</span><span>GLOBAL NEWS</span><span>REGIONS ▾</span><span>BUSINESS</span><span style="margin-left:auto">☾ &nbsp; ⌕</span>
-  </div>
+  <div style="display:flex;align-items:center;gap:16px;padding:10px 14px;border-bottom:1px solid var(--line);flex-wrap:wrap"><img src="../public/assets/img/logo/logo-1x.webp" srcset="../public/assets/img/logo/logo-2x.webp 2x" width="120" height="39" alt="Global Arms Post logo" style="display:block;height:auto"><span style="display:flex;gap:14px;font-size:12px;font-weight:500;flex-wrap:wrap"><span>Home</span><span>Land</span><span>Air</span><span>Space</span><span>Naval</span><span>Global news</span><span>Regions ⌄</span><span>Business</span></span><span style="margin-left:auto;font-size:13px">☾ &nbsp; ⌕</span></div>
   <div style="padding:6px 12px;font-size:11px;border-bottom:1px solid var(--line)">Trending: <span class="chip">USA</span> <span class="chip">Europe</span> <span class="chip">Middle East</span> <span class="chip">F-35</span></div>
   <div class="g12">
     <div style="grid-column:span 8">
@@ -121,7 +160,7 @@ h2.sec{font:600 20px/1.3 Georgia,serif;margin:40px 0 4px}
 </div></div>
 <div><div class="lb">Phone, 390 px</div>
 <div class="ph">
-  <div class="red" style="display:flex;justify-content:space-between;align-items:center;padding:9px 10px;border-radius:16px 16px 0 0;margin:-10px -10px 10px"><span>☰</span><img src="../public/assets/img/logo/logo-1x.webp" srcset="../public/assets/img/logo/logo-2x.webp 2x" width="120" height="39" alt="Global Arms Post logo" style="display:block;height:auto"><span>⌕</span></div>
+  <div style="display:flex;gap:8px;align-items:center;padding:9px 10px;border-bottom:1px solid var(--line);border-radius:16px 16px 0 0;margin:-10px -10px 10px"><span>☰</span><img src="../public/assets/img/logo/logo-1x.webp" srcset="../public/assets/img/logo/logo-2x.webp 2x" width="120" height="39" alt="Global Arms Post logo" style="display:block;height:auto"><span style="margin-left:auto">☾ &nbsp; ⌕</span></div>
   <div class="ml"><div class="im"></div><div class="lv">◉ LIVE UPDATES</div><div class="hl"></div><div class="hl" style="width:70%"></div><div class="dtm">3 Nov 2026</div></div>
   <div class="mr"><div><div class="lv" style="margin:0 0 4px">◉ LIVE UPDATES</div><div class="t"></div><div class="t" style="width:85%"></div><div class="dtm">3 Nov 2026</div></div><div class="im"></div></div>
   <div class="mr"><div><div class="t"></div><div class="t" style="width:70%"></div><div class="dtm">3 Nov 2026</div></div><div class="im"></div></div>
@@ -310,6 +349,194 @@ h2.sec{font:600 20px/1.3 Georgia,serif;margin:40px 0 4px}
   <div style="text-align:center;margin-top:10px"><span class="btn">Older stories</span></div>
 </div>
 <p class="foot">On phones the same plain date heading stays at the top while you scroll that day. The sidebar moves under the list.</p>
+</div>
+</div>
+
+<!-- 5. Admin (backend) -->
+<h2 class="sec">5. Admin (backend) at /admin</h2>
+<p class="sub">Same look as the site: white, clean, red only for the main button and warnings. Left side menu on desktop, bottom tab bar on phones. Every screen works by touch. Nothing here is built yet: this is for approval.</p>
+
+<div class="row">
+<div><div class="lb">5a. Login (desktop)</div>
+<div class="pg" style="display:flex;justify-content:center;padding:30px 16px">
+  <div style="width:300px;max-width:100%;border:1px solid var(--line);border-radius:14px;padding:18px">
+    <img src="../public/assets/img/logo/logo-1x.webp" width="140" height="45" alt="Global Arms Post logo" style="display:block;height:auto;margin:0 auto 10px">
+    <div style="font:600 15px Georgia,serif;text-align:center;margin-bottom:10px">Sign in to the newsroom</div>
+    <div class="a-lbl">Email</div><div class="a-in"></div>
+    <div class="a-lbl">Password</div><div class="a-in"></div>
+    <label style="display:flex;gap:6px;align-items:center;font-size:11px;margin:6px 0"><span class="a-cb"></span>Keep me signed in on this device</label>
+    <div class="a-btn" style="text-align:center;margin-top:8px">Sign in</div>
+    <span class="note">After 5 wrong tries: wait 15 minutes · optional 6-digit code from an authenticator app (two-step login)</span>
+  </div>
+</div></div>
+<div><div class="lb">Phone</div>
+<div class="ph" style="padding:18px 14px">
+  <img src="../public/assets/img/logo/logo-1x.webp" width="120" height="39" alt="Global Arms Post logo" style="display:block;height:auto;margin:0 auto 8px">
+  <div style="font:600 14px Georgia,serif;text-align:center;margin-bottom:8px">Sign in to the newsroom</div>
+  <div class="a-lbl">Email</div><div class="a-in"></div>
+  <div class="a-lbl">Password</div><div class="a-in"></div>
+  <div class="a-btn" style="text-align:center;margin-top:8px">Sign in</div>
+</div>
+</div>
+</div>
+
+<div class="row" style="margin-top:18px">
+<div><div class="lb">5b. Dashboard (desktop)</div>
+<div class="pg flush"><div class="a-shell">
+  <div class="a-side">
+    <img src="../public/assets/img/logo/logo-1x.webp" width="110" height="35" alt="Global Arms Post logo" style="display:block;height:auto;margin-bottom:10px">
+    <div class="a-nav on">Dashboard</div><div class="a-nav">Stories</div><div class="a-nav">Homepage</div><div class="a-nav">Categories</div><div class="a-nav">Tags</div><div class="a-nav">Pictures</div><div class="a-nav">Menu</div><div class="a-nav">Users</div><div class="a-nav">Settings</div>
+    <div class="a-nav" style="margin-top:10px;color:var(--mute)">View site ↗</div>
+  </div>
+  <div class="a-main">
+    <div style="display:flex;align-items:center;gap:8px"><b style="font:600 17px Georgia,serif">Good afternoon, Alex</b><span class="a-btn" style="margin-left:auto">+ New story</span></div>
+    <div class="a-stats">
+      <div class="a-stat"><b>42</b><span>Published</span></div><div class="a-stat"><b>3</b><span>Scheduled</span></div><div class="a-stat"><b>5</b><span>Drafts</span></div><div class="a-stat"><b>12.4k</b><span>Views today</span></div>
+    </div>
+    <div class="a-cols">
+      <div><div class="a-h">Scheduled next</div>
+        <div class="a-li"><span class="a-pill sch">Today 6:00 PM</span><div class="t" style="flex:1"></div></div>
+        <div class="a-li"><span class="a-pill sch">Tomorrow 8:30 AM</span><div class="t" style="flex:1"></div></div>
+        <div class="a-li"><span class="a-pill sch">Sat 10:00 AM</span><div class="t" style="flex:1;width:60%"></div></div>
+      </div>
+      <div><div class="a-h">Recent drafts</div>
+        <div class="a-li"><span class="a-pill dr">Draft</span><div class="t" style="flex:1"></div></div>
+        <div class="a-li"><span class="a-pill dr">Draft</span><div class="t" style="flex:1;width:70%"></div></div>
+        <div class="a-h" style="margin-top:10px">Server check</div>
+        <div style="font-size:11px">✓ PHP 8.3 · ✓ Database · ✓ AVIF in browser · ✓ HTTPS</div>
+      </div>
+    </div>
+  </div>
+</div></div></div>
+<div><div class="lb">Phone</div>
+<div class="ph">
+  <div style="display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--line);padding-bottom:8px;margin-bottom:8px"><b style="font:600 14px Georgia,serif">Dashboard</b><span class="a-btn" style="margin-left:auto;padding:3px 8px">+ New</span></div>
+  <div class="a-stats" style="grid-template-columns:1fr 1fr"><div class="a-stat"><b>42</b><span>Published</span></div><div class="a-stat"><b>3</b><span>Scheduled</span></div><div class="a-stat"><b>5</b><span>Drafts</span></div><div class="a-stat"><b>12.4k</b><span>Views</span></div></div>
+  <div class="a-h">Scheduled next</div>
+  <div class="a-li"><span class="a-pill sch">6:00 PM</span><div class="t" style="flex:1"></div></div>
+  <div class="a-li"><span class="a-pill sch">Tomorrow</span><div class="t" style="flex:1"></div></div>
+  <div class="a-tabbar"><span class="on">Home</span><span>Stories</span><span>+</span><span>Pictures</span><span>More</span></div>
+</div>
+</div>
+</div>
+
+<div class="row" style="margin-top:18px">
+<div><div class="lb">5c. Stories list (desktop)</div>
+<div class="pg flush"><div class="a-shell">
+  <div class="a-side"><img src="../public/assets/img/logo/logo-1x.webp" width="110" height="35" alt="Global Arms Post logo" style="display:block;height:auto;margin-bottom:10px"><div class="a-nav">Dashboard</div><div class="a-nav on">Stories</div><div class="a-nav">Homepage</div><div class="a-nav">Categories</div><div class="a-nav">Tags</div><div class="a-nav">Pictures</div><div class="a-nav">Menu</div><div class="a-nav">Users</div><div class="a-nav">Settings</div></div>
+  <div class="a-main">
+    <div style="display:flex;align-items:center;gap:8px"><b style="font:600 17px Georgia,serif">Stories</b><span class="a-btn" style="margin-left:auto">+ New story</span></div>
+    <div style="display:flex;gap:6px;margin:10px 0;flex-wrap:wrap"><span class="a-tab on">All 50</span><span class="a-tab">Published 42</span><span class="a-tab">Scheduled 3</span><span class="a-tab">Drafts 5</span><span class="a-tab">Trash 0</span><span class="a-in" style="margin:0 0 0 auto;width:170px;height:24px"></span></div>
+    <div class="a-tr a-th"><span></span><span>Title</span><span>Category</span><span>Status</span><span>Date</span></div>
+    <div class="a-tr"><span class="im" style="height:26px"></span><span><div class="t" style="margin:0"></div><span style="font-size:10px;color:var(--mute)">Edit · View · Trash</span></span><span>Asia</span><span class="a-pill pub">Published</span><span>5 Nov 1:12 PM</span></div>
+    <div class="a-tr"><span class="im" style="height:26px"></span><span><div class="t" style="margin:0;width:70%"></div></span><span>Europe</span><span class="a-pill sch">Scheduled</span><span>6 Nov 8:30 AM</span></div>
+    <div class="a-tr"><span class="im" style="height:26px"></span><span><div class="t" style="margin:0;width:80%"></div></span><span>Land</span><span class="a-pill dr">Draft</span><span>—</span></div>
+    <div class="a-tr"><span class="im" style="height:26px"></span><span><div class="t" style="margin:0;width:60%"></div></span><span>Air</span><span class="a-pill pub">Published</span><span>4 Nov 9:40 PM</span></div>
+    <span class="note">Filters: category, author, date · sort by any column · tick several stories to publish / move to trash at once</span>
+  </div>
+</div></div></div>
+<div><div class="lb">Phone</div>
+<div class="ph">
+  <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px"><b style="font:600 14px Georgia,serif">Stories</b><span class="a-btn" style="margin-left:auto;padding:3px 8px">+ New</span></div>
+  <div style="display:flex;gap:5px;overflow:hidden;margin-bottom:6px"><span class="a-tab on">All</span><span class="a-tab">Published</span><span class="a-tab">Scheduled</span><span class="a-tab">Drafts</span></div>
+  <div class="mr" style="border-top:0"><div><span class="a-pill pub">Published</span><div class="t" style="margin-top:6px"></div><div class="t" style="width:60%"></div><div class="dtm">Asia · 5 Nov 1:12 PM</div></div><div class="im"></div></div>
+  <div class="mr"><div><span class="a-pill sch">Scheduled</span><div class="t" style="margin-top:6px"></div><div class="dtm">Europe · 6 Nov 8:30 AM</div></div><div class="im"></div></div>
+  <div class="mr"><div><span class="a-pill dr">Draft</span><div class="t" style="margin-top:6px"></div><div class="dtm">Land</div></div><div class="im"></div></div>
+  <div class="a-tabbar"><span>Home</span><span class="on">Stories</span><span>+</span><span>Pictures</span><span>More</span></div>
+</div>
+</div>
+</div>
+
+<div class="row" style="margin-top:18px">
+<div><div class="lb">5d. Story editor (desktop)</div>
+<div class="pg flush"><div class="a-shell">
+  <div class="a-side"><img src="../public/assets/img/logo/logo-1x.webp" width="110" height="35" alt="Global Arms Post logo" style="display:block;height:auto;margin-bottom:10px"><div class="a-nav">Dashboard</div><div class="a-nav on">Stories</div><div class="a-nav">Homepage</div><div class="a-nav">Categories</div><div class="a-nav">Tags</div><div class="a-nav">Pictures</div><div class="a-nav">Menu</div><div class="a-nav">Users</div><div class="a-nav">Settings</div></div>
+  <div class="a-main">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span style="font-size:11px;color:var(--mute)">‹ Stories</span><span style="font-size:11px;color:var(--mute);margin-left:auto">Saved 10 seconds ago</span><span class="a-btn2">Preview</span><span class="a-btn">Publish</span></div>
+    <div class="a-ed">
+      <div>
+        <div style="font:600 20px/1.3 Georgia,serif;border-bottom:1px solid var(--line);padding-bottom:6px">Headline goes here</div>
+        <div class="a-tool"><b>B</b><i>I</i><u>U</u><span>H2</span><span>H3</span><span>• List</span><span>1. List</span><span>❝</span><span>🔗</span><span>🖼</span></div>
+        <div class="s"></div><div class="s"></div><div class="s" style="width:80%"></div>
+        <div class="im" style="height:70px;margin-top:8px"></div><div style="font-size:10px;color:var(--mute)">Caption under the picture (type here)</div>
+        <div class="s" style="margin-top:8px"></div><div class="s" style="width:60%"></div>
+        <span class="note">Paste or drop pictures straight into the text · they become AVIF + WebP in your browser</span>
+        <div class="a-box"><div class="a-h">Summary (one bullet per line)</div><div class="s"></div><div class="s"></div><div class="s" style="width:70%"></div></div>
+        <div class="a-box"><div class="a-h">Short summary for cards (excerpt)</div><div class="a-in" style="height:30px"></div></div>
+        <div class="a-box"><div class="a-h">Credits line</div><div class="a-in"></div><div style="font-size:10px;color:var(--mute)">e.g. Reporting by … Editing by …</div></div>
+      </div>
+      <div class="a-panel">
+        <div class="a-box"><div class="a-h">Publish</div>
+          <div class="a-seg"><span class="on">Draft</span><span>Published</span></div>
+          <div class="a-lbl">Date and time (future = scheduled)</div><div class="a-in" style="display:flex;align-items:center;padding:0 6px;font-size:10px">5 Nov 2026 · 6:00 PM · GMT+7</div>
+          <label class="a-chk"><span class="a-cb"></span>Pin to top (sticky)</label>
+          <label class="a-chk"><span class="a-cb"></span>Show "Live updates" label</label>
+          <div style="font-size:10px;color:var(--red);margin-top:6px">Move to trash</div>
+        </div>
+        <div class="a-box"><div class="a-h">Category</div><div class="a-in" style="font-size:10px;padding:0 6px;display:flex;align-items:center">Search categories…</div>
+          <label class="a-chk"><span class="a-rd on"></span>Asia (Regions)</label><label class="a-chk"><span class="a-rd"></span>Europe (Regions)</label><label class="a-chk"><span class="a-rd"></span>Land</label>
+          <div style="font-size:10px;color:var(--red)">+ Add new category</div></div>
+        <div class="a-box"><div class="a-h">Tags</div><span class="chip">USA ×</span> <span class="chip">Drones ×</span><div class="a-in" style="margin-top:5px;font-size:10px;padding:0 6px;display:flex;align-items:center">Type a tag, Enter adds it</div></div>
+        <div class="a-box"><div class="a-h">Main photo + gallery</div><div class="im" style="height:56px"></div><div class="a-lbl">Caption</div><div class="a-in"></div><div class="a-lbl">Photo credit</div><div class="a-in"></div><div style="font-size:10px;color:var(--red)">+ Add gallery photos</div></div>
+        <div class="a-box"><div class="a-h">Author · Search preview</div><div class="a-in"></div><div class="s"></div></div>
+      </div>
+    </div>
+  </div>
+</div></div></div>
+<div><div class="lb">Phone</div>
+<div class="ph">
+  <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px"><span style="font-size:11px">‹</span><span style="font-size:10px;color:var(--mute)">Saved</span><span class="a-btn2" style="margin-left:auto">Preview</span><span class="a-btn" style="padding:3px 8px">Publish</span></div>
+  <div style="display:flex;gap:5px;margin-bottom:8px"><span class="a-tab on">Write</span><span class="a-tab">Details</span><span class="a-tab">Photos</span></div>
+  <div style="font:600 15px/1.3 Georgia,serif;border-bottom:1px solid var(--line);padding-bottom:5px">Headline goes here</div>
+  <div class="s"></div><div class="s"></div><div class="s" style="width:70%"></div>
+  <div class="im" style="height:56px;margin-top:6px"></div>
+  <div class="s" style="margin-top:6px"></div><div class="s" style="width:60%"></div>
+  <div class="a-tool"><b>B</b><i>I</i><span>H2</span><span>•</span><span>🔗</span><span>🖼</span></div><div style="font-size:10px;color:var(--mute)">The toolbar stays above the phone keyboard while typing.</div>
+  <p class="foot" style="margin:6px 0 0">Details tab: status, date, category, tags, summary, excerpt, credits. Photos tab: main photo, caption, credit, gallery.</p>
+</div>
+</div>
+</div>
+
+<div class="row" style="margin-top:18px">
+<div><div class="lb">5e. Homepage builder (desktop)</div>
+<div class="pg flush"><div class="a-shell">
+  <div class="a-side"><img src="../public/assets/img/logo/logo-1x.webp" width="110" height="35" alt="Global Arms Post logo" style="display:block;height:auto;margin-bottom:10px"><div class="a-nav">Dashboard</div><div class="a-nav">Stories</div><div class="a-nav on">Homepage</div><div class="a-nav">Categories</div><div class="a-nav">Tags</div><div class="a-nav">Pictures</div><div class="a-nav">Menu</div><div class="a-nav">Users</div><div class="a-nav">Settings</div></div>
+  <div class="a-main">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><b style="font:600 17px Georgia,serif">Homepage</b><span class="a-btn2" style="margin-left:auto">+ Add section</span><span class="a-btn">Save</span></div>
+    <div class="a-ed" style="grid-template-columns:minmax(0,1fr) 200px">
+      <div>
+        <div class="a-sec on"><span class="a-grip">⋮⋮</span><b>Hero + cards</b><span class="a-pill dr">span 8</span><span class="a-pill dr">4 stories</span></div>
+        <div class="a-sec"><span class="a-grip">⋮⋮</span><b>List · Top stories / Latest</b><span class="a-pill dr">span 4</span></div>
+        <div class="a-sec"><span class="a-grip">⋮⋮</span><b>Asia · photo with title + rows</b><span class="a-pill dr">span 6</span></div>
+        <div class="a-sec"><span class="a-grip">⋮⋮</span><b>Middle East and Africa</b><span class="a-pill dr">span 6</span></div>
+        <div class="a-sec"><span class="a-grip">⋮⋮</span><b>Europe · lead + 2×2</b><span class="a-pill dr">span 12</span></div>
+        <div class="a-sec"><span class="a-grip">⋮⋮</span><b>Land · grid 4 columns</b><span class="a-pill dr">span 12</span></div>
+        <span class="note">Drag ⋮⋮ to change the order · live preview opens beside it (desktop / phone switch)</span>
+      </div>
+      <div class="a-panel"><div class="a-box"><div class="a-h">Section settings</div>
+        <div class="a-lbl">Layout</div><div class="a-in" style="font-size:10px;padding:0 6px;display:flex;align-items:center">Hero, then cards under it ▾</div>
+        <div class="a-lbl">Title</div><div class="a-in"></div>
+        <div class="a-lbl">Width (span 1–12): 8</div><div class="a-range"><span></span></div>
+        <div class="a-lbl">Stories: 4 · Columns: 3</div><div class="a-range"><span style="width:30%"></span></div>
+        <div class="a-lbl">Categories in / out</div><span class="chip">All</span>
+        <div class="a-lbl">Order</div><div class="a-in" style="font-size:10px;padding:0 6px;display:flex;align-items:center">Newest first ▾</div>
+        <div class="a-lbl">Skip first</div><div class="a-in" style="width:50px"></div>
+        <label class="a-chk"><span class="a-cb on"></span>Pinned stories first</label>
+        <label class="a-chk"><span class="a-cb on"></span>Avoid duplicates</label>
+      </div></div>
+    </div>
+  </div>
+</div></div></div>
+<div><div class="lb">Phone</div>
+<div class="ph">
+  <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px"><b style="font:600 14px Georgia,serif">Homepage</b><span class="a-btn" style="margin-left:auto;padding:3px 8px">Save</span></div>
+  <div class="a-sec on"><span class="a-grip">⋮⋮</span><b>Hero + cards</b></div>
+  <div class="a-sec"><span class="a-grip">⋮⋮</span><b>Top stories / Latest</b></div>
+  <div class="a-sec"><span class="a-grip">⋮⋮</span><b>Asia</b></div>
+  <div class="a-sec"><span class="a-grip">⋮⋮</span><b>Europe</b></div>
+  <p class="foot" style="margin:6px 0 0">Tap a section to open its settings as a sheet from the bottom. Hold ⋮⋮ and drag to reorder.</p>
+  <div class="a-tabbar"><span>Home</span><span>Stories</span><span>+</span><span>Pictures</span><span class="on">More</span></div>
+</div>
 </div>
 </div>
 </main>

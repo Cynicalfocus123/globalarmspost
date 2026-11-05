@@ -1,8 +1,11 @@
 <?php
 declare(strict_types=1);
-// Step 1: the page shell. Homepage sections (task F8) come in a later step.
+// Homepage: the sections set in the admin (home_sections), on a 12-column grid.
+$sections = render_home_sections();
 ?>
-<section class="empty" id="home">
-  <h1 class="sr-only"><?= e(setting('site_name', 'Global Arms Post')) ?></h1>
-  <p>No stories yet. The homepage sections are added in the next step.</p>
-</section>
+<h1 class="sr-only"><?= e(setting('site_name', 'Global Arms Post')) ?></h1>
+<?php if ($sections === ''): ?>
+<p class="empty" id="home">No stories yet.</p>
+<?php else: ?>
+<div class="home-grid" id="home"><?= $sections ?></div>
+<?php endif; ?>

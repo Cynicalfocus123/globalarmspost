@@ -6,6 +6,7 @@
   "scripts": {
     "test": "playwright test",
     "build:logo": "node scripts/build-logo.mjs",
+    "demo-images": "node scripts/make-demo-images.mjs",
     "fonts": "node scripts/copy-fonts.mjs",
     "build:live": "node scripts/build-live.mjs",
     "verify:live": "node scripts/verify-live.mjs",

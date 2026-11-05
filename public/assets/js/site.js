@@ -39,7 +39,8 @@
 
   document.addEventListener('click', function (ev) {
     if (!ev.target.closest('.has-sub')) closeSubs();
-    if (bar && bar.classList.contains('open') && !ev.target.closest('.menu-bar')) setMenu(false);
+    if (search && !search.hidden && !ev.target.closest('#site-search, .search-toggle')) { search.hidden = true; searchBtn.setAttribute('aria-expanded', 'false'); }
+    if (bar && bar.classList.contains('open') && !ev.target.closest('.menu-bar, .menu-toggle')) setMenu(false);
   });
   document.addEventListener('keydown', function (ev) {
     if (ev.key !== 'Escape') return;
@@ -63,6 +64,64 @@
       themeBtn.setAttribute('aria-pressed', String(dark));
       try { localStorage.setItem('gap-theme', dark ? 'dark' : 'light'); } catch (e) { /* storage blocked */ }
     });
+  }
+
+  // Tabs (e.g. Top stories / Latest).
+  function bindTabs(scope) {
+    scope.querySelectorAll('[role="tablist"]').forEach(function (list) {
+      var tabs = list.querySelectorAll('[role="tab"]');
+      tabs.forEach(function (tab, i) {
+        tab.addEventListener('click', function () { select(i); });
+        tab.addEventListener('keydown', function (ev) {
+          if (ev.key === 'ArrowRight' || ev.key === 'ArrowLeft') {
+            var n = (i + (ev.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length;
+            select(n); tabs[n].focus();
+          }
+        });
+      });
+      function select(n) {
+        tabs.forEach(function (t, k) {
+          t.setAttribute('aria-selected', String(k === n));
+          t.tabIndex = k === n ? 0 : -1;
+          var panel = document.getElementById(t.getAttribute('aria-controls'));
+          if (panel) panel.hidden = k !== n;
+        });
+      }
+    });
+  }
+  bindTabs(document);
+
+  // git/ copy only: '#' links (/#asia, /#regions/asia, /#news/slug) load that page into this one.
+  // The live/ copy uses proper addresses and never runs this.
+  if (root.getAttribute('data-links') === 'hash') {
+    var main = document.getElementById('main');
+    var current = '';
+    var route = function () {
+      var h = decodeURIComponent(location.hash.slice(1));
+      if (h === 'main') return;
+      if (h === 'home') h = '';
+      if (h === current) return;
+      var q = h.indexOf('?') >= 0 ? h.slice(h.indexOf('?')) : '';
+      var parts = h.split('?')[0].split('/').filter(Boolean);
+      var url = '/';
+      if (parts[0] === 'news' && parts[1]) url = '/news/' + encodeURIComponent(parts[1]);
+      else if ((parts[0] === 'tag') && parts[1]) url = '/tag/' + encodeURIComponent(parts[1]);
+      else if (parts[0] === 'search') url = '/search';
+      else if (parts.length) url = '/' + encodeURIComponent(parts[parts.length - 1]);
+      current = h;
+      fetch(url + q, { headers: { 'X-Partial': '1' } }).then(function (res) {
+        var title = res.headers.get('X-Page-Title');
+        return res.text().then(function (html) {
+          main.innerHTML = html;
+          if (title) document.title = decodeURIComponent(title);
+          bindTabs(main);
+          setMenu(false);
+          window.scrollTo(0, 0);
+        });
+      });
+    };
+    window.addEventListener('hashchange', route);
+    if (location.hash && location.hash !== '#home' && location.hash !== '#main') { current = ''; route(); } else { current = ''; }
   }
 
   if (toTop) {

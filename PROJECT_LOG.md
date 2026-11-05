@@ -146,10 +146,11 @@ Every change must keep the code:
     - width and height set, so nothing jumps
     - header logo preloaded
   - Favicon and app icons are made from the globe. Done in step 1 (task F18).
-- **Header** (like globalarmspost.com today):
-  - Layout: the logo centred on top, the red category menu bar below it, dark mode + search buttons. Regions opens a white rounded dropdown (U.S., Asia, Europe, Middle East and Africa).
-  - Logo position: **centred** (owner, 2026-11-03).
-  - **No date bar and no social links** above the logo (owner, 2026-11-03). The header is just the logo, then the categories.
+- **Header** (redesigned 2026-11-05, owner: "the red looks like the past"; like a modern news site):
+  - One white row: logo on the left, the menu in dark text (Home, Land, Air, Space, Naval, Global news, Regions ⌄, Business), dark mode + search icons on the right. Red is only an accent (hover line, open arrow). Regions opens a white rounded dropdown (U.S., Asia, Europe, Middle East and Africa). The header stays at the top while scrolling.
+  - Logo position: **left** (2026-11-05; was centred in the first wireframe).
+  - **No date bar and no social links** (owner, 2026-11-03). Search is a small pill box that opens under the search icon (owner: the full-width bar was too long).
+  - Under 1100 px: menu button, logo, icons; the menu opens as a white panel.
   - **Header builder in the admin:** add anything to the header:
     - menu links to categories, tags, posts or any web address
     - the logo
@@ -170,6 +171,26 @@ Every change must keep the code:
 ---
 
 ## Change log
+
+### 2026-11-05 — Step 2: stories, homepage sections, category pages; header redesign; admin wireframes (waiting for approval)
+- **Header redesign** (owner's request): one white row, logo left, dark menu text, icons right, red only as an accent; search is a small pill box under the icon. Wireframe updated.
+- **Database** (migrations `003_content`, `004_home_sections`): `media`, `posts`, `tags`, `post_tags`, `home_sections`. A story is public only when `status = 'published'` and `published_at <= now` (UTC), so scheduled stories appear at their exact time.
+- **Story query engine** (`app/lib/posts.php`): categories in/out with child categories, tags, order by date/updated/title/id/views/random, asc/desc, skip + page numbers, sticky first, avoid duplicates.
+- **Homepage** (`app/lib/sections.php`, `app/views/sections/`): layout registry with all 8 layouts (`hero`, `hero_grid`, `list` with Top stories / Latest tabs, `grid`, `overlay_list`, `lead_grid`, `lead_list`, `headlines`) on the 12-column grid, See more links. Phones: every section is one big rounded story, then rows with the photo on the right.
+- **Category page**: grouped by day under plain text headings ("Today · Thursday, 5 November 2026"), time + author on every story, Most read sidebar, Older stories (`?page=2`).
+- **Story page (basic)**: headline, byline, date + updated, photo with caption, Summary, body as plain paragraphs, credits. Views are counted. The full article page is task F10.
+- **git/ copy `#` links** (`/#asia`, `/#news/slug`) load the page into the current one (JS); live/ uses proper addresses.
+- **Pictures**: `<picture>` with AVIF + WebP at 480/960/1600 px, width/height set, lazy below the top.
+- **Sample stories (test database only)**: `tests/seed-demo.php` adds 42 stories, 1 scheduled and 1 draft that must never show; photos are drawn by `scripts/make-demo-images.mjs` (no real pictures). Never copied to live/.
+- **Preview**: `.claude/launch.json` starts the live copy at http://127.0.0.1:8091/ (use 127.0.0.1, not localhost). Tests use ports 8190/8191 so the preview can stay open.
+- **Tests**: new `tests/stories.spec.ts`. One full run = 28 tests × 18 projects = 504 checks: 442 passed, 62 skipped. Skipped by name:
+  - *Phone menu opens and closes*: 6 desktop projects (no menu button on desktop).
+  - *Database: migrations ran and a saved setting shows on the page*, *A scheduled story appears at its time*: 16 projects each (they change the database, so they run once per copy on desktop Chromium).
+  - *Phones: each section is one big story, then rows*: 12 tablet/desktop projects (phone layout only).
+  - *Desktop: section layouts use their columns*: 12 phone/tablet projects (desktop layout only).
+- **Test results:** 5 full runs. Runs 1, 3, 4 and 5: 442 passed, 62 skipped, 0 failed. Run 2: 11 failures on the live copy, caused by the test setup (restarting the preview mid-run overwrote the file that tells the tests which database to read), not by the site. Fixed: each server now writes its own `test-data/<copy>-<port>.json`. Run 5 was after the fix.
+- **Admin wireframes (section 5, new, for approval):** login, dashboard, stories list, story editor, homepage builder; desktop + phone.
+- Task list v13.
 
 ### 2026-11-03 — New rule: keep only the latest task list Excel
 - Owner's rule: delete the old task list Excel files every time, leaving only the latest. Added to hard rules 1 and 7.

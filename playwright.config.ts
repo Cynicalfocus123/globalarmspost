@@ -3,7 +3,7 @@ import { defineConfig, devices } from '@playwright/test';
 // Every test runs on phone, tablet and desktop in Chromium, Firefox and WebKit (hard rule 10),
 // against both copies of the site: git/ ('#' links) and live/ (proper addresses, hard rule 9).
 // The servers are the real PHP server with a real SQLite database (tests/serve.mjs).
-const copies = { git: 8090, live: 8091 } as const;
+const copies = { git: 8190, live: 8191 } as const; // 8090/8091 stay free for the preview (.claude/launch.json)
 
 // One id per run, shared with the workers and the servers. Each run writes to new folders,
 // so Playwright's start-of-run cleanup never removes earlier files (owner rule: no deleting).

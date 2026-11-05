@@ -6,7 +6,7 @@ $site = setting('site_name', 'Global Arms Post');
 $logo = logo_meta();
 $L = '/assets/img/logo/';
 ?><!doctype html>
-<html lang="en">
+<html lang="en" data-links="<?= e(build_info()['link_mode']) ?>">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">

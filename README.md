@@ -14,7 +14,10 @@ History, rules and design notes: [PROJECT_LOG.md](PROJECT_LOG.md). Wireframes: [
 ```bash
 npm test
 ```
-Starts the real PHP server with a fresh SQLite database for both copies (git/ with `#` links, live/ with proper addresses) and stops it after the run.
+Starts the real PHP server with a fresh SQLite database for both copies (git/ with `#` links, live/ with proper addresses), loads the sample stories (test database only) and stops it after the run.
+
+## Look at the site locally
+The Claude app's preview (`.claude/launch.json`, "live-copy") serves the live copy with sample stories at http://127.0.0.1:8091/.
 
 ## Update live/
 ```bash

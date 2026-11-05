@@ -11,11 +11,13 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 
 const meta = (info: TestInfo) => info.project.metadata as { copy: 'git' | 'live'; engine: string; device: string };
 const isLive = (info: TestInfo) => meta(info).copy === 'live';
-const wide = (page: Page) => (page.viewportSize()?.width ?? 0) >= 1024;
+/** Which test server's database: "<copy>-<port>" (see tests/serve.mjs). */
+const dbKey = (info: TestInfo) => `${meta(info).copy}-${new URL((info.project.use as any).baseURL).port}`;
+const wide = (page: Page) => (page.viewportSize()?.width ?? 0) >= 1100; // full menu from 1100 px
 
 /** Run SQL on the test copy's real database (through the site's own PHP code). */
 function sql(copy: string, query: string, ...params: string[]): any {
-  const info = JSON.parse(readFileSync(join(HERE, '..', 'test-data', `${copy}.json`), 'utf8'));
+  const info = JSON.parse(readFileSync(join(HERE, '..', 'test-data', `${copy}.json`), 'utf8') /* copy = "<copy>-<port>" */);
   const out = execFileSync(process.env.PHP_BIN || 'php', [...info.ext, join(HERE, 'db.php'), info.docroot, query, ...params], {
     env: { ...process.env, GAP_CONFIG: info.config },
   });
@@ -42,29 +44,34 @@ test('homepage loads with security headers and no third-party scripts', async ({
   await expect(page.locator('html')).toHaveAttribute('lang', 'en');
 });
 
-test('header is the centred logo with the red menu below, no date or social links', async ({ page }) => {
+test('header is one white row: logo left, menu, icons right; no date or social links', async ({ page }) => {
   await page.goto('/');
   const header = page.locator('.site-header');
   const text = (await header.innerText()).toLowerCase();
   for (const word of ['facebook', 'rss', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday', '2026']) {
     expect(text, `header must not show "${word}"`).not.toContain(word);
   }
-  const logo = page.locator(wide(page) ? '.logo-row .logo img' : '.logo-bar img');
+  const logo = page.locator('.site-header .logo img');
   await expect(logo).toBeVisible();
   const box = (await logo.boundingBox())!;
   const vw = page.viewportSize()!.width;
-  expect(Math.abs(box.x + box.width / 2 - vw / 2), 'logo is centred').toBeLessThan(3);
-  const bar = (await page.locator('.menu-bar').boundingBox())!;
-  if (wide(page)) expect(bar.y, 'menu bar sits under the logo').toBeGreaterThanOrEqual(box.y + box.height);
-  const red = await page.locator('.menu-bar').evaluate((el) => getComputedStyle(el).backgroundColor);
-  expect(red).toBe('rgb(200, 16, 46)');
+  expect(box.x + box.width / 2, 'logo sits on the left').toBeLessThan(vw / 2);
+  const tools = (await page.locator('.tools').boundingBox())!;
+  expect(tools.x, 'icons sit on the right').toBeGreaterThan(vw / 2);
+  expect(Math.abs((tools.y + tools.height / 2) - (box.y + box.height / 2)), 'logo and icons on one row').toBeLessThan(8);
+  if (wide(page)) {
+    const menu = (await page.locator('#main-menu').boundingBox())!;
+    expect(menu.x, 'menu after the logo').toBeGreaterThan(box.x + box.width);
+    expect(Math.abs((menu.y + menu.height / 2) - (box.y + box.height / 2)), 'menu on the same row').toBeLessThan(8);
+  }
+  expect(await header.evaluate((el) => getComputedStyle(el).backgroundColor), 'white header, no red bar').toBe('rgb(255, 255, 255)');
   const pageBg = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
   expect(pageBg).toBe('rgb(255, 255, 255)');
 });
 
 test('logo is sharp, light and not stretched', async ({ page }) => {
   await page.goto('/');
-  const img = page.locator(wide(page) ? '.logo-row img' : '.logo-bar img');
+  const img = page.locator('.site-header .logo img');
   await expect(img).toHaveAttribute('width', '240');
   await expect(img).toHaveAttribute('height', '77');
   await expect.poll(() => img.evaluate((el: HTMLImageElement) => el.complete && el.naturalWidth)).toBeGreaterThan(0);
@@ -87,7 +94,7 @@ test('menu comes from the database, in order', async ({ page }, info) => {
   const top = page.locator('#main-menu > li > a');
   if (!wide(page)) await page.locator('.menu-toggle').click();
   await expect(top).toHaveText(['Home', 'Land', 'Air', 'Space', 'Naval', 'Global news', 'Regions', 'Business']);
-  const rows = sql(meta(info).copy, "SELECT i.label FROM menu_items i JOIN menus m ON m.id = i.menu_id WHERE m.location = 'header' AND i.parent_id IS NULL ORDER BY i.position");
+  const rows = sql(dbKey(info), "SELECT i.label FROM menu_items i JOIN menus m ON m.id = i.menu_id WHERE m.location = 'header' AND i.parent_id IS NULL ORDER BY i.position");
   expect(rows.map((r: any) => r.label)).toEqual((await top.allTextContents()).map((t) => t.trim()));
 });
 
@@ -190,7 +197,15 @@ test('search box opens and closes', async ({ page }) => {
   await page.locator('.search-toggle').click();
   await expect(form).toBeVisible();
   await expect(page.locator('#q')).toBeFocused();
+  const box = (await form.boundingBox())!;
+  expect(box.width, 'search is a small box, not a full-width bar').toBeLessThanOrEqual(Math.min(381, page.viewportSize()!.width - 31));
+  expect(box.x + box.width, 'search box stays on screen').toBeLessThanOrEqual(page.viewportSize()!.width);
   await page.keyboard.press('Escape');
+  await expect(form).toBeHidden();
+  // A click outside also closes it.
+  await page.locator('.search-toggle').click();
+  await expect(form).toBeVisible();
+  await page.locator('main').click({ position: { x: 5, y: 5 } });
   await expect(form).toBeHidden();
 });
 
@@ -228,9 +243,9 @@ test('pages and protected folders answer with the right status', async ({ page }
 
 test('database: migrations ran and a saved setting shows on the page', async ({ page }, info) => {
   test.skip(meta(info).device !== 'desktop' || meta(info).engine !== 'chromium', 'Server and database check: the same on every browser and device, so it runs once per copy (desktop Chromium). The other tests read this same database on every browser and device.');
-  const copy = meta(info).copy;
+  const copy = dbKey(info);
   const migrations = sql(copy, 'SELECT id FROM migrations ORDER BY id').map((r: any) => r.id);
-  expect(migrations).toEqual(['001_core', '002_starter_content']);
+  expect(migrations).toEqual(['001_core', '002_starter_content', '003_content', '004_home_sections']);
   expect(sql(copy, 'SELECT COUNT(*) AS n FROM categories')[0].n).toBe(11);
   const regions = sql(copy, "SELECT c.slug FROM categories c JOIN categories p ON p.id = c.parent_id WHERE p.slug = 'regions' ORDER BY c.position").map((r: any) => r.slug);
   expect(regions).toEqual(['us', 'asia', 'europe', 'middle-east-africa']);

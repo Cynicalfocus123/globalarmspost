@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "live-copy",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["tests/serve.mjs", "live", "8091"],
+      "port": 8091
+    },
+    {
+      "name": "git-copy",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["tests/serve.mjs", "git", "8090"],
+      "port": 8090
+    }
+  ]
+}

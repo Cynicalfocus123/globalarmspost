@@ -14,7 +14,7 @@ define('PUBLIC_DIR', dirname(__DIR__));
 
 date_default_timezone_set('UTC'); // all dates are stored in UTC
 
-foreach (['html', 'db', 'migrate', 'settings', 'link', 'menu', 'view', 'http'] as $lib) {
+foreach (['html', 'db', 'migrate', 'settings', 'link', 'menu', 'view', 'http', 'dates', 'media', 'posts', 'sections'] as $lib) {
     require APP_DIR . '/lib/' . $lib . '.php';
 }
 
