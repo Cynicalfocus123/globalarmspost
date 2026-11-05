@@ -16,6 +16,7 @@ $L = '/assets/img/logo/';
 <link rel="preload" as="image" type="image/avif" imagesrcset="<?= e($L) ?>logo-1x.avif 1x, <?= e($L) ?>logo-2x.avif 2x" fetchpriority="high">
 <link rel="preload" as="font" type="font/woff2" href="/assets/fonts/inter-latin-wght-normal.woff2" crossorigin>
 <link rel="stylesheet" href="<?= e(asset('css/site.css')) ?>">
+<link rel="stylesheet" href="<?= e(asset('css/reader.css')) ?>">
 <script src="<?= e(asset('js/theme.js')) ?>"></script>
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link rel="icon" type="image/png" href="<?= e($L) ?>favicon-32.png" sizes="32x32">
@@ -26,6 +27,7 @@ $L = '/assets/img/logo/';
 <body>
 <a class="skip" href="#main">Skip to content</a>
 <?= view('header', ['site' => $site, 'logo' => $logo]) ?>
+<?= view('partials/trending', ['tags' => trending_tags((int) setting('trending_tags_count', '8'), (int) setting('trending_tags_days', '14'))]) ?>
 <main id="main" class="wrap">
 <?= $body ?>
 </main>

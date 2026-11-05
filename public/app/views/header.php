@@ -39,9 +39,11 @@ $items = function (array $list, int $depth) use (&$items): string {
       </button>
     </div>
   </div>
-  <form class="search-box" id="site-search" role="search" action="<?= e(site_link('search')) ?>" method="get" hidden>
+  <form class="search-box" id="site-search" role="search" action="<?= e(site_link('search')) ?>" method="get" hidden data-search-form>
     <label class="sr-only" for="q">Search news</label>
-    <input id="q" name="q" type="search" placeholder="Search news" autocomplete="off" maxlength="120">
+    <input id="q" name="q" type="search" placeholder="Search news" autocomplete="off" maxlength="120" data-suggest aria-describedby="hdr-search-help" value="<?= e((string) ($_GET['q'] ?? '')) ?>">
     <button type="submit">Search</button>
+    <span class="sr-only" id="hdr-search-help">Suggestions appear while you type</span>
+    <div class="suggest-box hdr-suggest" data-suggest-box hidden></div>
   </form>
 </header>

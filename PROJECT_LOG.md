@@ -177,6 +177,38 @@ Every change must keep the code:
 
 ## Change log
 
+### 2026-11-05 — Step 4: the reader side (built, not tested yet)
+
+Built on branch `step-4-reader-side`. No test results yet: the tests are written and the 4 full runs come next. The database work is one migration, `006_search`, and every query works on MySQL 8 and SQLite (no full text index, no recursive CTE, no upsert).
+
+- **Full article page (task F10)** — `app/views/article.php`, `assets/css/reader.css`, `assets/js/site.js`:
+  - breadcrumb, headline, **byline with the author's profile picture**, date and time with the zone, "Updated …" when edited after publishing, reading time;
+  - **Aa** button with three text sizes, remembered in the browser (`localStorage`);
+  - **Share**: the phone's share sheet on touch (`navigator.share`), a menu with plain links on desktop (X, Facebook, LinkedIn, WhatsApp, email, copy link) — no third-party scripts;
+  - **photo gallery**: the main photo plus the gallery photos in one slider with ‹ › arrows, a "1/3" counter, swipe (scroll snap) and a full-screen dialog; every photo has the caption and credit the admin typed;
+  - Summary box (one bullet per line), the cleaned body with its pictures, the credits line, **topic chips** that open the tag pages, and a share row;
+  - **"More in {category}"** (a row you can swipe or move with arrows) and **"Latest news"** with a See more button;
+  - pictures stay `<picture>` with AVIF + WebP and sizes, the main photo eager, the rest lazy, nothing stretched; "Live updates" label when the story has one.
+- **Tag pages** (`/tag/{slug}`, reserved name): every public story with that tag, newest first, with pages. `site_link('tag')` now takes a page number too.
+- **Smart search (tasks B11 + F7)** — `app/lib/search.php`, `app/views/search.php`, `index.php`:
+  - own index in three tables: `search_terms` (the vocabulary with document counts), `search_post_terms` (term → story with a weight: title 10, tags 7, summary 5, category 4, excerpt 4, author 3, body 1) and `search_docs` (a fingerprint per story);
+  - indexed on every save, publish, trash and restore (`story_save()`, `stories_set_status()`), when an author is renamed, and by the **"Rebuild search index"** button in Settings (only changed stories are redone; deleted stories are dropped);
+  - a scheduled story becomes findable at its exact time without touching the index, because the query filters on "public" (`status = published AND published_at <= now`);
+  - **joined words** are split with the vocabulary ("ukrainewar" → "ukraine war"); **word forms** match because words are stemmed and a word also matches longer indexed words ("strike" → "strikes", "striking"); **typos** are matched by edit distance with adjacent swaps ("ukrane" → "ukraine") and the page says "Did you mean …";
+  - **ranking**: title and tag matches first (weights), a whole-phrase match in the title (+30) or body (+10) above scattered words, newer stories a little higher; sort by best match or newest;
+  - **snippets** around the first matched word with the matched words in `<mark>` (escaped, only our tags get through);
+  - the **search page** has category and date filters, sort, pages, and the "no results" state; `/search?q=…` in live/, `/#search?q=…` in git/ (the '#' router already sends the query along, and the search forms switch to the hash in that copy);
+  - **suggestions while typing** in the header's search box (and on the search page) from `/api/suggest?q=`, a small JSON answer with vocabulary words and matching headlines, rate limited per address (40 a minute) with no third-party code and no cookies.
+- **Page cache (task B12)** — `app/lib/cache.php`:
+  - a public page is rendered once and served from `storage/cache/pages/<hash>.cache`; the response says `X-Cache: HIT` or `MISS`;
+  - a cached page **expires at the next scheduled story's time** (or after `cache_ttl`, 300 s by default), so a scheduled story appears exactly on time;
+  - **every admin save clears the cache** (story save, bulk publish/trash/restore, homepage, author, settings);
+  - admin pages, API answers, POSTs, pages with unknown query parameters and the test/debug runs (`debug` on) are never cached — the tests change the database directly, and a stale page would hide it; `?cache=1` turns it on for one page, which is how the cache is tested;
+  - the folder keeps itself small: expired/oldest generated files are removed when there are many (never a project, upload or story file).
+- **Trending tags row (task F11)** — `partials/trending.php`, `trending_tags()`: the tags most used by recent public stories (default: last 14 days, 8 tags), under the header, a horizontal chip row on phones. On/off, how many and how many days are set in the admin.
+- **Settings page** (the reader-side part of task F17) — `/admin/settings` replaces the "comes later" placeholder: trending tags, the page cache (on/off, time to live, size, "Clear the page cache"), and the search index with "Rebuild search index". Saving clears the cache.
+- **Tests written, not run yet**: `tests/article.spec.ts`, `tests/search.spec.ts`, `tests/reader.spec.ts` (cache, trending, rebuild). `tests/seed-demo.php` now gives the first three sample stories a photo gallery and builds the search index at seed time. Task list v19.
+
 ### 2026-11-05 — Step 3 tested: 3 full runs pass, the 4th stopped by the owner (waiting for approval)
 
 The Step 3 admin was tested with the whole suite — `PLAYWRIGHT_BROWSERS_PATH=D:/dev/playwright WORKERS=8 npm test` (848 tests, 18 projects: git/live × Chromium/Firefox/WebKit × phone/tablet/desktop, three phases per copy: `setup` → site/stories/admin → `publish`). Every failure the first runs found was fixed in the code. On the same, final code:

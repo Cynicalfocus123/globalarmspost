@@ -1,8 +1,8 @@
 {
   "project": "Global Arms Post",
   "updated": "2026-11-05",
-  "version": 18,
-  "update_note": "Updated 2026-11-05 v18 (step 3 tested: 3 full runs passed, 786 passed / 62 skipped / 0 failed each, and a 4th run was stopped by the owner after 718 passing tests with 0 failed; committed, pushed, live/ rebuilt and verified; B2, B4, B5, B6, B13, B16, B19, F13, F14, F15, F16, F17 Pending until you approve). Earlier v17 (step 3 testing; every failure found by the runs was fixed: the WebKit Save click, the homepage builder drag, the More sheet on touch, SQLite busy timeout; B2, B4, B5, B6, B13, B16, B19, F13, F14, F15, F16, F17 Pending until you approve). Earlier v16 (step 3, the admin, built and tested: B2, B4, B5, B6, B13, B16, B19, F13, F14, F15, F16, F17 Pending until you approve). Updated 2026-11-05 v16 (step 3, the admin, built and tested: B2, B4, B5, B6, B13, B16, B19, F13, F14, F15, F16, F17 Pending until you approve; B7, B8, F10 moved forward). Earlier v15 (owner approved step 2: F4 header, F6 phone menu, B9 query engine, F8 homepage sections, F9 category page, P16 sample stories are Done; B7, B8, F10, F11 stay Pending because parts come in later steps). Earlier v14 (admin wireframe F20 approved with the owner's changes; new task B19 authors). Earlier v13 (step 2 passed the full suite 4 times; admin wireframes F20 added for approval). Earlier v12 (step 2 built: stories database, query engine B9, homepage sections F8, category page F9, basic story page F10; header redesigned F4/F6; sample stories P16; all Pending until you approve). Earlier v11 (new rule: only the latest task list Excel is kept; old versions are deleted on every build). Earlier v10 (owner approved step 1: F18 logo, F4 header, F6 phone menu, B10 menu data, B14 migrations, P10 live build + verify, P14 site_link(), P8 test suite, P11 first push, P7 approval are Done). Earlier v9 (step 1 passed the full suite 4 times on Chromium, Firefox, WebKit; first commit pushed; live/ built and verified). Earlier v8 (step 1 built: logo F18, header F4, phone menu F6, menu data B10, migrations B14, live build + verify P10, site_link() P14, tests P8; all Pending until you approve, Firefox + WebKit not run yet). Earlier v7 (the 6 draft backend files were removed at the owner's request; B1-B6 are back to Not started and get written fresh in Phase 1). Earlier v6 (owner approved all wireframes: F1, F2, F3 and the new category page F19 are Done; header = centred logo + red menu, no date bar or social links; phones use one lead story + headline/date rows; no WordPress import, B18 is now scraping the current site later). Earlier v5 (new logo for header + footer added to step 1 as F18). Earlier v4 (hard rule 10: correct on all modern phones, tablets, desktops; test task P8 widened). Earlier v3 (hard rule 9: live/ mirrors git/ with proper addresses like globalarmspost.com/asia; new task P14). Earlier v2 (nothing is Done: the owner has not approved the wireframes or plan yet, so every started item is Pending). Earlier v1 (task list created; header builder + smart search added as Not started).",
+  "version": 19,
+  "update_note": "Updated 2026-11-05 v19 (step 4, the reader side, built and waiting for the tests: F10 full article page, F11 trending tags row, B11 smart search index, F7 search page + suggestions, B12 page cache; a new Settings page holds the trending tags, the cache and the \"Rebuild search index\" button). Earlier v18 (step 3 approved). Updated 2026-11-05 v18 (step 3 tested: 3 full runs passed, 786 passed / 62 skipped / 0 failed each, and a 4th run was stopped by the owner after 718 passing tests with 0 failed; committed, pushed, live/ rebuilt and verified; B2, B4, B5, B6, B13, B16, B19, F13, F14, F15, F16, F17 Pending until you approve). Earlier v17 (step 3 testing; every failure found by the runs was fixed: the WebKit Save click, the homepage builder drag, the More sheet on touch, SQLite busy timeout; B2, B4, B5, B6, B13, B16, B19, F13, F14, F15, F16, F17 Pending until you approve). Earlier v16 (step 3, the admin, built and tested: B2, B4, B5, B6, B13, B16, B19, F13, F14, F15, F16, F17 Pending until you approve). Updated 2026-11-05 v16 (step 3, the admin, built and tested: B2, B4, B5, B6, B13, B16, B19, F13, F14, F15, F16, F17 Pending until you approve; B7, B8, F10 moved forward). Earlier v15 (owner approved step 2: F4 header, F6 phone menu, B9 query engine, F8 homepage sections, F9 category page, P16 sample stories are Done; B7, B8, F10, F11 stay Pending because parts come in later steps). Earlier v14 (admin wireframe F20 approved with the owner's changes; new task B19 authors). Earlier v13 (step 2 passed the full suite 4 times; admin wireframes F20 added for approval). Earlier v12 (step 2 built: stories database, query engine B9, homepage sections F8, category page F9, basic story page F10; header redesigned F4/F6; sample stories P16; all Pending until you approve). Earlier v11 (new rule: only the latest task list Excel is kept; old versions are deleted on every build). Earlier v10 (owner approved step 1: F18 logo, F4 header, F6 phone menu, B10 menu data, B14 migrations, P10 live build + verify, P14 site_link(), P8 test suite, P11 first push, P7 approval are Done). Earlier v9 (step 1 passed the full suite 4 times on Chromium, Firefox, WebKit; first commit pushed; live/ built and verified). Earlier v8 (step 1 built: logo F18, header F4, phone menu F6, menu data B10, migrations B14, live build + verify P10, site_link() P14, tests P8; all Pending until you approve, Firefox + WebKit not run yet). Earlier v7 (the 6 draft backend files were removed at the owner's request; B1-B6 are back to Not started and get written fresh in Phase 1). Earlier v6 (owner approved all wireframes: F1, F2, F3 and the new category page F19 are Done; header = centred logo + red menu, no date bar or social links; phones use one lead story + headline/date rows; no WordPress import, B18 is now scraping the current site later). Earlier v5 (new logo for header + footer added to step 1 as F18). Earlier v4 (hard rule 10: correct on all modern phones, tablets, desktops; test task P8 widened). Earlier v3 (hard rule 9: live/ mirrors git/ with proper addresses like globalarmspost.com/asia; new task P14). Earlier v2 (nothing is Done: the owner has not approved the wireframes or plan yet, so every started item is Pending). Earlier v1 (task list created; header builder + smart search added as Not started).",
   "tasks": [
     {
       "id": "P1",
@@ -206,10 +206,10 @@
       "id": "F7",
       "area": "Search",
       "side": "Frontend",
-      "status": "Not started",
+      "status": "Pending",
       "task": "Search page + search box: results with highlighted words, filters (category, date), sort by best match or newest, 'Did you mean' for typos, suggestions while typing",
-      "why": "Owner request 2026-11-03: search must be extremely smart for a news site",
-      "next": "Claude, after approval"
+      "why": "Built in step 4 (2026-11-05), not tested yet: /search page (/#search in the git copy) with results, highlighted matched words, category and date filters, sort by best match or newest, pages, \"Did you mean\", and suggestions while typing from a small JSON endpoint (/api/suggest, rate limited per address, no third-party code).",
+      "next": "You: review, then the tests run for step 4"
     },
     {
       "id": "F8",
@@ -235,8 +235,8 @@
       "side": "Frontend",
       "status": "Pending",
       "task": "Article page as in the wireframe: gallery with arrows + full screen, captions, Summary box, Aa text size, Share (phone share sheet), share row, credits, topics, More in category, Latest news",
-      "why": "Step 2: basic story page. Step 3: the body is now cleaned HTML with body pictures (caption + credit) and gallery photos with captions. Still to do: gallery slider + full screen, Aa, Share, share row, topics, More in category, Latest news",
-      "next": "Claude, in step 4"
+      "why": "Step 2: basic story page. Step 3: cleaned body with body pictures and gallery photos. Built in step 4 (2026-11-05), not tested yet: the full article page as the design rules say it — breadcrumb, headline, byline with the author's picture, date + time zone + \"Updated\", reading time, Aa (three sizes, remembered), Share (phone share sheet on touch, menu with plain links on desktop), photo gallery with arrows, counter, swipe and full screen, captions + credits, Summary box, body, credits line, topic chips that open the tag pages, share row, \"More in {category}\" with arrows and \"Latest news\"; \"Live updates\" when set.",
+      "next": "You: review, then the tests run for step 4"
     },
     {
       "id": "F11",
@@ -244,8 +244,8 @@
       "side": "Frontend",
       "status": "Pending",
       "task": "Site look: white background, serif headlines (self-hosted fonts), section headers with divider + See more, red back-to-top button, dark mode switch, trending tags row, footer",
-      "why": "Built so far: white page, self-hosted fonts, theme tokens, dark mode, red back-to-top, footer, section headers with See more (step 2). Still to do: trending tags row",
-      "next": "Claude, with a later step"
+      "why": "Built so far: white page, self-hosted fonts, theme tokens, dark mode, red back-to-top, footer, section headers with See more (step 2). Built in step 4 (2026-11-05), not tested yet: the trending tags row under the header (the tags most used by recent public stories), with on/off, how many tags and how many days in Settings.",
+      "next": "You: review, then the tests run for step 4"
     },
     {
       "id": "F12",
@@ -298,7 +298,7 @@
       "side": "Frontend",
       "status": "Pending",
       "task": "Admin pages: dashboard (counts, scheduled posts, server check), posts list (filters: all, published, scheduled, draft, trash), categories (drag order, parent, show in menu), tags, media library, settings (site name, time zone, theme colors + fonts), users",
-      "why": "Built in step 3 (2026-11-05), tested with the full suite: 3 full runs passed (786 passed, 62 skipped, 0 failed each) and a 4th run was stopped by the owner after 718 passing tests, 0 failed (phone, tablet and desktop in Chromium, Firefox and WebKit); waiting for your approval. dashboard, stories list (tabs, search, filters, bulk), users (add admin/editor), account; categories, tags, pictures as lists. Still to do: category order/parent/menu editing, media library actions, site settings",
+      "why": "Built in step 3 (2026-11-05), tested with the full suite: 3 full runs passed (786 passed, 62 skipped, 0 failed each) and a 4th run was stopped by the owner after 718 passing tests, 0 failed (phone, tablet and desktop in Chromium, Firefox and WebKit); waiting for your approval. dashboard, stories list (tabs, search, filters, bulk), users (add admin/editor), account; categories, tags, pictures as lists. Step 4 added a Settings page for the trending tags, the page cache and the search index tools. Still to do: category order/parent/menu editing, media library actions, the rest of site settings (site name, time zone, theme)",
       "next": "You: approve step 3"
     },
     {
@@ -307,7 +307,7 @@
       "side": "Backend",
       "status": "Pending",
       "task": "Posts: save, draft, publish, schedule (shows at the exact time), trash, restore, delete for good; updated date; reading time",
-      "why": "Step 2: posts table and public rule. Built in step 3 (2026-11-05), tested with the full suite: 3 full runs passed (786 passed, 62 skipped, 0 failed each) and a 4th run was stopped by the owner after 718 passing tests, 0 failed (phone, tablet and desktop in Chromium, Firefox and WebKit); waiting for your approval. Save, draft, publish, schedule, trash and restore from the admin. Still to do: delete for good, reading time",
+      "why": "Step 2: posts table and public rule. Built in step 3 (2026-11-05), tested with the full suite: 3 full runs passed (786 passed, 62 skipped, 0 failed each) and a 4th run was stopped by the owner after 718 passing tests, 0 failed (phone, tablet and desktop in Chromium, Firefox and WebKit); waiting for your approval. Save, draft, publish, schedule, trash and restore from the admin. Reading time is on the article page now (step 4). Still to do: delete for good",
       "next": "You: approve step 3"
     },
     {
@@ -350,19 +350,19 @@
       "id": "B11",
       "area": "Search",
       "side": "Backend",
-      "status": "Not started",
+      "status": "Pending",
       "task": "Smart search engine: own word index (works on MySQL and SQLite); finds words joined or spaced ('ukrainewar' = 'ukraine war'), single words from title, body, tags, categories, author; word forms (missile = missiles); typo fixing; ranking with title boost, phrase match and newer-first boost; snippets with the matched words",
-      "why": "Owner request 2026-11-03. Index updates on every save; 'Rebuild index' button in admin",
-      "next": "Claude, after approval"
+      "why": "Built in step 4 (2026-11-05), not tested yet: own word index in three tables (search_terms vocabulary, search_post_terms inverted index with weights, search_docs fingerprints) filled on every story save, publish, trash and restore, plus a \"Rebuild search index\" button in Settings; searches title, body, excerpt, summary, tags, category and author; joined words split with the vocabulary (\"ukrainewar\"), longer forms match (\"strike\" finds \"strikes\"), typos are fixed with \"Did you mean\", results ranked (title and tag matches first, whole phrase higher, newer a little higher), snippets with the matched words highlighted; only public stories.",
+      "next": "You: review, then the tests run for step 4"
     },
     {
       "id": "B12",
       "area": "Speed",
       "side": "Backend",
-      "status": "Not started",
+      "status": "Pending",
       "task": "Page cache: cached pages expire at the next scheduled post; any admin save clears the cache",
-      "why": "Code shown 2026-11-03",
-      "next": "Claude, after approval"
+      "why": "Built in step 4 (2026-11-05), not tested yet: public pages are rendered once and served from storage/cache/pages; a cached page expires at the next scheduled story's time (or a time to live set in Settings); every admin save (story, bulk status, homepage, author) clears the cache; admin pages, API answers, POSTs and pages with unknown query parameters are never cached.",
+      "next": "You: review, then the tests run for step 4"
     },
     {
       "id": "B13",

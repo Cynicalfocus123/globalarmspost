@@ -38,7 +38,7 @@ Every change keeps the code **customizable** (settings in the admin, theme token
 ## Testing
 - `npm test` runs on 18 projects (git/live × Chromium/Firefox/WebKit × phone/tablet/desktop) against the real PHP server (`tests/serve.mjs`) and SQLite, loaded with sample stories (`tests/seed-demo.php`, test database only), in three phases per copy:
   1. `setup-<copy>`: `tests/admin-setup.spec.ts` makes the first admin through the real `/admin/setup` step and adds an editor (accounts in `tests/fixtures/test-users.json`, test only).
-  2. `<copy>-<engine>-<device>`: `site.spec.ts`, `stories.spec.ts`, `admin.spec.ts`.
+  2. `<copy>-<engine>-<device>`: `site.spec.ts`, `stories.spec.ts`, `article.spec.ts`, `search.spec.ts`, `reader.spec.ts` (page cache, trending tags, search index tools), `admin.spec.ts`.
   3. `<copy>-<engine>-<device>-publish`: `admin-publish.spec.ts` (publishing, new categories, homepage builder), after phase 2, so the site tests never see a half-changed homepage.
 - Local preview (`npm run preview` or `.claude/launch.json`, port 8091) adds a demo admin (`tests/seed-admin.php`, login in `tests/fixtures/test-users.json` → `demo_admin`); test runs never do.
 - Test ports 8190/8191; the preview (`.claude/launch.json`) uses 8091. Each run writes new folders in `test-data/` and `test-results/`; nothing is deleted. Playwright browsers: `PLAYWRIGHT_BROWSERS_PATH=D:/dev/playwright`.
@@ -47,6 +47,7 @@ Every change keeps the code **customizable** (settings in the admin, theme token
 - Test phone, tablet AND desktop (Chromium, Firefox, WebKit; 320–1920 px), against the real running PHP server and database. Check that values were really saved, not just status codes.
 - Run the full suite 4 times (`PLAYWRIGHT_BROWSERS_PATH=D:/dev/playwright WORKERS=8 npm test`). Stop when all 4 runs pass: 786 passed, 62 skipped, 0 failed per run.
 - Heavy tests get a longer budget for their own work, never weaker assertions: "phones and tablets" 180 s (36 page loads), "throttling" 120 s (six sign-in rounds), publish "schedule" and "move to trash" 150 s.
+- Step 4 tests: `tests/seed-demo.php` gives the first three sample stories a photo gallery and builds the search index at seed time (so search and the article gallery are testable in every project). The page cache is **off while `debug` is on** (the test config), because tests change the database directly; the cache tests turn it on for one page with `?cache=1` and read the `X-Cache: HIT|MISS` header.
 - Each report lists every skipped test by name with its reason.
 
 ## Design
@@ -59,6 +60,7 @@ Every change keeps the code **customizable** (settings in the admin, theme token
 - Category page: posts grouped by day under a plain text date heading ("Today · Tuesday, 3 November 2026", no calendar box); each story shows its time. Smart search: own word index; joined or spaced words, word forms, typo fixing, ranking, highlights (details in `PROJECT_LOG.md`).
 - Admin (`/admin`, step 3, wireframe 5): setup step for the first admin, sign-in (throttling, keep me signed in, optional two-step code), roles admin/editor, dashboard, stories list, story editor (pictures anywhere in the body, tags/categories/authors added on the spot), authors, homepage builder. Side menu from 900 px; under 900 px a bottom tab bar and bottom sheets.
 - Article page: headline, author, date + updated, Aa and Share buttons, photo gallery with captions, Summary bullet box, body, credits line, topic chips, share row, then "More in {category}" and "Latest news" (full list in `PROJECT_LOG.md` → Design rules → Article page).
+- Reader side (step 4, built, not tested yet): the article page above, tag pages (`/tag/{slug}`), the search page (`/search?q=` live, `/#search?q=` git) with filters, sort, pages, highlights and "Did you mean", suggestions under the header search box from `/api/suggest`, the trending tags row under the header, and the page cache (`storage/cache/pages`, expires at the next scheduled story, cleared by every admin save). Settings in the admin: trending tags, cache, "Rebuild search index".
 
 ## Stack
 - PHP 8.1+ with no framework, PDO MySQL (Hostinger) or SQLite, plain JavaScript. No Node on the server.

@@ -109,7 +109,18 @@ foreach ($stories as $i => [$slugCat, $title, $live, $sticky, $tags]) {
     foreach ($tags as $t) {
         q('INSERT INTO post_tags (post_id, tag_id) VALUES (?, ?)', [$id, $tag[$t]]);
     }
+    // The first three stories get a photo gallery, so the article page has photos to slide through (task F10).
+    if ($i < 3) {
+        foreach ([1, 2] as $pos => $offset) {
+            q('INSERT INTO post_gallery (post_id, media_id, position, caption, credit) VALUES (?, ?, ?, ?, ?)',
+                [$id, $media[($i + $offset) % 12], $pos, 'Sample gallery caption ' . ($pos + 1), 'Sample photo desk']);
+        }
+    }
 }
+
+// The search index (task B11) is built from the sample stories, as it is on the real site.
+$indexed = search_reindex_all();
+echo $indexed['posts'] . ' sample stories indexed for search (' . $indexed['terms'] . " words).\n";
 
 // Must never show: a story scheduled for later, and a draft.
 foreach ([['Scheduled sample story for later', 'published', gmdate('Y-m-d H:i:s', $now + 2 * 86400)], ['Draft sample story', 'draft', gmdate('Y-m-d H:i:s', $now - 60)]] as [$title, $status, $at]) {

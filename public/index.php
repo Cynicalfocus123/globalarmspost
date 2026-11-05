@@ -17,18 +17,48 @@ $path = request_path();
 $parts = $path === '/' ? [] : explode('/', substr($path, 1));
 $page = max(1, (int) ($_GET['page'] ?? 1));
 
+// Suggestions while typing in the search box: small JSON, never cached, rate limited (task B11/F7).
+if (($parts[0] ?? '') === 'api' && ($parts[1] ?? '') === 'suggest') {
+    header('Content-Type: application/json; charset=utf-8');
+    header('Cache-Control: no-store');
+    echo json_encode(search_suggest_limited((string) ($_GET['q'] ?? '')), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
+// Page cache (task B12): a public page rendered once is served from storage/cache/pages until the next
+// scheduled story's time. Admin pages, API responses and POSTs never get here (see cache_key()).
+$cacheKey = cache_key();
+if ($cacheKey !== null) {
+    $hit = cache_read($cacheKey);
+    if ($hit !== null) {
+        if ($hit['post'] > 0) {
+            count_view($hit['post']); // a served page is still a read
+        }
+        http_response_code($hit['status']);
+        header('X-Cache: HIT');
+        echo $hit['html'];
+        exit;
+    }
+    header('X-Cache: MISS');
+}
+
 /**
  * Send a page. The git/ copy's '#' links load pages into the current one: those requests send
  * X-Partial: 1 and get only the main content (title in X-Page-Title).
  */
-$send = function (string $title, string $body, int $status = 200): never {
+$send = function (string $title, string $body, int $status = 200, int $postId = 0) use ($cacheKey): never {
     http_response_code($status);
-    if (($_SERVER['HTTP_X_PARTIAL'] ?? '') === '1') {
+    $partial = ($_SERVER['HTTP_X_PARTIAL'] ?? '') === '1';
+    if ($partial) {
         header('X-Page-Title: ' . rawurlencode($title === '' ? setting('site_name', 'Global Arms Post') : $title . ' | ' . setting('site_name', 'Global Arms Post')));
-        echo $body;
-        exit;
+        $html = $body;
+    } else {
+        $html = view('layout', ['title' => $title, 'body' => $body]);
     }
-    echo view('layout', ['title' => $title, 'body' => $body]);
+    if ($cacheKey !== null) {
+        cache_store($cacheKey, $html, $status, $postId);
+    }
+    echo $html;
     exit;
 };
 
@@ -41,6 +71,28 @@ if (($parts[0] ?? '') === 'admin') {
 
 if ($parts === [] || $parts === ['home']) {
     $send('', view('home'));
+}
+
+// Search page: /search?q= in live/, /#search?q= in git/ (reserved name, so no category can take it).
+if (count($parts) === 1 && $parts[0] === 'search') {
+    $q = (string) ($_GET['q'] ?? '');
+    $res = search_results($q, [
+        'category' => (string) ($_GET['cat'] ?? ''),
+        'from' => (string) ($_GET['from'] ?? ''),
+        'to' => (string) ($_GET['to'] ?? ''),
+        'sort' => (string) ($_GET['sort'] ?? 'match'),
+        'page' => $page,
+    ]);
+    $send($res['q'] === '' ? 'Search' : 'Search: ' . $res['q'], view('search', ['res' => $res]));
+}
+
+// Tag page: /tag/usa (both copies; it is a reserved name too).
+if (count($parts) === 2 && $parts[0] === 'tag') {
+    $tag = q_one('SELECT id, name, slug FROM tags WHERE slug = ?', [$parts[1]]);
+    if ($tag !== null) {
+        $posts = posts_query(['tags' => [(string) $tag['slug']], 'count' => 20, 'page' => $page]);
+        $send('Tag: ' . (string) $tag['name'], view('tag', ['tag' => $tag, 'posts' => $posts, 'page' => $page]));
+    }
 }
 
 if (count($parts) === 1 && !in_array($parts[0], reserved_slugs(), true)) {
@@ -57,7 +109,7 @@ if (count($parts) === 2) {
     if ($post !== null && ($parts[0] === 'news' || $parts[0] === $post['cat_slug'])) {
         if ($parts[0] !== 'news' || build_info()['link_mode'] === 'hash') {
             count_view((int) $post['id']);
-            $send((string) $post['title'], view('article', ['p' => $post]));
+            $send((string) $post['title'], view('article', ['p' => $post]), 200, (int) $post['id']);
         }
     }
 }

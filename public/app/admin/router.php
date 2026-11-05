@@ -77,7 +77,7 @@ function admin_route(array $parts): void
         'users' => admin_users(admin_need($user, 'admin')),
         'account' => admin_account($user, $parts[1] ?? ''),
         'menu' => admin_later(admin_need($user, 'admin'), 'Menu', 'menu', 'The header builder (task F5) comes in a later step.'),
-        'settings' => admin_later(admin_need($user, 'admin'), 'Settings', 'settings', 'Site settings (task F17) come in a later step.'),
+        'settings' => admin_settings(admin_need($user, 'admin')),
         'api' => admin_api($user, $parts[1] ?? ''),
         default => admin_fail(404, 'This admin page does not exist.', false),
     };
@@ -529,6 +529,47 @@ function admin_later(array $user, string $title, string $nav, string $text): nev
     admin_page($user, $title, $nav, 'later', ['text' => $text, 'title' => $title]);
 }
 
+/* ---------- settings (the reader-side parts of task F17) ---------- */
+
+/**
+ * Trending tags, the page cache and the search index tools. Saving here clears the page cache, because a
+ * changed setting changes every page.
+ */
+function admin_settings(array $user): never
+{
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $action = (string) ($_POST['action'] ?? 'save');
+        if ($action === 'rebuild') {
+            $res = search_reindex_all();
+            cache_clear();
+            audit('search.rebuild', 'indexed ' . $res['posts'] . ', skipped ' . $res['skipped'] . ', terms ' . $res['terms']);
+            flash('Search index rebuilt: ' . $res['posts'] . ' stories indexed, ' . $res['skipped'] . ' already up to date, ' . $res['terms'] . ' words in the vocabulary.');
+            admin_redirect('/admin/settings');
+        }
+        if ($action === 'cache') {
+            $n = cache_clear();
+            audit('cache.clear', $n . ' pages');
+            flash('Page cache cleared (' . $n . ' page' . ($n === 1 ? '' : 's') . ').');
+            admin_redirect('/admin/settings');
+        }
+        setting_save('trending_tags', !empty($_POST['trending_tags']) ? '1' : '0');
+        setting_save('trending_tags_count', (string) max(1, min(20, (int) ($_POST['trending_tags_count'] ?? 8))));
+        setting_save('trending_tags_days', (string) max(1, min(365, (int) ($_POST['trending_tags_days'] ?? 14))));
+        setting_save('cache_enabled', !empty($_POST['cache_enabled']) ? '1' : '0');
+        setting_save('cache_ttl', (string) max(15, min(3600, (int) ($_POST['cache_ttl'] ?? 300))));
+        cache_clear();
+        audit('settings.save', 'trending tags, page cache');
+        flash('Settings saved. The page cache was cleared.');
+        admin_redirect('/admin/settings');
+    }
+    $stats = cache_stats();
+    admin_page($user, 'Settings', 'settings', 'settings', [
+        'stats' => $stats,
+        'terms' => (int) (q_one('SELECT COUNT(*) AS n FROM search_terms')['n'] ?? 0),
+        'docs' => (int) (q_one('SELECT COUNT(*) AS n FROM search_docs')['n'] ?? 0),
+    ]);
+}
+
 /* ---------- JSON API ---------- */
 
 function admin_api(array $user, string $what): never
@@ -659,5 +700,6 @@ function homepage_save(array $in): array
         throw $e;
     }
     audit('homepage.save', count($ids) . ' sections');
+    cache_clear(); // the homepage just changed (task B12)
     return ['ids' => $ids, 'saved' => true];
 }

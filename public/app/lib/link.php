@@ -27,7 +27,7 @@ function site_link(string $route, array $p = []): string
             ? '/#' . (($p['parent'] ?? '') !== '' ? rawurlencode($p['parent']) . '/' : '') . $slug
             : '/' . $slug) . $page,
         'article' => $hash ? '/#news/' . $slug : '/' . rawurlencode($p['category'] ?? '') . '/' . $slug,
-        'tag' => ($hash ? '/#tag/' : '/tag/') . $slug,
+        'tag' => (($hash ? '/#tag/' : '/tag/') . $slug) . $page,
         'search' => ($hash ? '/#search' : '/search') . $query,
         'page' => ($hash ? '/#' : '/') . $slug,
         'admin' => '/admin',
@@ -55,6 +55,42 @@ function asset_dir_version(string $dir): string
         $parts .= basename($file) . filemtime($file) . filesize($file);
     }
     return substr(md5($parts), 0, 8);
+}
+
+/**
+ * The full address of this site (for share links and the sitemap): the configured site_url, else the
+ * address of the current request.
+ */
+function absolute_url(string $path = '/'): string
+{
+    $base = rtrim(setting('site_url', ''), '/');
+    if ($base === '') {
+        $https = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || ($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https';
+        $host = (string) ($_SERVER['HTTP_HOST'] ?? 'localhost');
+        $base = ($https ? 'https://' : 'http://') . $host;
+    }
+    return $base . '/' . ltrim($path, '/');
+}
+
+/**
+ * The search page's address with its filters (q, cat, from, to, sort, page) in both copies:
+ * /#search?q=… in git/, /search?q=… in live/.
+ * @param array<string, mixed> $p
+ */
+function search_url(array $p, int $page = 1): string
+{
+    $query = [];
+    foreach (['q', 'cat', 'from', 'to', 'sort'] as $key) {
+        $value = trim((string) ($p[$key] ?? ''));
+        if ($value !== '') {
+            $query[$key] = $value;
+        }
+    }
+    if ($page > 1) {
+        $query['page'] = (string) $page;
+    }
+    $base = build_info()['link_mode'] === 'hash' ? '/#search' : '/search';
+    return $base . ($query === [] ? '' : '?' . http_build_query($query));
 }
 
 /**

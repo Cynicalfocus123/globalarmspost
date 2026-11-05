@@ -168,6 +168,9 @@ function story_save(array $in, int $userId): array
         throw $e;
     }
     audit($old === null ? 'story.create' : 'story.update', '#' . $id . ' ' . $title, $userId);
+    // Reader side (tasks B11, B12): the story goes into the search index, and every cached page is stale now.
+    search_index_post($id);
+    cache_clear();
     return [
         'id' => $id,
         'slug' => $slug,
@@ -201,6 +204,11 @@ function stories_set_status(array $ids, string $action, int $userId): int
         $n++;
     }
     audit('stories.' . $action, implode(',', $ids), $userId);
+    // Publish / trash / restore change what the reader side shows, so the index and the cache follow.
+    foreach ($ids as $id) {
+        search_index_post((int) $id);
+    }
+    cache_clear();
     return $n;
 }
 
@@ -228,6 +236,7 @@ function tag_create(string $name): array
     q('INSERT INTO tags (name, slug) VALUES (?, ?)', [$name, $slug]);
     $id = (int) db()->lastInsertId();
     audit('tag.create', $name);
+    cache_clear(); // the search page's filters and any page listing tags may change (task B12)
     return ['id' => $id, 'name' => $name, 'slug' => $slug, 'parent_id' => null, 'created' => true];
 }
 
@@ -253,6 +262,7 @@ function category_create(string $name, int $parentId): array
     q('INSERT INTO categories (parent_id, name, slug, position, created_at) VALUES (?, ?, ?, ?, ?)', [$parentId > 0 ? $parentId : null, $name, $slug, $pos, now_utc()]);
     $id = (int) db()->lastInsertId();
     audit('category.create', $name);
+    cache_clear(); // a new category can show in lists and filters (task B12)
     return ['id' => $id, 'name' => $name, 'slug' => $slug, 'parent_id' => $parentId > 0 ? $parentId : null, 'created' => true];
 }
 
@@ -308,6 +318,9 @@ function author_save(array $in, int $id = 0): array
         q('UPDATE authors SET name = ?, email = ?, bio = ?, media_id = ? WHERE id = ?', [$name, $email, $bio, $mediaId > 0 ? $mediaId : null, $id]);
         q('UPDATE posts SET author_name = ? WHERE author_id = ?', [$name, $id]);
         audit('author.update', $name);
+        // The author's name is searchable, so those stories are indexed again (task B11).
+        search_reindex_where('p.author_id = ?', [$id]);
+        cache_clear();
     } else {
         q('INSERT INTO authors (name, slug, email, bio, media_id, created_at) VALUES (?, ?, ?, ?, ?, ?)',
             [$name, unique_slug('authors', slugify($name) ?: 'author'), $email, $bio, $mediaId > 0 ? $mediaId : null, now_utc()]);

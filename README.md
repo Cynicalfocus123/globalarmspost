@@ -8,8 +8,16 @@ History, rules and design notes: [PROJECT_LOG.md](PROJECT_LOG.md). Wireframes: [
   - `app/lib/` code, `app/views/` templates, `app/migrations/` database changes, `app/cli/` command line tools
   - `app/admin/` the admin at `/admin`, with its views in `app/views/admin/`
   - `assets/` CSS, JS, fonts, logo; `assets/admin/` the admin's CSS + JS (and the jSquash AVIF encoder in `vendor/`)
+  - `storage/` sessions and `storage/cache/pages/` (the page cache: generated files, and the admin can clear them)
 - `scripts/` — build tools (logo, fonts, live/ build and check, task list)
 - `tests/` — Playwright tests and the test server
+
+## The reader side (step 4)
+- Every story page has the full article: byline with the author's picture, Aa text size (remembered), Share (the phone's share sheet, a menu with plain links elsewhere), a photo gallery with arrows, counter and full screen, the Summary box, the credits line, topic chips that open the tag pages, and "More in {category}" and "Latest news" rows.
+- **Smart search** at `/search?q=` (`/#search?q=` in the git copy): its own word index, so joined words ("ukrainewar"), word forms ("missile"/"missiles"), typos ("Did you mean …"), ranking, highlights, category and date filters, sort and pages. The header's search box shows suggestions while typing (`/api/suggest`, rate limited, no third-party code).
+- **Page cache**: public pages are kept in `storage/cache/pages` and expire at the next scheduled story's time; every save in the admin clears them. Admin pages, API answers and POSTs are never cached.
+- **Trending tags** row under the header, from the tags most used by recent stories.
+- `/admin/settings` holds the trending tags, the cache and the **Rebuild search index** button.
 
 ## Run the tests
 ```bash

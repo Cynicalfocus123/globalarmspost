@@ -128,6 +128,34 @@ function category_ids_with_children(array $slugs): array
     return $ids;
 }
 
+/**
+ * Every category for the reader side (the search filter): parents before their children, with a depth so
+ * the list can be indented. No recursive SQL, so it runs the same on MySQL and SQLite.
+ * @return list<array{id: int, name: string, slug: string, depth: int}>
+ */
+function public_category_tree(): array
+{
+    static $tree = null;
+    if ($tree !== null) {
+        return $tree;
+    }
+    $rows = q_all('SELECT id, name, slug, parent_id FROM categories ORDER BY name');
+    $by = [];
+    foreach ($rows as $row) {
+        $by[(int) ($row['parent_id'] ?? 0)][] = $row;
+    }
+    $out = [];
+    $walk = function (int $parent, int $depth) use (&$walk, &$out, $by): void {
+        foreach ($depth > 8 ? [] : ($by[$parent] ?? []) as $row) {
+            $out[] = ['id' => (int) $row['id'], 'name' => (string) $row['name'], 'slug' => (string) $row['slug'], 'depth' => $depth];
+            $walk((int) $row['id'], $depth + 1);
+        }
+    };
+    $walk(0, 0);
+    $tree = $out;
+    return $tree;
+}
+
 /** @param array<string, mixed> $p */
 function post_url(array $p): string
 {
