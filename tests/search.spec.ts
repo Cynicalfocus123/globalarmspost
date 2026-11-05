@@ -9,7 +9,11 @@ const searchUrl = (info: TestInfo, query: string, extra = '') =>
   (isLive(info) ? `/search?${query}${extra}` : `/#search?${query}${extra}`);
 
 async function openSearch(page: Page, info: TestInfo, query: string, extra = '') {
-  await page.goto(searchUrl(info, query, extra));
+  const url = searchUrl(info, query, extra);
+  await page.goto(url);
+  // git/: going from one '#search?…' to another only changes the hash, and the old results stay on screen
+  // until the new ones arrive; the '#' router marks #main with the page it has drawn.
+  if (!isLive(info)) await expect(page.locator('#main')).toHaveAttribute('data-route', decodeURIComponent(url.slice(2)));
   await expect(page.locator('.search-page h1')).toHaveText('Search');
 }
 
@@ -82,9 +86,16 @@ test('sort: newest first really orders by date', async ({ page }, info) => {
   expect(dates.length).toBe(10);
 });
 
-test('pages: twenty sample stories are split into pages', async ({ page }, info) => {
+test('pages: the sample stories are split into pages of ten', async ({ page }, info) => {
+  // Every public sample story says "sample" (tests/seed-demo.php: 42 of them, plus a scheduled one and a
+  // draft that are not public). The count shown must be exactly the public stories with the word indexed.
+  const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
+  const n = Number(sql(info, `SELECT COUNT(DISTINCT st.post_id) AS n FROM search_post_terms st JOIN posts p ON p.id = st.post_id
+                              WHERE st.term = 'sample' AND p.status = 'published' AND p.published_at <= ?`, now)[0].n);
+  expect(n, 'more than two pages of sample stories').toBeGreaterThan(20);
   await openSearch(page, info, 'q=sample');
-  await expect(page.locator('.search-count')).toContainText('20 stories');
+  await expect(page.locator('.search-count')).toContainText(`${n} stories`);
+  await expect(page.locator('.search-count')).toContainText(`page 1 of ${Math.ceil(n / 10)}`);
   await expect(page.locator('.results .result')).toHaveCount(10);
   await page.locator('.pager .pager-btn[rel="next"]').click();
   await expect(page.locator('.search-count')).toContainText('page 2');

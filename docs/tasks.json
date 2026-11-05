@@ -1,8 +1,8 @@
 {
   "project": "Global Arms Post",
   "updated": "2026-11-05",
-  "version": 19,
-  "update_note": "Updated 2026-11-05 v19 (step 4, the reader side, built and waiting for the tests: F10 full article page, F11 trending tags row, B11 smart search index, F7 search page + suggestions, B12 page cache; a new Settings page holds the trending tags, the cache and the \"Rebuild search index\" button). Earlier v18 (step 3 approved). Updated 2026-11-05 v18 (step 3 tested: 3 full runs passed, 786 passed / 62 skipped / 0 failed each, and a 4th run was stopped by the owner after 718 passing tests with 0 failed; committed, pushed, live/ rebuilt and verified; B2, B4, B5, B6, B13, B16, B19, F13, F14, F15, F16, F17 Pending until you approve). Earlier v17 (step 3 testing; every failure found by the runs was fixed: the WebKit Save click, the homepage builder drag, the More sheet on touch, SQLite busy timeout; B2, B4, B5, B6, B13, B16, B19, F13, F14, F15, F16, F17 Pending until you approve). Earlier v16 (step 3, the admin, built and tested: B2, B4, B5, B6, B13, B16, B19, F13, F14, F15, F16, F17 Pending until you approve). Updated 2026-11-05 v16 (step 3, the admin, built and tested: B2, B4, B5, B6, B13, B16, B19, F13, F14, F15, F16, F17 Pending until you approve; B7, B8, F10 moved forward). Earlier v15 (owner approved step 2: F4 header, F6 phone menu, B9 query engine, F8 homepage sections, F9 category page, P16 sample stories are Done; B7, B8, F10, F11 stay Pending because parts come in later steps). Earlier v14 (admin wireframe F20 approved with the owner's changes; new task B19 authors). Earlier v13 (step 2 passed the full suite 4 times; admin wireframes F20 added for approval). Earlier v12 (step 2 built: stories database, query engine B9, homepage sections F8, category page F9, basic story page F10; header redesigned F4/F6; sample stories P16; all Pending until you approve). Earlier v11 (new rule: only the latest task list Excel is kept; old versions are deleted on every build). Earlier v10 (owner approved step 1: F18 logo, F4 header, F6 phone menu, B10 menu data, B14 migrations, P10 live build + verify, P14 site_link(), P8 test suite, P11 first push, P7 approval are Done). Earlier v9 (step 1 passed the full suite 4 times on Chromium, Firefox, WebKit; first commit pushed; live/ built and verified). Earlier v8 (step 1 built: logo F18, header F4, phone menu F6, menu data B10, migrations B14, live build + verify P10, site_link() P14, tests P8; all Pending until you approve, Firefox + WebKit not run yet). Earlier v7 (the 6 draft backend files were removed at the owner's request; B1-B6 are back to Not started and get written fresh in Phase 1). Earlier v6 (owner approved all wireframes: F1, F2, F3 and the new category page F19 are Done; header = centred logo + red menu, no date bar or social links; phones use one lead story + headline/date rows; no WordPress import, B18 is now scraping the current site later). Earlier v5 (new logo for header + footer added to step 1 as F18). Earlier v4 (hard rule 10: correct on all modern phones, tablets, desktops; test task P8 widened). Earlier v3 (hard rule 9: live/ mirrors git/ with proper addresses like globalarmspost.com/asia; new task P14). Earlier v2 (nothing is Done: the owner has not approved the wireframes or plan yet, so every started item is Pending). Earlier v1 (task list created; header builder + smart search added as Not started).",
+  "version": 20,
+  "update_note": "Updated 2026-11-05 v20 (step 4 tested: the final full run on MySQL passed, 1290 passed / 62 skipped / 0 failed on 18 projects; the owner asked for one final run instead of four; twelve bugs in the step 4 code were fixed while testing; F7, F10, F11, F21, B11, B12 and P15 stay Pending until you approve). Earlier v19 (step 4, the reader side, built and waiting for the tests). Earlier v18 (step 3 tested; still waiting for the owner's approval, so its tasks stay Pending). Updated 2026-11-05 v18 (step 3 tested: 3 full runs passed, 786 passed / 62 skipped / 0 failed each, and a 4th run was stopped by the owner after 718 passing tests with 0 failed; committed, pushed, live/ rebuilt and verified; B2, B4, B5, B6, B13, B16, B19, F13, F14, F15, F16, F17 Pending until you approve). Earlier v17 (step 3 testing; every failure found by the runs was fixed: the WebKit Save click, the homepage builder drag, the More sheet on touch, SQLite busy timeout; B2, B4, B5, B6, B13, B16, B19, F13, F14, F15, F16, F17 Pending until you approve). Earlier v16 (step 3, the admin, built and tested: B2, B4, B5, B6, B13, B16, B19, F13, F14, F15, F16, F17 Pending until you approve). Updated 2026-11-05 v16 (step 3, the admin, built and tested: B2, B4, B5, B6, B13, B16, B19, F13, F14, F15, F16, F17 Pending until you approve; B7, B8, F10 moved forward). Earlier v15 (owner approved step 2: F4 header, F6 phone menu, B9 query engine, F8 homepage sections, F9 category page, P16 sample stories are Done; B7, B8, F10, F11 stay Pending because parts come in later steps). Earlier v14 (admin wireframe F20 approved with the owner's changes; new task B19 authors). Earlier v13 (step 2 passed the full suite 4 times; admin wireframes F20 added for approval). Earlier v12 (step 2 built: stories database, query engine B9, homepage sections F8, category page F9, basic story page F10; header redesigned F4/F6; sample stories P16; all Pending until you approve). Earlier v11 (new rule: only the latest task list Excel is kept; old versions are deleted on every build). Earlier v10 (owner approved step 1: F18 logo, F4 header, F6 phone menu, B10 menu data, B14 migrations, P10 live build + verify, P14 site_link(), P8 test suite, P11 first push, P7 approval are Done). Earlier v9 (step 1 passed the full suite 4 times on Chromium, Firefox, WebKit; first commit pushed; live/ built and verified). Earlier v8 (step 1 built: logo F18, header F4, phone menu F6, menu data B10, migrations B14, live build + verify P10, site_link() P14, tests P8; all Pending until you approve, Firefox + WebKit not run yet). Earlier v7 (the 6 draft backend files were removed at the owner's request; B1-B6 are back to Not started and get written fresh in Phase 1). Earlier v6 (owner approved all wireframes: F1, F2, F3 and the new category page F19 are Done; header = centred logo + red menu, no date bar or social links; phones use one lead story + headline/date rows; no WordPress import, B18 is now scraping the current site later). Earlier v5 (new logo for header + footer added to step 1 as F18). Earlier v4 (hard rule 10: correct on all modern phones, tablets, desktops; test task P8 widened). Earlier v3 (hard rule 9: live/ mirrors git/ with proper addresses like globalarmspost.com/asia; new task P14). Earlier v2 (nothing is Done: the owner has not approved the wireframes or plan yet, so every started item is Pending). Earlier v1 (task list created; header builder + smart search added as Not started).",
   "tasks": [
     {
       "id": "P1",
@@ -102,6 +102,15 @@
       "task": "Admin (backend) wireframes, desktop + phone: login (throttling, optional two-step code), dashboard, stories list, story editor (toolbar, paste pictures, summary, excerpt, credits, status + schedule, sticky, live label, category add on the spot, tags, photo + caption + credit, gallery), homepage builder (drag order, section settings); pictures anywhere in the body with caption + credit; add new tag on the spot; add new author (name, email, profile picture) on the spot + Authors page; homepage builder category checklist with All + search",
       "why": "Drawn 2026-11-05 in docs/wireframes.html section 5, changed as the owner asked, approved by the owner 2026-11-05",
       "next": "-"
+    },
+    {
+      "id": "F21",
+      "area": "Tag page",
+      "side": "Frontend",
+      "status": "Pending",
+      "task": "Tag page /tag/{slug} (/#tag/{slug} links in the git copy): every public story with the tag, newest first, 20 a page, \"Search instead\" button; wireframe section 7",
+      "why": "built in step 4, waiting for approval Tested 2026-11-05 (step 4): the final full run on MySQL passed on all 18 projects (git/live x Chromium/Firefox/WebKit x phone/tablet/desktop): 1290 passed, 62 skipped, 0 failed (test-results/1793892035032-report.json).",
+      "next": "You: review and approve"
     },
     {
       "id": "P7",
@@ -208,8 +217,8 @@
       "side": "Frontend",
       "status": "Pending",
       "task": "Search page + search box: results with highlighted words, filters (category, date), sort by best match or newest, 'Did you mean' for typos, suggestions while typing",
-      "why": "Built in step 4 (2026-11-05), not tested yet: /search page (/#search in the git copy) with results, highlighted matched words, category and date filters, sort by best match or newest, pages, \"Did you mean\", and suggestions while typing from a small JSON endpoint (/api/suggest, rate limited per address, no third-party code).",
-      "next": "You: review, then the tests run for step 4"
+      "why": "Built in step 4 (2026-11-05): /search page (/#search in the git copy) with results, highlighted matched words, category and date filters, sort by best match or newest, pages, \"Did you mean\", and suggestions while typing from a small JSON endpoint (/api/suggest, rate limited per address, no third-party code). Tested 2026-11-05 (step 4): the final full run on MySQL passed on all 18 projects (git/live x Chromium/Firefox/WebKit x phone/tablet/desktop): 1290 passed, 62 skipped, 0 failed (test-results/1793892035032-report.json). Fixed while testing: the search page and the header suggestions crashed (client_ip() was only loaded in the admin); headline words are highlighted too and a highlighted word keeps its ending; the # router only draws the newest page; the suggestion box closes on a real press, not on a phone's late click.",
+      "next": "You: review and approve"
     },
     {
       "id": "F8",
@@ -235,8 +244,8 @@
       "side": "Frontend",
       "status": "Pending",
       "task": "Article page as in the wireframe: gallery with arrows + full screen, captions, Summary box, Aa text size, Share (phone share sheet), share row, credits, topics, More in category, Latest news",
-      "why": "Step 2: basic story page. Step 3: cleaned body with body pictures and gallery photos. Built in step 4 (2026-11-05), not tested yet: the full article page as the design rules say it — breadcrumb, headline, byline with the author's picture, date + time zone + \"Updated\", reading time, Aa (three sizes, remembered), Share (phone share sheet on touch, menu with plain links on desktop), photo gallery with arrows, counter, swipe and full screen, captions + credits, Summary box, body, credits line, topic chips that open the tag pages, share row, \"More in {category}\" with arrows and \"Latest news\"; \"Live updates\" when set.",
-      "next": "You: review, then the tests run for step 4"
+      "why": "Step 2: basic story page. Step 3: cleaned body with body pictures and gallery photos. Built in step 4 (2026-11-05): the full article page as the design rules say it — breadcrumb, headline, byline with the author's picture, date + time zone + \"Updated\", reading time, Aa (three sizes, remembered), Share (phone share sheet on touch, menu with plain links on desktop), photo gallery with arrows, counter, swipe and full screen, captions + credits, Summary box, body, credits line, topic chips that open the tag pages, share row, \"More in {category}\" with arrows and \"Latest news\"; \"Live updates\" when set. Tested 2026-11-05 (step 4): the final full run on MySQL passed on all 18 projects (git/live x Chromium/Firefox/WebKit x phone/tablet/desktop): 1290 passed, 62 skipped, 0 failed (test-results/1793892035032-report.json). Fixed while testing: the full screen gallery never opened (the dialog had no track, the script stopped); the byline box keeps its old name (article-meta).",
+      "next": "You: review and approve"
     },
     {
       "id": "F11",
@@ -244,8 +253,8 @@
       "side": "Frontend",
       "status": "Pending",
       "task": "Site look: white background, serif headlines (self-hosted fonts), section headers with divider + See more, red back-to-top button, dark mode switch, trending tags row, footer",
-      "why": "Built so far: white page, self-hosted fonts, theme tokens, dark mode, red back-to-top, footer, section headers with See more (step 2). Built in step 4 (2026-11-05), not tested yet: the trending tags row under the header (the tags most used by recent public stories), with on/off, how many tags and how many days in Settings.",
-      "next": "You: review, then the tests run for step 4"
+      "why": "Built so far: white page, self-hosted fonts, theme tokens, dark mode, red back-to-top, footer, section headers with See more (step 2). Built in step 4 (2026-11-05): the trending tags row under the header (the tags most used by recent public stories), with on/off, how many tags and how many days in Settings. Tested 2026-11-05 (step 4): the final full run on MySQL passed on all 18 projects (git/live x Chromium/Firefox/WebKit x phone/tablet/desktop): 1290 passed, 62 skipped, 0 failed (test-results/1793892035032-report.json). Fixed while testing: a global .grid rule in reader.css broke the homepage on phones (sections squashed into 4 columns); the trending tests wait in one line, so switching the row off never hides it from another test.",
+      "next": "You: review and approve"
     },
     {
       "id": "F12",
@@ -352,8 +361,8 @@
       "side": "Backend",
       "status": "Pending",
       "task": "Smart search engine: own word index (works on MySQL and SQLite); finds words joined or spaced ('ukrainewar' = 'ukraine war'), single words from title, body, tags, categories, author; word forms (missile = missiles); typo fixing; ranking with title boost, phrase match and newer-first boost; snippets with the matched words",
-      "why": "Built in step 4 (2026-11-05), not tested yet: own word index in three tables (search_terms vocabulary, search_post_terms inverted index with weights, search_docs fingerprints) filled on every story save, publish, trash and restore, plus a \"Rebuild search index\" button in Settings; searches title, body, excerpt, summary, tags, category and author; joined words split with the vocabulary (\"ukrainewar\"), longer forms match (\"strike\" finds \"strikes\"), typos are fixed with \"Did you mean\", results ranked (title and tag matches first, whole phrase higher, newer a little higher), snippets with the matched words highlighted; only public stories.",
-      "next": "You: review, then the tests run for step 4"
+      "why": "Built in step 4 (2026-11-05): own word index in three tables (search_terms vocabulary, search_post_terms inverted index with weights, search_docs fingerprints) filled on every story save, publish, trash and restore, plus a \"Rebuild search index\" button in Settings; searches title, body, excerpt, summary, tags, category and author; joined words split with the vocabulary (\"ukrainewar\"), longer forms match (\"strike\" finds \"strikes\"), typos are fixed with \"Did you mean\", results ranked (title and tag matches first, whole phrase higher, newer a little higher), snippets with the matched words highlighted; only public stories. Tested 2026-11-05 (step 4): the final full run on MySQL passed on all 18 projects (git/live x Chromium/Firefox/WebKit x phone/tablet/desktop): 1290 passed, 62 skipped, 0 failed (test-results/1793892035032-report.json). Fixed while testing: indexing one story runs as one transaction (two saves at once broke the primary key); words are cut to 64 letters (MySQL strict mode). Search keeps the 300 best matches (fine for hundreds of stories; raise it if the archive grows into the thousands).",
+      "next": "You: review and approve"
     },
     {
       "id": "B12",
@@ -361,8 +370,8 @@
       "side": "Backend",
       "status": "Pending",
       "task": "Page cache: cached pages expire at the next scheduled post; any admin save clears the cache",
-      "why": "Built in step 4 (2026-11-05), not tested yet: public pages are rendered once and served from storage/cache/pages; a cached page expires at the next scheduled story's time (or a time to live set in Settings); every admin save (story, bulk status, homepage, author) clears the cache; admin pages, API answers, POSTs and pages with unknown query parameters are never cached.",
-      "next": "You: review, then the tests run for step 4"
+      "why": "Built in step 4 (2026-11-05): public pages are rendered once and served from storage/cache/pages; a cached page expires at the next scheduled story's time (or a time to live set in Settings); every admin save (story, bulk status, homepage, author) clears the cache; admin pages, API answers, POSTs and pages with unknown query parameters are never cached. Tested 2026-11-05 (step 4): the final full run on MySQL passed on all 18 projects (git/live x Chromium/Firefox/WebKit x phone/tablet/desktop): 1290 passed, 62 skipped, 0 failed (test-results/1793892035032-report.json). The cache is now on in the test runs too, as on the real site; raw SQL in the tests clears it (tests/db.php). Fixed while testing: a page rendered from old data during a clear is never served (cache generation); the database is part of the cache key; new tags and categories clear the cache.",
+      "next": "You: review and approve"
     },
     {
       "id": "B13",
@@ -431,10 +440,10 @@
       "id": "P15",
       "area": "Testing",
       "side": "Project",
-      "status": "Not started",
+      "status": "Pending",
       "task": "Run the full test suite on MySQL too (same tests as SQLite), so Hostinger's database is covered",
-      "why": "Split from P8 on 2026-11-03: step 1 was tested on SQLite only",
-      "next": "Claude, in a later step"
+      "why": "Split from P8 on 2026-11-03: step 1 was tested on SQLite only. Built and run 2026-11-05: GAP_DB=mysql npm test starts its own MySQL 8.4 (--no-defaults, own data folder in test-data, port 33190/33191) and stops it after the run. The final full run on MySQL passed: 1290 passed, 62 skipped, 0 failed (test-results/1793892035032-report.json). MySQL-only fix: a test added SUM() counts as text.",
+      "next": "You: review and approve"
     },
     {
       "id": "P16",

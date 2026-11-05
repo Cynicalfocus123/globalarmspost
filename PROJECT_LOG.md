@@ -172,10 +172,78 @@ Every change must keep the code:
   - Ranking: title and tag matches first, whole-phrase matches higher, newer articles slightly higher.
   - Results show a snippet with the matched words highlighted, filters (category, date) and sort (best match / newest). Suggestions appear while typing.
   - The admin has a "Rebuild search index" button.
+  - A search keeps the 300 best matches (then ranks them). Fine for a few hundred stories; **raise it if the archive grows into the thousands** (`LIMIT 300` in `search_results()`, `app/lib/search.php`).
 
 ---
 
 ## Change log
+
+### 2026-11-05 — Step 4 tested (waiting for approval)
+
+Claude tested DeepSeek's Step 4 build (the entry below) with the whole suite: 1352 tests on 18 projects (git/live × Chromium/Firefox/WebKit × phone/tablet/desktop), against the real PHP server and database, in the three phases per copy. Every failure was read from its `error-context.md` and trace, and the cause was fixed in the code. No check was made weaker.
+
+**Owner's decisions applied:**
+- **(a) Page cache on in the test runs**, the same as on the real site: `cache_enabled()` no longer turns it off when `debug` is on. Raw SQL in the tests clears it through `tests/db.php`. `?cache=1` and the `X-Cache` header still work.
+- **(b) Tag page:** wireframe section 7 and task F21.
+- **(c) Search keeps the 300 best matches.** The note is under Design rules → Smart search.
+- **6 workers instead of 8:** with 8, seven Chromium browsers starting at once took about 40 s on this PC (16 GB), and the first tests ran out of time.
+- **One final run instead of four:** the owner asked for it to save time.
+
+**Runs** (each report is `test-results/<run>-report.json`; "not run" = the publish phase is skipped when phase 2 has failures):
+
+| Run | Database | Report | Passed | Failed | Skipped | Counts? |
+|---|---|---|---|---|---|---|
+| 1 | SQLite | `1793880240756` | 0 | 2 | 1350 not run | no: setup timed out (cold browser start) |
+| 2 | SQLite | `1793880412524` | 1092 | 126 | 62 + 72 not run | no: first run of the Step 4 code |
+| 3 | SQLite | `1793881761279` | 1188 | 30 | 62 + 72 not run | no |
+| 4 | SQLite | `1793882893032` | 1212 | 6 | 62 + 72 not run | no |
+| 5 | SQLite | `1793884058200` | 1241 | 13 | 62 + 36 not run | no |
+| A | SQLite, 6 workers | `1793890090964` | 1244 | 10 | 62 + 36 not run | no (two fixes after it) |
+| M1 | MySQL, 6 workers | `1793891002209` | 1199 | 19 | 62 + 72 not run | no (two fixes after it) |
+| **M2** | **MySQL, 6 workers** | **`1793892035032`** | **1290** | **0** | **62** | **yes: the final code** |
+
+So the final code passed one full run, on MySQL (Hostinger's database). It has not had a full run on SQLite since the last two fixes (`admin.spec.ts` "all" count, the suggestion box), and has not had the four runs the hard rule asks for (the owner chose one).
+
+**Bugs fixed in the Step 4 code (cause → fix):**
+- **Phones: homepage sections squashed into 4 columns.** A global `.grid{display:grid}` in `reader.css` loads after `site.css` and undid the phone rule `.grid{display:block}`. Now limited to `.grid.grid-3` (the article's "Latest news").
+- **Full screen gallery never opened.** The dialog copied the slides with `innerHTML` but not the `.gal-track`, so `bindTrack(null)` threw before `showModal()`. Now the whole track is cloned (`site.js`).
+- **Search page and suggestions crashed.** `client_ip()` lived in `auth.php`, which only the admin loads. Moved to `http.php`. The suggestion limit (40 a minute per address) is now `suggest_limit` in `config.php`; the test config raises it, because every test browser is 127.0.0.1.
+- **Highlights cut words.** `search_highlight()` captured only the stem, and `preg_split` drops the rest ("countermeasures" → "countermeasure"). The whole word is captured now. Headlines get the same highlights, so a story found by a headline word shows why. A match at the very start of a snippet (position 0) was ignored.
+- **The `#` router could show the wrong page.** When the hash changed twice quickly, an older, slower answer overwrote the newer page. Only the newest request draws now, and `#main` gets `data-route` (the search tests wait for it).
+- **Search index broke under parallel saves.** `search_index_post()` deleted and re-inserted its rows with no transaction, so two indexings of one story (a save and "Rebuild search index") hit the primary key. It now runs in `db_atomic()` (new, `db.php`: SQLite `BEGIN IMMEDIATE`; MySQL retries a deadlock), and so do `search_forget_post()` and the vocabulary recount.
+- **MySQL strict mode:** index words longer than 64 letters (the column size) are cut to 64.
+- **Cache could keep a stale page.** A page rendered from old data while a save cleared the cache was stored afterwards. `cache_clear()` now starts a new generation, and the key holds it. The database is part of the key, because the git test server and the git preview both serve `public/`. New tags and categories clear the cache too.
+- **The byline box lost its name.** `.byline` keeps `article-meta`, which the approved Step 2/3 checks (author, date format) use.
+- **Admin dashboard on phones** (Step 3 code): every visit compiled the 3.5 MB AVIF encoder for the "AVIF in this browser" line. The answer is now remembered in the browser (`localStorage`).
+- **"More" sheet on WebKit phones** (Step 3 code): the tap's late follow-up click hit the sheet's Account link. The guard ignored it only within 800 ms; now it ignores that one click until the next real press (`ui.js`).
+- **Suggestion box closed by itself on Firefox phones:** a late click from the tap on the search icon. It closes on an outside press (`pointerdown`) now.
+- `docs/wireframes.html`: 167 characters were double-encoded by the Step 4 edit ("Â·" for "·"). Repaired; against Step 3 only the real additions differ.
+
+**Test fixes (the tests were wrong, the site was right):**
+- the cache test's admin save had no CSRF token (403 is correct);
+- "pages" expected 20 sample stories (there are 42; the count now comes from the database);
+- the migrations list lacked `006_search`;
+- the trending test's SQL left out "published_at <= now";
+- the publish test looked for the old `.article-figure` and `.gallery-photo` (now the gallery's first and second slides);
+- the stories-list test added MySQL's `SUM()` text values as text ("42"+"21"+"9");
+- `admin.spec.ts` checks "Database (MySQL)" in MySQL mode.
+
+**Test harness:**
+- both trending tests wait in `inLine(info, 'trending')`;
+- the cache tests use their own page and their own scheduled story, and retry when another test's save cleared the cache;
+- the rebuild test compares the sample stories' index rows, not the whole table (other tests save stories meanwhile);
+- `admin-setup` has 120 s (cold browser start);
+- temporary files of a run go to `test-data/<run>/tmp` on D: (they were on C:);
+- MySQL mode in `tests/serve.mjs` (task P15).
+
+**The 62 skips, by name** (the same as Step 3; the new Step 4 tests skip nothing):
+- "database: migrations ran and a saved setting shows on the page" (16): the server and database check runs once per copy, on desktop Chromium.
+- "a scheduled story appears at its time (saved in the database)" (16): it changes the database, so once per copy.
+- "phone menu opens and closes" (6): desktop has the full menu bar and no menu button.
+- "desktop: section layouts use their columns" (12): desktop only, from 1100 px.
+- "phones: each section is one big story, then rows with the photo on the right" (12): phone only.
+
+Task list v20. Nothing is Done until the owner approves (Step 3 is also still waiting).
 
 ### 2026-11-05 — Step 4: the reader side (built, not tested yet)
 

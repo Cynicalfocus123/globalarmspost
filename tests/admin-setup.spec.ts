@@ -5,6 +5,9 @@ import { users, sql } from './admin-helpers';
 // the first admin account is made through the real setup step (never hard-coded), then the admin adds an editor.
 
 test('setup step makes the first admin, then the admin adds an editor', async ({ page }, info) => {
+  // The first test of the run: its time includes the cold start of the browser and of the servers' PHP
+  // processes (18 s for Chromium alone was seen on a busy machine), so it gets 120 s. No check is changed.
+  test.setTimeout(120_000);
   expect(sql(info, 'SELECT COUNT(*) AS n FROM users')[0].n).toBe(0);
   await page.goto('/admin');
   await expect(page).toHaveURL(/\/admin\/setup$/);

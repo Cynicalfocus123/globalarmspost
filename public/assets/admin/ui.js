@@ -26,17 +26,20 @@ const openFrom = (target) => {
 // covers the screen, so the browser's follow-up click can land on the sheet itself (the More sheet's
 // Sign out button sits right where the More tab was: tapping More signed the admin out). A click is only
 // honoured inside a sheet when its press started there.
+// No time window: a busy phone can send that click a second or more later (WebKit did), so the one click
+// that belongs to the opening press is ignored until the next real press starts.
 let pressedOn = null;
-let touchOpenedAt = 0;
-document.addEventListener('pointerdown', (e) => { pressedOn = e.target; }, true);
+let openedByTouch = false;
+document.addEventListener('pointerdown', (e) => { pressedOn = e.target; openedByTouch = false; }, true);
 // A touch or pen press opens the sheet straight away, so a tap opens it even when the browser sends the
 // follow-up click late or at stale coordinates (Firefox on phones did).
 document.addEventListener('pointerup', (e) => {
-  if (e.pointerType && e.pointerType !== 'mouse' && openFrom(e.target)) touchOpenedAt = performance.now();
+  if (e.pointerType && e.pointerType !== 'mouse' && openFrom(e.target)) openedByTouch = true;
 });
 document.addEventListener('click', (e) => {
   const wrap = e.target.closest?.('.a-sheet-wrap.open');
-  if (wrap && !wrap.contains(pressedOn) && performance.now() - touchOpenedAt < 800) {
+  if (wrap && !wrap.contains(pressedOn) && openedByTouch) {
+    openedByTouch = false;
     e.preventDefault(); // the click that follows the touch press that opened the sheet: not a real press
     e.stopPropagation();
     return;

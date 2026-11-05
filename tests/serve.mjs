@@ -4,9 +4,13 @@
 //   live = a fresh copy of public/ in test-data/<run>/live/site with link_mode 'path' (proper addresses),
 //          made the same way scripts/build-live.mjs makes live/
 // Each start makes a new SQLite database and runs the real migrations.
+// GAP_DB=mysql: a new MySQL 8.4 server instead (task P15), with its own data folder in
+// test-data/<run>/<copy>/mysql-data and port 33000 + (port % 1000) (8190 -> 33190, 8191 -> 33191).
+// mysqld runs with --no-defaults, so it never reads the owner's my.ini or touches D:/codex system/mysql-data,
+// and it is stopped together with this server.
 // Several PHP processes sit behind a small proxy (see the bottom), so parallel browsers never wait.
 import { cpSync, mkdirSync, writeFileSync, existsSync } from 'node:fs';
-import { spawn, execFileSync } from 'node:child_process';
+import { spawn, execFileSync, spawnSync } from 'node:child_process';
 import http from 'node:http';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -22,7 +26,8 @@ const PHP = process.env.PHP_BIN || 'php';
 // when a browser cannot make WebP (Safari); Hostinger has it on.
 const mods = execFileSync(PHP, ['-m']).toString().toLowerCase().split(/\s+/);
 const ext = [];
-for (const name of ['pdo_sqlite', 'gd', 'fileinfo']) if (!mods.includes(name)) ext.push('-d', `extension=${name}`);
+const USE_MYSQL = process.env.GAP_DB === 'mysql';
+for (const name of ['pdo_sqlite', 'gd', 'fileinfo', ...(USE_MYSQL ? ['pdo_mysql'] : [])]) if (!mods.includes(name)) ext.push('-d', `extension=${name}`);
 ext.push('-d', 'upload_max_filesize=20M', '-d', 'post_max_size=64M');
 
 mkdirSync(TMP, { recursive: true });
@@ -41,9 +46,12 @@ const config = join(TMP, 'config.php');
 const db = join(TMP, 'site.sqlite').replaceAll('\\', '/');
 const sessions = join(TMP, 'sessions').replaceAll('\\', '/');
 mkdirSync(sessions, { recursive: true });
-// login_ip_limit: every test browser signs in from 127.0.0.1, so the all-emails limit per address is raised.
+// login_ip_limit, suggest_limit: every test browser comes from 127.0.0.1, so the per-address limits are raised.
 // The per-email limit (5 wrong tries in 15 minutes) stays as on the real site and is tested.
-writeFileSync(config, `<?php\nreturn ['db' => ['driver' => 'sqlite', 'path' => '${db}'], 'debug' => true, 'session_path' => '${sessions}', 'login_ip_limit' => 100000];\n`);
+let mysqld = null;
+let stopping = false;
+const dbConfig = USE_MYSQL ? await startMysql() : `['driver' => 'sqlite', 'path' => '${db}']`;
+writeFileSync(config, `<?php\nreturn ['db' => ${dbConfig}, 'debug' => true, 'session_path' => '${sessions}', 'login_ip_limit' => 100000, 'suggest_limit' => 100000];\n`);
 // One note per server (copy + port), so the preview and the tests never read each other's database.
 writeFileSync(join(ROOT, 'test-data', `${copy}-${port}.json`), JSON.stringify({ config, docroot, ext }));
 
@@ -91,7 +99,40 @@ const proxy = http.createServer((req, res) => {
 });
 proxy.listen(Number(port), '127.0.0.1');
 
-const stop = () => { for (const b of backends) b.proc.kill(); proxy.close(); process.exit(0); };
+const stop = () => { stopping = true; for (const b of backends) b.proc.kill(); stopMysql(); proxy.close(); process.exit(0); };
 process.on('SIGINT', stop);
 process.on('SIGTERM', stop);
 for (const b of backends) b.proc.on('exit', () => stop());
+
+// ---------- MySQL test mode (GAP_DB=mysql, task P15) ----------
+function stopMysql() {
+  if (mysqld && mysqld.exitCode === null) mysqld.kill();
+}
+
+async function startMysql() {
+  const base = (process.env.MYSQL_BASE || 'D:/codex system/tools/mysql').replaceAll('\\', '/');
+  const bin = (name) => join(base, 'bin', name);
+  const data = join(TMP, 'mysql-data').replaceAll('\\', '/');
+  const mport = 33000 + (Number(port) % 1000);
+  // A new, empty data folder for this run (root with no password, only on 127.0.0.1).
+  execFileSync(bin('mysqld.exe'), ['--no-defaults', '--initialize-insecure', `--basedir=${base}`, `--datadir=${data}`], { stdio: 'inherit' });
+  mysqld = spawn(bin('mysqld.exe'), [
+    '--no-defaults', `--basedir=${base}`, `--datadir=${data}`, `--port=${mport}`, '--bind-address=127.0.0.1',
+    '--mysqlx=OFF', '--skip-log-bin', '--character-set-server=utf8mb4', '--collation-server=utf8mb4_0900_ai_ci',
+    '--max-connections=500', // 20 PHP processes plus the tests' own helpers; the default strict sql_mode stays
+  ], { stdio: 'ignore' });
+  mysqld.on('exit', (code) => { if (!stopping) { console.error(`mysqld stopped (exit ${code})`); process.exit(1); } });
+  process.on('exit', stopMysql);
+  // Wait until it takes connections, then make the database.
+  const client = (q) => spawnSync(bin('mysql.exe'), ['--no-defaults', '-uroot', '-h127.0.0.1', `-P${mport}`, '-e', q], { encoding: 'utf8' });
+  const until = Date.now() + 120_000;
+  for (;;) {
+    const r = client('SELECT 1');
+    if (r.status === 0) break;
+    if (Date.now() > until) throw new Error('mysqld did not start: ' + (r.stderr || ''));
+    await new Promise((res) => setTimeout(res, 500));
+  }
+  const made = client('CREATE DATABASE gap CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci');
+  if (made.status !== 0) throw new Error('could not create the database: ' + made.stderr);
+  return `['driver' => 'mysql', 'host' => '127.0.0.1', 'port' => ${mport}, 'name' => 'gap', 'user' => 'root', 'pass' => '']`;
+}

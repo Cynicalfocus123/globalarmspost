@@ -109,7 +109,9 @@ function search_tokens(string $text): array
         if ($stem === '' || search_is_stop($stem) || search_is_stop($word)) {
             continue;
         }
-        $out[] = $stem;
+        // The index columns hold 64 characters (MySQL's strict mode refuses longer); a longer "word" is a code
+        // or a pasted address, and its first 64 letters find it just as well (queries are cut the same way).
+        $out[] = substr($stem, 0, 64);
     }
     return $out;
 }
@@ -158,8 +160,15 @@ function search_document(int $postId): ?array
     return ['fields' => $fields, 'fingerprint' => $fingerprint, 'words' => str_word_count($fields['body']) + str_word_count($fields['title'])];
 }
 
-/** Drop everything the index holds for one story (and fix the vocabulary counts). */
+/** Drop everything the index holds for one story (and fix the vocabulary counts), as one transaction. */
 function search_forget_post(int $postId): void
+{
+    db_atomic(static function () use ($postId): void {
+        search_forget_post_now($postId);
+    });
+}
+
+function search_forget_post_now(int $postId): void
 {
     $terms = array_column(q_all('SELECT term FROM search_post_terms WHERE post_id = ?', [$postId]), 'term');
     q('DELETE FROM search_post_terms WHERE post_id = ?', [$postId]);
@@ -190,13 +199,20 @@ function search_refresh_term(string $term): void
 
 /**
  * Index one story (called on every save, publish, trash and restore).
+ * One transaction: a save and "Rebuild search index" (or two saves) indexing the same story at once would
+ * otherwise both delete its rows and then both insert them, and the second insert breaks the primary key.
  * @return int the number of words indexed
  */
 function search_index_post(int $postId): int
 {
+    return db_atomic(static fn (): int => search_index_post_now($postId));
+}
+
+function search_index_post_now(int $postId): int
+{
     $doc = search_document($postId);
     if ($doc === null) {
-        search_forget_post($postId);
+        search_forget_post_now($postId);
         return 0;
     }
     $weights = search_weights();
@@ -253,9 +269,12 @@ function search_reindex_all(): array
             search_forget_post($gone);
         }
     }
-    // Vocabulary counts from scratch (cheap and exact): a full re-count keeps "docs" trustworthy.
-    q('DELETE FROM search_terms');
-    q('INSERT INTO search_terms (term, docs) SELECT term, COUNT(*) FROM search_post_terms GROUP BY term');
+    // Vocabulary counts from scratch (cheap and exact): a full re-count keeps "docs" trustworthy. One
+    // transaction, so a second rebuild or a save at the same time never sees (or refills) a half-empty table.
+    db_atomic(static function (): void {
+        q('DELETE FROM search_terms');
+        q('INSERT INTO search_terms (term, docs) SELECT term, COUNT(*) FROM search_post_terms GROUP BY term');
+    });
     $terms = (int) (q_one('SELECT COUNT(*) AS n FROM search_terms')['n'] ?? 0);
     return ['posts' => $indexed, 'terms' => $terms, 'skipped' => $skipped];
 }
@@ -516,6 +535,9 @@ function search_results(string $q, array $o = []): array
         $s += max(0, 6 - intdiv($days, 15));
         $row['score'] = $s;
         $row['snippet'] = search_snippet((string) ($row['excerpt'] ?? ''), $row['body'] ?? '', $resolved['words']);
+        // The headline gets the same highlights (escaped, only our <mark> tags), so a story found by a word in its
+        // title shows why it was found even when the snippet does not contain the word.
+        $row['title_html'] = search_highlight((string) $row['title'], $resolved['words']);
     }
     unset($row);
     usort($rows, static function (array $a, array $b) use ($sort): int {
@@ -541,7 +563,7 @@ function search_snippet(string $excerpt, string $bodyHtml, array $words, int $le
     }
     $source = $excerpt !== '' ? $excerpt . ' ' . search_plain($bodyHtml) : $text;
     $at = search_first_match($source, $words);
-    if ($at > 0) {
+    if ($at >= 0) { // 0 = the very first word matches
         $start = max(0, $at - (int) ($length / 3));
         $text = mb_substr($source, $start, $length, 'UTF-8');
         if ($start > 0) {
@@ -584,7 +606,8 @@ function search_highlight(string $text, array $words): string
     if ($words === []) {
         return e($text);
     }
-    $pattern = '/\b(' . implode('|', array_map(static fn (string $w): string => preg_quote($w, '/'), $words)) . ')[\p{L}\p{N}]*/iu';
+    // The whole word is captured (stem + the rest of the word): preg_split keeps only what the group captured.
+    $pattern = '/\b((?:' . implode('|', array_map(static fn (string $w): string => preg_quote($w, '/'), $words)) . ')[\p{L}\p{N}]*)/iu';
     $parts = preg_split($pattern, $text, -1, PREG_SPLIT_DELIM_CAPTURE);
     if ($parts === false) {
         return e($text);
@@ -638,7 +661,7 @@ function search_suggest_limited(string $q): array
     }
     $file = $dir . '/suggest-' . sha1(client_ip()) . '.txt';
     $window = 60;
-    $limit = 40;
+    $limit = max(1, (int) (config()['suggest_limit'] ?? 40)); // per address per minute (app/config.php)
     $now = time();
     $count = 0;
     $start = $now;

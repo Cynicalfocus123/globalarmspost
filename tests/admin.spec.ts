@@ -200,7 +200,7 @@ test('dashboard: counts, views today, scheduled next, recent drafts, server chec
     await expect(page.locator('.scheduled-list li a')).toHaveText(sched);
     await expect(page.locator('.drafts-list li a')).toHaveText(drafts);
   });
-  await expect(page.locator('.a-checks')).toContainText('Database (SQLite)');
+  await expect(page.locator('.a-checks')).toContainText(process.env.GAP_DB === 'mysql' ? 'Database (MySQL)' : 'Database (SQLite)');
   await expect(page.locator('.a-checks')).toContainText('GD WebP');
   await expect(page.locator('.browser-check')).toHaveClass(/ok|bad/, { timeout: 60_000 });
   if (meta(info).engine !== 'webkit') await expect(page.locator('.browser-check')).toHaveClass(/ok/);
@@ -213,7 +213,8 @@ test('stories list: tabs with counts, search and filters', async ({ page }, info
     await expect(page.locator('[data-tab="scheduled"] .n')).toHaveText(String(c.scheduled));
     await expect(page.locator('[data-tab="drafts"] .n')).toHaveText(String(c.drafts));
     await expect(page.locator('[data-tab="trash"] .n')).toHaveText(String(c.trash));
-    await expect(page.locator('[data-tab="all"] .n')).toHaveText(String(c.published + c.scheduled + c.drafts));
+    // Number(): MySQL gives SUM() back as text ("42"), and "42" + "21" would join the texts.
+    await expect(page.locator('[data-tab="all"] .n')).toHaveText(String(Number(c.published) + Number(c.scheduled) + Number(c.drafts)));
   });
   await page.click('[data-tab="scheduled"]');
   await expect(page.locator('.story-row').first()).toHaveAttribute('data-state', 'scheduled');

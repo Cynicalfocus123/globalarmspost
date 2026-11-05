@@ -74,8 +74,9 @@ test('publish a story with a new category, main photo, gallery and body picture;
   await page.goto(isLive(info) ? url : `/#news/${row.slug}`);
   await expect(page.locator('main h1')).toHaveText(title);
   await expect(page.locator('.article-meta')).toContainText('By Priya Nair');
-  await expect(page.locator('.article-figure').first().locator('figcaption')).toHaveText('Main photo caption Photo: Main credit');
-  await expect(page.locator('.gallery-photo figcaption')).toHaveText('Gallery caption Photo: Gallery credit');
+  // Step 4: the main photo is the first slide of the photo gallery (it was a single .article-figure before).
+  await expect(page.locator('[data-gal] .gal-slide').first().locator('figcaption')).toHaveText('Main photo caption Photo: Main credit');
+  await expect(page.locator('[data-gal] .gal-slide').nth(1).locator('figcaption')).toHaveText('Gallery caption Photo: Gallery credit'); // the gallery photo is the second slide
   await expect(page.locator('.article-body .body-fig figcaption')).toHaveText('Body picture caption Photo: Body credit');
   // The new category has its own page.
   await page.goto(isLive(info) ? `/${cat[0].slug}` : `/#regions/${cat[0].slug}`);

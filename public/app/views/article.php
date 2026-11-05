@@ -43,7 +43,7 @@ $latest = posts_query(['exclude_ids' => [(int) $p['id']], 'count' => 6]);
   <?php if ((int) $p['live_label'] === 1): ?><div class="live"><span class="live-dot" aria-hidden="true"></span>Live updates</div><?php endif; ?>
   <h1 class="article-title"><?= e((string) $p['title']) ?></h1>
 
-  <div class="byline">
+  <div class="byline article-meta">
     <?php if ($authorMedia !== null): ?>
     <span class="byline-pic"><?= picture($authorMedia, '48px', true) ?></span>
     <?php endif; ?>

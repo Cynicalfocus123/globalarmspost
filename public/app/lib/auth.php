@@ -11,11 +11,6 @@ const LOGIN_TRIES = 5;          // wrong tries per email + address ...
 const LOGIN_WINDOW = 15 * 60;   // ... in this many seconds
 const REMEMBER_DAYS = 30;
 
-function client_ip(): string
-{
-    return substr((string) ($_SERVER['REMOTE_ADDR'] ?? ''), 0, 45);
-}
-
 function is_https(): bool
 {
     return (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || ($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https';

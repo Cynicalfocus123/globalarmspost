@@ -26,11 +26,21 @@ if (bulkForm) {
   });
 }
 
-/* Dashboard: can this browser make AVIF pictures? */
+/* Dashboard: can this browser make AVIF pictures?
+   The check loads and compiles the 3.5 MB AVIF encoder, so the answer is remembered in this browser
+   (localStorage): the dashboard opens after every sign-in, and on a phone that work every time is too much. */
 const avifCheck = $('.browser-check[data-check="avif"]');
 if (avifCheck) {
-  import('./images.js').then(async ({ browserAvif }) => {
-    const ok = await browserAvif();
+  const KEY = 'gap-avif-check-1';
+  let known = null;
+  try { known = localStorage.getItem(KEY); } catch { /* storage blocked: check every time */ }
+  const answer = known === 'ok' || known === 'bad'
+    ? Promise.resolve(known === 'ok')
+    : import('./images.js').then(({ browserAvif }) => browserAvif()).then((ok) => {
+      try { localStorage.setItem(KEY, ok ? 'ok' : 'bad'); } catch { /* not remembered */ }
+      return ok;
+    });
+  answer.then((ok) => {
     avifCheck.classList.add(ok ? 'ok' : 'bad');
     avifCheck.firstElementChild.textContent = ok ? '✓' : '!';
     if (!ok) avifCheck.insertAdjacentHTML('beforeend', ' <small>pictures are made as WebP here</small>');

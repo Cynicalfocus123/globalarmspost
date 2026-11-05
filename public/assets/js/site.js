@@ -236,7 +236,10 @@
         dialog.setAttribute('aria-label', 'Photos');
         var wrap = document.createElement('div');
         wrap.className = 'gal-dialog-inner';
-        wrap.innerHTML = gal.querySelector('.gal-track').innerHTML;
+        // A copy of the whole track (not only its slides), so the dialog has its own .gal-track to scroll.
+        var copy = gal.querySelector('.gal-track').cloneNode(true);
+        copy.removeAttribute('id');
+        wrap.appendChild(copy);
         var close = document.createElement('button');
         close.type = 'button';
         close.className = 'gal-dialog-close';
@@ -381,7 +384,9 @@
       else if (ev.key === 'ArrowUp') { ev.preventDefault(); highlight(active - 1); }
       else if (ev.key === 'Escape') { close(); }
     });
-    document.addEventListener('click', function (ev) {
+    // Closed by a press outside (pointerdown), not by 'click': a phone browser can send a late click from an
+    // earlier tap (the search icon), which closed the suggestions right after they opened (Firefox did).
+    document.addEventListener('pointerdown', function (ev) {
       if (box.hidden) return;
       if (ev.target.closest('[data-suggest-box], [data-suggest]')) return;
       close();
@@ -431,6 +436,7 @@
   if (hashLinks) {
     var main = document.getElementById('main');
     var current = '';
+    var seq = 0; // only the newest request may draw the page (an older, slower answer must not overwrite it)
     var route = function () {
       var h = decodeURIComponent(location.hash.slice(1));
       if (h === 'main') return;
@@ -444,10 +450,13 @@
       else if (parts[0] === 'search') url = '/search';
       else if (parts.length) url = '/' + encodeURIComponent(parts[parts.length - 1]);
       current = h;
+      var mine = ++seq;
       fetch(url + q, { headers: { 'X-Partial': '1' } }).then(function (res) {
         var title = res.headers.get('X-Page-Title');
         return res.text().then(function (html) {
+          if (mine !== seq) return;
           main.innerHTML = html;
+          main.setAttribute('data-route', h); // which '#' page is shown now
           if (title) document.title = decodeURIComponent(title);
           initContent(main);
           setMenu(false);

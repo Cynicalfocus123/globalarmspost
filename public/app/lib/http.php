@@ -22,3 +22,9 @@ function request_path(): string
     $path = '/' . trim(rawurldecode(is_string($path) ? $path : '/'), '/');
     return $path;
 }
+
+/** The visitor's address (sign-in throttling, the suggestions rate limit). Public pages use it too. */
+function client_ip(): string
+{
+    return substr((string) ($_SERVER['REMOTE_ADDR'] ?? ''), 0, 45);
+}

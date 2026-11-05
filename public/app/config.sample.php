@@ -23,4 +23,6 @@ return [
     // Optional. Wrong sign-in tries allowed per address in 15 minutes for all emails together (default 50).
     // Each email is always limited to 5 wrong tries in 15 minutes.
     // 'login_ip_limit' => 50,
+    // Suggestions while typing: requests per address per minute (default 40).
+    // 'suggest_limit' => 40,
 ];

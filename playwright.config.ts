@@ -1,4 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
+import { mkdirSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 // Every test runs on phone, tablet and desktop in Chromium, Firefox and WebKit (hard rule 10),
 // against both copies of the site: git/ ('#' links) and live/ (proper addresses, hard rule 9).
@@ -8,6 +11,11 @@ const copies = { git: 8190, live: 8191 } as const; // 8090/8091 stay free for th
 // One id per run, shared with the workers and the servers. Each run writes to new folders,
 // so Playwright's start-of-run cleanup never removes earlier files (owner rule: no deleting).
 process.env.GAP_RUN ??= String(Date.now());
+// Temporary files of the run (browser profiles and the like) on D:, never on C: (owner's rule: C: has little
+// space). The workers and the servers inherit this; Playwright removes its own browser profiles when a browser closes.
+const RUN_TMP = join(dirname(fileURLToPath(import.meta.url)), 'test-data', process.env.GAP_RUN, 'tmp');
+mkdirSync(RUN_TMP, { recursive: true });
+process.env.TMP = process.env.TEMP = process.env.TMPDIR = RUN_TMP;
 
 const devicesByEngine = {
   chromium: {
@@ -72,7 +80,7 @@ export default defineConfig({
     command: `node tests/serve.mjs ${copy} ${port}`,
     url: `http://127.0.0.1:${port}/`,
     reuseExistingServer: false,
-    timeout: 60_000,
+    timeout: 180_000, // GAP_DB=mysql: mysqld --initialize takes a while
     ignoreHTTPSErrors: true,
   })),
 });

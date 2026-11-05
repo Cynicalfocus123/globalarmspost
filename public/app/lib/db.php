@@ -73,3 +73,45 @@ function now_utc(): string
 {
     return gmdate('Y-m-d H:i:s');
 }
+
+/**
+ * Run $fn as one transaction that writes, so two requests changing the same rows never interleave
+ * (e.g. the search index of one story being rebuilt by a save and by "Rebuild search index" at once).
+ *   - SQLite: BEGIN IMMEDIATE takes the write lock first (waiting up to busy_timeout), so a transaction that
+ *     reads and then writes can never fail half-way because another request wrote in between;
+ *   - MySQL: InnoDB row locks; a deadlock (another request held the rows) is retried twice.
+ * Nested calls join the outer transaction.
+ * @template T
+ * @param callable(): T $fn
+ * @return T
+ */
+function db_atomic(callable $fn): mixed
+{
+    static $depth = 0;
+    if ($depth > 0) {
+        return $fn();
+    }
+    $db = db();
+    $sqlite = db_driver() === 'sqlite';
+    for ($try = 1; ; $try++) {
+        $sqlite ? $db->exec('BEGIN IMMEDIATE') : $db->beginTransaction();
+        $depth++;
+        try {
+            $out = $fn();
+            $sqlite ? $db->exec('COMMIT') : $db->commit();
+            return $out;
+        } catch (Throwable $e) {
+            try {
+                $sqlite ? $db->exec('ROLLBACK') : $db->rollBack();
+            } catch (Throwable) {
+                // the transaction is already gone (the database rolled it back itself)
+            }
+            $deadlock = $e instanceof PDOException && in_array((string) ($e->errorInfo[1] ?? ''), ['1213', '1205'], true);
+            if (!$deadlock || $try >= 3) {
+                throw $e;
+            }
+        } finally {
+            $depth--;
+        }
+    }
+}

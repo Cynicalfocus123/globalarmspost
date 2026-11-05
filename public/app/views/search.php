@@ -57,7 +57,7 @@ $resultWord = (int) $res['total'] === 1 ? 'story' : 'stories';
   <ol class="results">
     <?php foreach ($res['rows'] as $row): ?>
     <li class="result">
-      <a class="result-title" href="<?= e(post_url($row)) ?>"><?= e((string) $row['title']) ?></a>
+      <a class="result-title" href="<?= e(post_url($row)) ?>"><?= (string) ($row['title_html'] ?? e((string) $row['title'])) ?></a>
       <div class="result-meta mute">
         <a href="<?= e(category_url_of($row)) ?>"><?= e((string) $row['cat_name']) ?></a>
         · <time datetime="<?= e(str_replace(' ', 'T', (string) $row['published_at']) . 'Z') ?>"><?= e(fmt_full((string) $row['published_at'])) ?></time>

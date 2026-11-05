@@ -247,7 +247,7 @@ test('database: migrations ran and a saved setting shows on the page', async ({ 
   test.skip(meta(info).device !== 'desktop' || meta(info).engine !== 'chromium', 'Server and database check: the same on every browser and device, so it runs once per copy (desktop Chromium). The other tests read this same database on every browser and device.');
   const copy = dbKey(info);
   const migrations = sql(copy, 'SELECT id FROM migrations ORDER BY id').map((r: any) => r.id);
-  expect(migrations).toEqual(['001_core', '002_starter_content', '003_content', '004_home_sections', '005_admin']);
+  expect(migrations).toEqual(['001_core', '002_starter_content', '003_content', '004_home_sections', '005_admin', '006_search']);
   expect(sql(copy, 'SELECT COUNT(*) AS n FROM categories')[0].n).toBe(11);
   const regions = sql(copy, "SELECT c.slug FROM categories c JOIN categories p ON p.id = c.parent_id WHERE p.slug = 'regions' ORDER BY c.position").map((r: any) => r.slug);
   expect(regions).toEqual(['us', 'asia', 'europe', 'middle-east-africa']);

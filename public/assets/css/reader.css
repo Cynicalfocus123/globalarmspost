@@ -74,8 +74,8 @@
 .row-prev{left:-8px}
 .row-next{right:-8px}
 .row-prev[disabled],.row-next[disabled]{opacity:.3;cursor:default}
-.grid{display:grid;gap:22px}
-.grid-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+/* Only the article's "Latest news" grid: a plain .grid rule here would undo the homepage's phone layout (site.css). */
+.grid.grid-3{display:grid;gap:22px;grid-template-columns:repeat(3,minmax(0,1fr))}
 .rows{display:flex;flex-direction:column}
 
 /* Search page (tasks B11 + F7) */
@@ -117,7 +117,7 @@
 
 /* Phones and small tablets */
 @media (max-width:899.98px){
-  .grid-3{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .grid.grid-3{grid-template-columns:repeat(2,minmax(0,1fr))}
   .row-prev,.row-next{display:none}
 }
 @media (max-width:767.98px){
@@ -130,7 +130,7 @@
   .aa-menu,.share-menu{left:0;right:auto;top:52px}
   .gal-prev,.gal-next{width:38px;height:38px;font-size:20px}
   .gal-count,.gal-expand{bottom:52px}
-  .grid-3{grid-template-columns:1fr}
+  .grid.grid-3{grid-template-columns:1fr}
   .row-item{flex:0 0 78vw}
   .share-row{gap:8px}
   .search-filters{gap:10px}
