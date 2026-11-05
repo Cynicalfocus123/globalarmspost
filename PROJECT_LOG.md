@@ -172,6 +172,11 @@ Every change must keep the code:
 
 ## Change log
 
+### 2026-11-05 — Step 2 approved
+- The owner approved step 2 (commit `ba82f56`). Task list v15: F4 header, F6 phone menu, B9 query engine, F8 homepage sections, F9 category page and P16 sample stories are **Done**.
+- Still Pending because parts come later: B7 (saving stories from the admin), B8 (adding/renaming tags and categories in the admin), F10 (full article page), F11 (trending tags row).
+- Next: step 3, the admin (backend), from the approved admin wireframe.
+
 ### 2026-11-05 — Hard rule 7: one Excel file, updated in place
 - Owner's hard rule: never make a new Excel. The task list is always `Claude outputs/Global Arms Post task list.xlsx`; it is updated, changed and has rows deleted in place. The version number is inside the file.
 - `scripts/build-tasks.py` now writes that one file. The last versioned file (v14) was replaced by it.
@@ -183,9 +188,8 @@ Every change must keep the code:
   - author picker with "Add new author" (name, email, profile picture); saved at once and added to a new Authors page
   - homepage builder: categories as a checkbox list (children indented) with "All categories" and a search box; same list for "Leave out"
 - Task list v14: F20 Done; new task B19 (authors).
-- Step 2 is still waiting for the owner's approval.
 
-### 2026-11-05 — Step 2: stories, homepage sections, category pages; header redesign; admin wireframes (waiting for approval)
+### 2026-11-05 — Step 2: stories, homepage sections, category pages; header redesign; admin wireframes
 - **Header redesign** (owner's request): one white row, logo left, dark menu text, icons right, red only as an accent; search is a small pill box under the icon. Wireframe updated.
 - **Database** (migrations `003_content`, `004_home_sections`): `media`, `posts`, `tags`, `post_tags`, `home_sections`. A story is public only when `status = 'published'` and `published_at <= now` (UTC), so scheduled stories appear at their exact time.
 - **Story query engine** (`app/lib/posts.php`): categories in/out with child categories, tags, order by date/updated/title/id/views/random, asc/desc, skip + page numbers, sticky first, avoid duplicates.
