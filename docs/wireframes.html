@@ -101,6 +101,23 @@ h2.sec{font:600 20px/1.3 Georgia,serif;margin:40px 0 4px}
 .a-range{height:6px;background:#eee;border-radius:99px;margin:4px 0 2px}
 .a-range span{display:block;height:6px;width:66%;background:var(--red);border-radius:99px}
 @media(max-width:700px){.a-shell{grid-template-columns:1fr}.a-side{display:none}.a-ed,.a-cols{grid-template-columns:1fr}.a-tr{grid-template-columns:30px minmax(0,1fr) 60px}.a-tr>span:nth-child(3),.a-tr>span:nth-child(5){display:none}}
+.a-bodyimg{border:1px dashed #cfcfcf;border-radius:8px;padding:6px;margin-top:8px}
+.a-imgbar{display:flex;gap:4px;flex-wrap:wrap;margin:5px 0;font-size:9px}
+.a-imgbar span{background:#f3f3f3;border-radius:4px;padding:1px 5px}
+.a-cap{height:auto;font-size:9px;color:var(--mute);padding:3px 6px;margin-top:3px}
+.a-drop{border:1.5px dashed var(--red);color:var(--red);border-radius:8px;padding:8px;text-align:center;font-size:10px;margin:8px 0}
+.a-typed{display:flex;align-items:center;padding:0 6px;font-size:10px;margin-top:5px}
+.a-caret{width:1px;height:12px;background:var(--ink);margin-left:2px}
+.a-sugg{border:1px solid var(--line);border-radius:8px;box-shadow:0 6px 16px rgba(0,0,0,.08);margin:3px 0 4px;overflow:hidden;font-size:10px}
+.a-opt{display:flex;gap:6px;align-items:center;padding:5px 8px;color:var(--mute);border-bottom:1px solid var(--line)}
+.a-add{padding:6px 8px;color:var(--red);font-weight:600;background:#fff5f6}
+.a-av{width:14px;height:14px;border-radius:50%;background:var(--img);display:inline-flex;align-items:center;justify-content:center;flex:none}
+.a-av.big{width:34px;height:34px;border:1px dashed #aaa;background:#fafafa;color:#888}
+.a-mini{border:1px solid var(--ink);border-radius:8px;padding:8px;margin:4px 0}
+.a-catbox{border:1px solid var(--line);border-radius:8px;padding:6px;max-height:none}
+.a-search{display:flex;align-items:center;padding:0 6px;font-size:10px;color:var(--mute);height:20px;margin-bottom:4px}
+.a-sub{padding-left:16px}
+.a-sheet{border:1px solid var(--line);border-radius:14px 14px 0 0;box-shadow:0 -6px 16px rgba(0,0,0,.08);padding:8px;margin-top:8px}
 .foot{color:var(--mute);font-size:12px;margin-top:8px;line-height:1.5}
 </style>
 </head>
@@ -385,7 +402,7 @@ h2.sec{font:600 20px/1.3 Georgia,serif;margin:40px 0 4px}
 <div class="pg flush"><div class="a-shell">
   <div class="a-side">
     <img src="../public/assets/img/logo/logo-1x.webp" width="110" height="35" alt="Global Arms Post logo" style="display:block;height:auto;margin-bottom:10px">
-    <div class="a-nav on">Dashboard</div><div class="a-nav">Stories</div><div class="a-nav">Homepage</div><div class="a-nav">Categories</div><div class="a-nav">Tags</div><div class="a-nav">Pictures</div><div class="a-nav">Menu</div><div class="a-nav">Users</div><div class="a-nav">Settings</div>
+    <div class="a-nav on">Dashboard</div><div class="a-nav">Stories</div><div class="a-nav">Homepage</div><div class="a-nav">Categories</div><div class="a-nav">Tags</div><div class="a-nav">Authors</div><div class="a-nav">Pictures</div><div class="a-nav">Menu</div><div class="a-nav">Users</div><div class="a-nav">Settings</div>
     <div class="a-nav" style="margin-top:10px;color:var(--mute)">View site ↗</div>
   </div>
   <div class="a-main">
@@ -423,7 +440,7 @@ h2.sec{font:600 20px/1.3 Georgia,serif;margin:40px 0 4px}
 <div class="row" style="margin-top:18px">
 <div><div class="lb">5c. Stories list (desktop)</div>
 <div class="pg flush"><div class="a-shell">
-  <div class="a-side"><img src="../public/assets/img/logo/logo-1x.webp" width="110" height="35" alt="Global Arms Post logo" style="display:block;height:auto;margin-bottom:10px"><div class="a-nav">Dashboard</div><div class="a-nav on">Stories</div><div class="a-nav">Homepage</div><div class="a-nav">Categories</div><div class="a-nav">Tags</div><div class="a-nav">Pictures</div><div class="a-nav">Menu</div><div class="a-nav">Users</div><div class="a-nav">Settings</div></div>
+  <div class="a-side"><img src="../public/assets/img/logo/logo-1x.webp" width="110" height="35" alt="Global Arms Post logo" style="display:block;height:auto;margin-bottom:10px"><div class="a-nav">Dashboard</div><div class="a-nav on">Stories</div><div class="a-nav">Homepage</div><div class="a-nav">Categories</div><div class="a-nav">Tags</div><div class="a-nav">Authors</div><div class="a-nav">Pictures</div><div class="a-nav">Menu</div><div class="a-nav">Users</div><div class="a-nav">Settings</div></div>
   <div class="a-main">
     <div style="display:flex;align-items:center;gap:8px"><b style="font:600 17px Georgia,serif">Stories</b><span class="a-btn" style="margin-left:auto">+ New story</span></div>
     <div style="display:flex;gap:6px;margin:10px 0;flex-wrap:wrap"><span class="a-tab on">All 50</span><span class="a-tab">Published 42</span><span class="a-tab">Scheduled 3</span><span class="a-tab">Drafts 5</span><span class="a-tab">Trash 0</span><span class="a-in" style="margin:0 0 0 auto;width:170px;height:24px"></span></div>
@@ -450,7 +467,7 @@ h2.sec{font:600 20px/1.3 Georgia,serif;margin:40px 0 4px}
 <div class="row" style="margin-top:18px">
 <div><div class="lb">5d. Story editor (desktop)</div>
 <div class="pg flush"><div class="a-shell">
-  <div class="a-side"><img src="../public/assets/img/logo/logo-1x.webp" width="110" height="35" alt="Global Arms Post logo" style="display:block;height:auto;margin-bottom:10px"><div class="a-nav">Dashboard</div><div class="a-nav on">Stories</div><div class="a-nav">Homepage</div><div class="a-nav">Categories</div><div class="a-nav">Tags</div><div class="a-nav">Pictures</div><div class="a-nav">Menu</div><div class="a-nav">Users</div><div class="a-nav">Settings</div></div>
+  <div class="a-side"><img src="../public/assets/img/logo/logo-1x.webp" width="110" height="35" alt="Global Arms Post logo" style="display:block;height:auto;margin-bottom:10px"><div class="a-nav">Dashboard</div><div class="a-nav on">Stories</div><div class="a-nav">Homepage</div><div class="a-nav">Categories</div><div class="a-nav">Tags</div><div class="a-nav">Authors</div><div class="a-nav">Pictures</div><div class="a-nav">Menu</div><div class="a-nav">Users</div><div class="a-nav">Settings</div></div>
   <div class="a-main">
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span style="font-size:11px;color:var(--mute)">‹ Stories</span><span style="font-size:11px;color:var(--mute);margin-left:auto">Saved 10 seconds ago</span><span class="a-btn2">Preview</span><span class="a-btn">Publish</span></div>
     <div class="a-ed">
@@ -458,9 +475,15 @@ h2.sec{font:600 20px/1.3 Georgia,serif;margin:40px 0 4px}
         <div style="font:600 20px/1.3 Georgia,serif;border-bottom:1px solid var(--line);padding-bottom:6px">Headline goes here</div>
         <div class="a-tool"><b>B</b><i>I</i><u>U</u><span>H2</span><span>H3</span><span>• List</span><span>1. List</span><span>❝</span><span>🔗</span><span>🖼</span></div>
         <div class="s"></div><div class="s"></div><div class="s" style="width:80%"></div>
-        <div class="im" style="height:70px;margin-top:8px"></div><div style="font-size:10px;color:var(--mute)">Caption under the picture (type here)</div>
+        <div class="a-bodyimg"><div class="im" style="height:70px"></div>
+          <div class="a-imgbar"><span>↔ Full width</span><span>Inline</span><span>Replace</span><span>⇅ Move</span><span style="color:var(--red)">Remove</span></div>
+          <div class="a-in a-cap">Caption: type the caption for this picture</div><div class="a-in a-cap">Credit: Photo by …</div></div>
         <div class="s" style="margin-top:8px"></div><div class="s" style="width:60%"></div>
-        <span class="note">Paste or drop pictures straight into the text · they become AVIF + WebP in your browser</span>
+        <div class="a-bodyimg"><div class="im" style="height:56px;width:60%"></div>
+          <div class="a-in a-cap">Caption: second picture, anywhere in the text</div><div class="a-in a-cap">Credit: Photo by …</div></div>
+        <div class="s" style="margin-top:8px"></div>
+        <div class="a-drop">＋ Drop a picture here, paste one, or press 🖼 in the toolbar · it goes where the cursor is</div>
+        <span class="note">Pictures can go anywhere in the body, each with its own caption + credit · made into AVIF + WebP in your browser</span>
         <div class="a-box"><div class="a-h">Summary (one bullet per line)</div><div class="s"></div><div class="s"></div><div class="s" style="width:70%"></div></div>
         <div class="a-box"><div class="a-h">Short summary for cards (excerpt)</div><div class="a-in" style="height:30px"></div></div>
         <div class="a-box"><div class="a-h">Credits line</div><div class="a-in"></div><div style="font-size:10px;color:var(--mute)">e.g. Reporting by … Editing by …</div></div>
@@ -476,9 +499,23 @@ h2.sec{font:600 20px/1.3 Georgia,serif;margin:40px 0 4px}
         <div class="a-box"><div class="a-h">Category</div><div class="a-in" style="font-size:10px;padding:0 6px;display:flex;align-items:center">Search categories…</div>
           <label class="a-chk"><span class="a-rd on"></span>Asia (Regions)</label><label class="a-chk"><span class="a-rd"></span>Europe (Regions)</label><label class="a-chk"><span class="a-rd"></span>Land</label>
           <div style="font-size:10px;color:var(--red)">+ Add new category</div></div>
-        <div class="a-box"><div class="a-h">Tags</div><span class="chip">USA ×</span> <span class="chip">Drones ×</span><div class="a-in" style="margin-top:5px;font-size:10px;padding:0 6px;display:flex;align-items:center">Type a tag, Enter adds it</div></div>
+        <div class="a-box"><div class="a-h">Tags</div><span class="chip">USA ×</span> <span class="chip">Drones ×</span>
+          <div class="a-in a-typed">Hypersonic<span class="a-caret"></span></div>
+          <div class="a-sugg"><div class="a-opt">No tag found</div><div class="a-add">＋ Add new tag: "Hypersonic"</div></div>
+          <div style="font-size:9px;color:var(--mute)">Saved to the database at once and added to this story's tags (no reload)</div></div>
         <div class="a-box"><div class="a-h">Main photo + gallery</div><div class="im" style="height:56px"></div><div class="a-lbl">Caption</div><div class="a-in"></div><div class="a-lbl">Photo credit</div><div class="a-in"></div><div style="font-size:10px;color:var(--red)">+ Add gallery photos</div></div>
-        <div class="a-box"><div class="a-h">Author · Search preview</div><div class="a-in"></div><div class="s"></div></div>
+        <div class="a-box"><div class="a-h">Author</div>
+          <div class="a-in a-typed">Jordan Blake<span class="a-caret"></span></div>
+          <div class="a-sugg"><div class="a-opt"><span class="a-av"></span>Alex Morgan</div><div class="a-opt">No other match</div><div class="a-add">＋ Add new author</div></div>
+          <div class="a-mini">
+            <div class="a-h" style="font-size:10px">New author</div>
+            <div style="display:flex;gap:8px;align-items:center"><span class="a-av big">＋</span><span style="font-size:9px;color:var(--mute)">Profile picture<br>(becomes AVIF + WebP)</span></div>
+            <div class="a-lbl">Name</div><div class="a-in a-typed" style="height:20px">Jordan Blake</div>
+            <div class="a-lbl">Email</div><div class="a-in" style="height:20px"></div>
+            <div style="display:flex;gap:6px;margin-top:6px"><span class="a-btn" style="padding:2px 10px">Save author</span><span class="a-btn2" style="padding:2px 8px">Cancel</span></div>
+          </div>
+          <div style="font-size:9px;color:var(--mute)">Saved at once, chosen for this story and added to the Authors list</div></div>
+        <div class="a-box"><div class="a-h">Search preview</div><div class="s"></div><div class="s" style="width:70%"></div></div>
       </div>
     </div>
   </div>
@@ -492,7 +529,16 @@ h2.sec{font:600 20px/1.3 Georgia,serif;margin:40px 0 4px}
   <div class="im" style="height:56px;margin-top:6px"></div>
   <div class="s" style="margin-top:6px"></div><div class="s" style="width:60%"></div>
   <div class="a-tool"><b>B</b><i>I</i><span>H2</span><span>•</span><span>🔗</span><span>🖼</span></div><div style="font-size:10px;color:var(--mute)">The toolbar stays above the phone keyboard while typing.</div>
-  <p class="foot" style="margin:6px 0 0">Details tab: status, date, category, tags, summary, excerpt, credits. Photos tab: main photo, caption, credit, gallery.</p>
+  <div class="a-bodyimg" style="margin-top:6px"><div class="im" style="height:40px"></div><div class="a-in a-cap">Caption…</div></div>
+  <div class="a-drop" style="font-size:9px">＋ Add a picture here</div>
+  <div class="lb" style="margin-top:10px">Details tab</div>
+  <div class="a-h">Tags</div><span class="chip">USA ×</span>
+  <div class="a-in a-typed">Hypersonic<span class="a-caret"></span></div>
+  <div class="a-sugg"><div class="a-add">＋ Add new tag: "Hypersonic"</div></div>
+  <div class="a-h" style="margin-top:8px">Author</div>
+  <div class="a-in a-typed">Jordan Blake<span class="a-caret"></span></div>
+  <div class="a-sugg"><div class="a-add">＋ Add new author</div></div>
+  <p class="foot" style="margin:6px 0 0">Add new author opens a sheet from the bottom: profile picture, name, email, Save. Details tab also has status, date, category, summary, excerpt, credits. Photos tab: main photo, caption, credit, gallery.</p>
 </div>
 </div>
 </div>
@@ -500,7 +546,7 @@ h2.sec{font:600 20px/1.3 Georgia,serif;margin:40px 0 4px}
 <div class="row" style="margin-top:18px">
 <div><div class="lb">5e. Homepage builder (desktop)</div>
 <div class="pg flush"><div class="a-shell">
-  <div class="a-side"><img src="../public/assets/img/logo/logo-1x.webp" width="110" height="35" alt="Global Arms Post logo" style="display:block;height:auto;margin-bottom:10px"><div class="a-nav">Dashboard</div><div class="a-nav">Stories</div><div class="a-nav on">Homepage</div><div class="a-nav">Categories</div><div class="a-nav">Tags</div><div class="a-nav">Pictures</div><div class="a-nav">Menu</div><div class="a-nav">Users</div><div class="a-nav">Settings</div></div>
+  <div class="a-side"><img src="../public/assets/img/logo/logo-1x.webp" width="110" height="35" alt="Global Arms Post logo" style="display:block;height:auto;margin-bottom:10px"><div class="a-nav">Dashboard</div><div class="a-nav">Stories</div><div class="a-nav on">Homepage</div><div class="a-nav">Categories</div><div class="a-nav">Tags</div><div class="a-nav">Authors</div><div class="a-nav">Pictures</div><div class="a-nav">Menu</div><div class="a-nav">Users</div><div class="a-nav">Settings</div></div>
   <div class="a-main">
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><b style="font:600 17px Georgia,serif">Homepage</b><span class="a-btn2" style="margin-left:auto">+ Add section</span><span class="a-btn">Save</span></div>
     <div class="a-ed" style="grid-template-columns:minmax(0,1fr) 200px">
@@ -518,7 +564,24 @@ h2.sec{font:600 20px/1.3 Georgia,serif;margin:40px 0 4px}
         <div class="a-lbl">Title</div><div class="a-in"></div>
         <div class="a-lbl">Width (span 1–12): 8</div><div class="a-range"><span></span></div>
         <div class="a-lbl">Stories: 4 · Columns: 3</div><div class="a-range"><span style="width:30%"></span></div>
-        <div class="a-lbl">Categories in / out</div><span class="chip">All</span>
+        <div class="a-lbl">Show stories from</div>
+        <div class="a-catbox">
+          <div class="a-in a-search">⌕ Search categories</div>
+          <label class="a-chk"><span class="a-cb"></span><b>All categories</b></label>
+          <label class="a-chk"><span class="a-cb"></span>Land</label>
+          <label class="a-chk"><span class="a-cb on"></span>Air</label>
+          <label class="a-chk"><span class="a-cb"></span>Space</label>
+          <label class="a-chk"><span class="a-cb"></span>Naval</label>
+          <label class="a-chk"><span class="a-cb"></span>Global news</label>
+          <label class="a-chk"><span class="a-cb"></span>Regions</label>
+          <label class="a-chk a-sub"><span class="a-cb"></span>U.S.</label>
+          <label class="a-chk a-sub"><span class="a-cb on"></span>Asia</label>
+          <label class="a-chk a-sub"><span class="a-cb"></span>Europe</label>
+          <label class="a-chk a-sub"><span class="a-cb"></span>Middle East and Africa</label>
+          <label class="a-chk"><span class="a-cb"></span>Business</label>
+        </div>
+        <div style="font-size:9px;color:var(--mute)">2 chosen: Air, Asia · ticking a parent includes its children</div>
+        <div class="a-lbl">Leave out (same list, closed)</div><div class="a-in" style="font-size:10px;padding:0 6px;display:flex;align-items:center">None ▾</div>
         <div class="a-lbl">Order</div><div class="a-in" style="font-size:10px;padding:0 6px;display:flex;align-items:center">Newest first ▾</div>
         <div class="a-lbl">Skip first</div><div class="a-in" style="width:50px"></div>
         <label class="a-chk"><span class="a-cb on"></span>Pinned stories first</label>
@@ -534,6 +597,15 @@ h2.sec{font:600 20px/1.3 Georgia,serif;margin:40px 0 4px}
   <div class="a-sec"><span class="a-grip">⋮⋮</span><b>Top stories / Latest</b></div>
   <div class="a-sec"><span class="a-grip">⋮⋮</span><b>Asia</b></div>
   <div class="a-sec"><span class="a-grip">⋮⋮</span><b>Europe</b></div>
+  <div class="a-sheet">
+    <div class="a-h">Hero + cards · settings</div>
+    <div class="a-lbl">Show stories from</div>
+    <div class="a-in a-search">⌕ Search categories</div>
+    <label class="a-chk"><span class="a-cb"></span><b>All categories</b></label>
+    <label class="a-chk"><span class="a-cb on"></span>Air</label>
+    <label class="a-chk a-sub"><span class="a-cb on"></span>Asia</label>
+    <div style="font-size:9px;color:var(--mute)">…the full list scrolls</div>
+  </div>
   <p class="foot" style="margin:6px 0 0">Tap a section to open its settings as a sheet from the bottom. Hold ⋮⋮ and drag to reorder.</p>
   <div class="a-tabbar"><span>Home</span><span>Stories</span><span>+</span><span>Pictures</span><span class="on">More</span></div>
 </div>

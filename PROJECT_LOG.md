@@ -172,6 +172,15 @@ Every change must keep the code:
 
 ## Change log
 
+### 2026-11-05 — Admin wireframe approved
+- The owner approved the admin wireframe (section 5) with these changes, now drawn in it:
+  - pictures anywhere inside the story body, each with its own caption + credit (toolbar button, paste or drop)
+  - tags: "Add new tag: <name>" under the box when a tag does not exist; saved at once, no reload
+  - author picker with "Add new author" (name, email, profile picture); saved at once and added to a new Authors page
+  - homepage builder: categories as a checkbox list (children indented) with "All categories" and a search box; same list for "Leave out"
+- Task list v14: F20 Done; new task B19 (authors).
+- Step 2 is still waiting for the owner's approval.
+
 ### 2026-11-05 — Step 2: stories, homepage sections, category pages; header redesign; admin wireframes (waiting for approval)
 - **Header redesign** (owner's request): one white row, logo left, dark menu text, icons right, red only as an accent; search is a small pill box under the icon. Wireframe updated.
 - **Database** (migrations `003_content`, `004_home_sections`): `media`, `posts`, `tags`, `post_tags`, `home_sections`. A story is public only when `status = 'published'` and `published_at <= now` (UTC), so scheduled stories appear at their exact time.
