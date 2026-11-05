@@ -42,6 +42,11 @@ foreach (['USA' => 'usa', 'Ukraine' => 'ukraine', 'F-35' => 'f-35', 'NATO' => 'n
 }
 
 $authors = ['Alex Morgan', 'Sam Rivera', 'Priya Nair', 'Daniel Okafor', 'Mei Lin'];
+$authorId = [];
+foreach ($authors as $name) {
+    q('INSERT INTO authors (name, slug, email, created_at) VALUES (?, ?, ?, ?)', [$name, strtolower(str_replace(' ', '-', $name)), strtolower(str_replace(' ', '.', $name)) . '@example.test', now_utc()]);
+    $authorId[$name] = (int) db()->lastInsertId();
+}
 $stories = [
     ['asia', 'Navy begins sea trials of new unmanned surface vessel', 1, 1, ['drones']],
     ['us', 'Army awards contract for next-generation interceptor', 0, 0, ['usa']],
@@ -94,11 +99,11 @@ foreach ($stories as $i => [$slugCat, $title, $live, $sticky, $tags]) {
     // Newest first: about 5 hours apart, so the first few days each get several stories.
     $published = gmdate('Y-m-d H:i:s', $now - 600 - $i * 5 * 3600);
     $updated = $i % 7 === 0 ? gmdate('Y-m-d H:i:s', $now - 300 - $i * 5 * 3600 + 1800) : $published;
-    q('INSERT INTO posts (title, slug, excerpt, summary, body, credits, author_name, category_id, media_id, status, sticky, live_label, views, published_at, updated_at, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', [
+    q('INSERT INTO posts (title, slug, excerpt, summary, body, credits, author_name, author_id, category_id, media_id, status, sticky, live_label, views, published_at, updated_at, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', [
         $title, 'sample-' . ($i + 1) . '-' . trim((string) preg_replace('/[^a-z0-9]+/', '-', strtolower($title)), '-'),
         $excerpt, $summary, $body, 'Reporting by ' . $authors[$i % 5] . '; Editing by ' . $authors[($i + 2) % 5],
-        $authors[$i % 5], $cat[$slugCat], $media[$i % 12], 'published', $sticky, $live, (97 * ($i + 3)) % 1000, $published, $updated, $published,
+        $authors[$i % 5], $authorId[$authors[$i % 5]], $cat[$slugCat], $media[$i % 12], 'published', $sticky, $live, (97 * ($i + 3)) % 1000, $published, $updated, $published,
     ]);
     $id = (int) db()->lastInsertId();
     foreach ($tags as $t) {

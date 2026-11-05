@@ -30,6 +30,12 @@ function db(): PDO
         $pdo = new PDO('sqlite:' . $path, null, null, $options);
         $pdo->exec('PRAGMA foreign_keys = ON');
         $pdo->exec('PRAGMA journal_mode = WAL');
+        // Wait at most 5 s for another request's write. PDO's default is 60 s, so a busy database turned
+        // into a request that answered minutes later (a 45 s test sees it as "never answered").
+        $pdo->exec('PRAGMA busy_timeout = 5000');
+        // WAL already keeps every commit safe: the extra full fsync only made writes slower, and slower
+        // writes hold the write lock longer for everybody else.
+        $pdo->exec('PRAGMA synchronous = NORMAL');
     }
     return $pdo;
 }

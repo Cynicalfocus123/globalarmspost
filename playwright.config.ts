@@ -29,24 +29,41 @@ const devicesByEngine = {
 };
 
 const engines = (process.env.ENGINES ?? 'chromium,firefox,webkit').split(',');
-const projects = [];
+// Three phases per copy:
+//   setup-<copy>            makes the first admin through the real setup step (desktop Chromium, once)
+//   <copy>-<engine>-<device>             site, story and admin tests (18 projects)
+//   <copy>-<engine>-<device>-publish     admin actions visitors can see (publishing, new categories, homepage
+//                                        builder), after the phase above, so the site tests never see a half-changed homepage
+const projects: any[] = [];
 for (const [copy, port] of Object.entries(copies)) {
+  const baseURL = `http://127.0.0.1:${port}`;
+  projects.push({ name: `setup-${copy}`, testMatch: /admin-setup\.spec\.ts/, use: { ...devicesByEngine.chromium.desktop, baseURL }, metadata: { copy, engine: 'chromium', device: 'desktop' } });
+  const main: string[] = [];
   for (const engine of engines) {
     for (const [device, use] of Object.entries(devicesByEngine[engine as keyof typeof devicesByEngine])) {
+      const name = `${copy}-${engine}-${device}`;
+      main.push(name);
       projects.push({
-        name: `${copy}-${engine}-${device}`,
-        use: { ...use, baseURL: `http://127.0.0.1:${port}` },
+        name,
+        testIgnore: [/admin-setup\.spec\.ts/, /admin-publish\.spec\.ts/],
+        dependencies: [`setup-${copy}`],
+        use: { ...use, baseURL },
         metadata: { copy, engine, device },
       });
     }
+  }
+  for (const name of [...main]) {
+    const base = projects.find((p) => p.name === name);
+    projects.push({ ...base, name: `${name}-publish`, testIgnore: undefined, testMatch: /admin-publish\.spec\.ts/, dependencies: main });
   }
 }
 
 export default defineConfig({
   testDir: './tests',
-  timeout: 30_000,
+  timeout: 45_000,
+  expect: { timeout: 10_000 }, // 8 workers on three engines at once can make one page answer take over 5 s
   fullyParallel: true,
-  workers: process.env.CI ? 2 : 4,
+  workers: process.env.WORKERS ? Number(process.env.WORKERS) : process.env.CI ? 2 : 4, // WORKERS=8 npm test on a big machine
   outputDir: `test-results/${process.env.GAP_RUN}`,
   reporter: [['list'], ['json', { outputFile: `test-results/${process.env.GAP_RUN}-report.json` }]],
   use: { trace: 'retain-on-failure' },

@@ -5,6 +5,7 @@
   "version": "0.1.0",
   "scripts": {
     "test": "playwright test",
+    "preview": "node tests/serve.mjs live 8091 --demo-admin",
     "build:logo": "node scripts/build-logo.mjs",
     "demo-images": "node scripts/make-demo-images.mjs",
     "fonts": "node scripts/copy-fonts.mjs",

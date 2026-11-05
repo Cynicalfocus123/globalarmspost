@@ -44,6 +44,20 @@ function asset(string $path): string
 }
 
 /**
+ * One version for a whole asset folder (e.g. the admin's JS modules, which import each other),
+ * so every file of the folder is fetched new after an update.
+ */
+function asset_dir_version(string $dir): string
+{
+    $parts = '';
+    $base = PUBLIC_DIR . '/assets/' . $dir;
+    foreach (array_merge(glob($base . '/*.js') ?: [], glob($base . '/*.css') ?: []) as $file) {
+        $parts .= basename($file) . filemtime($file) . filesize($file);
+    }
+    return substr(md5($parts), 0, 8);
+}
+
+/**
  * Names a category cannot use, because live/ puts categories at the top level (/asia).
  * @return list<string>
  */

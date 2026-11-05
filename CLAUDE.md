@@ -26,6 +26,7 @@ Full history, status and the wireframe notes are in `PROJECT_LOG.md`. Read it be
     - Browsers: Chrome, Edge, Safari, Firefox.
     - Widths: 320–1920 px. No sideways scroll, cut-off text or stretched images. Menus work by touch.
     - Tested on phone, tablet and desktop in Chromium, Firefox and WebKit. A break on any of them means not done.
+11. **Build first, then test** (2026-11-05). No trial or partial test runs while building. Finish all the code of the step, then run the tests (the 4 full runs).
 
 ## Code standards (owner's requirements; details in PROJECT_LOG.md)
 Every change keeps the code **customizable** (settings in the admin, theme tokens), **future proof** (migrations, strict types, standard PHP, JSON API), **fast and easy to extend** (server rendering, cache, layout registry, PHPStan + tests in CI), and **safe and secure**:
@@ -35,9 +36,17 @@ Every change keeps the code **customizable** (settings in the admin, theme token
 - security headers, no third-party scripts, audit log
 
 ## Testing
-- `npm test` runs `tests/site.spec.ts` and `tests/stories.spec.ts` on 18 projects (git/live × Chromium/Firefox/WebKit × phone/tablet/desktop) against the real PHP server (`tests/serve.mjs`) and SQLite, loaded with sample stories (`tests/seed-demo.php`, test database only). Test ports 8190/8191; the preview (`.claude/launch.json`) uses 8091. Each run writes new folders in `test-data/` and `test-results/`; nothing is deleted.
+- `npm test` runs on 18 projects (git/live × Chromium/Firefox/WebKit × phone/tablet/desktop) against the real PHP server (`tests/serve.mjs`) and SQLite, loaded with sample stories (`tests/seed-demo.php`, test database only), in three phases per copy:
+  1. `setup-<copy>`: `tests/admin-setup.spec.ts` makes the first admin through the real `/admin/setup` step and adds an editor (accounts in `tests/fixtures/test-users.json`, test only).
+  2. `<copy>-<engine>-<device>`: `site.spec.ts`, `stories.spec.ts`, `admin.spec.ts`.
+  3. `<copy>-<engine>-<device>-publish`: `admin-publish.spec.ts` (publishing, new categories, homepage builder), after phase 2, so the site tests never see a half-changed homepage.
+- Local preview (`npm run preview` or `.claude/launch.json`, port 8091) adds a demo admin (`tests/seed-admin.php`, login in `tests/fixtures/test-users.json` → `demo_admin`); test runs never do.
+- Test ports 8190/8191; the preview (`.claude/launch.json`) uses 8091. Each run writes new folders in `test-data/` and `test-results/`; nothing is deleted. Playwright browsers: `PLAYWRIGHT_BROWSERS_PATH=D:/dev/playwright`.
+- The test server (`tests/serve.mjs`) runs 10 PHP processes per copy behind a small proxy that sends each request to the **least busy** one, so a slow picture (PHP GD) never blocks the requests behind it. `expect` timeout is 10 s because 8 workers on three engines can make one answer take seconds. The admin scripts mark `html[data-ui="ready"]` when the admin modules have run, and the tests wait for it before tapping.
+- SQLite is in WAL mode with `busy_timeout = 5000` and `synchronous = NORMAL` (`app/lib/db.php`): PDO's 60 s default meant a busy database held a request — and its PHP session lock — for a minute, which reads as a hang.
 - Test phone, tablet AND desktop (Chromium, Firefox, WebKit; 320–1920 px), against the real running PHP server and database. Check that values were really saved, not just status codes.
-- Run the full suite 4 times. Stop when all 4 runs pass.
+- Run the full suite 4 times (`PLAYWRIGHT_BROWSERS_PATH=D:/dev/playwright WORKERS=8 npm test`). Stop when all 4 runs pass: 786 passed, 62 skipped, 0 failed per run.
+- Heavy tests get a longer budget for their own work, never weaker assertions: "phones and tablets" 180 s (36 page loads), "throttling" 120 s (six sign-in rounds), publish "schedule" and "move to trash" 150 s.
 - Each report lists every skipped test by name with its reason.
 
 ## Design
@@ -48,11 +57,12 @@ Every change keeps the code **customizable** (settings in the admin, theme token
 - Header (2026-11-05): one white row, logo left, dark menu text, icons right; red only as an accent; search is a small box under the icon. No date bar, no social links. Built in the admin (any links, submenus under any parent).
 - Phones: every section is one big rounded photo story, then headline + date rows with a small photo on the right. No grids on phones.
 - Category page: posts grouped by day under a plain text date heading ("Today · Tuesday, 3 November 2026", no calendar box); each story shows its time. Smart search: own word index; joined or spaced words, word forms, typo fixing, ranking, highlights (details in `PROJECT_LOG.md`).
+- Admin (`/admin`, step 3, wireframe 5): setup step for the first admin, sign-in (throttling, keep me signed in, optional two-step code), roles admin/editor, dashboard, stories list, story editor (pictures anywhere in the body, tags/categories/authors added on the spot), authors, homepage builder. Side menu from 900 px; under 900 px a bottom tab bar and bottom sheets.
 - Article page: headline, author, date + updated, Aa and Share buttons, photo gallery with captions, Summary bullet box, body, credits line, topic chips, share row, then "More in {category}" and "Latest news" (full list in `PROJECT_LOG.md` → Design rules → Article page).
 
 ## Stack
 - PHP 8.1+ with no framework, PDO MySQL (Hostinger) or SQLite, plain JavaScript. No Node on the server.
-- Code lives in `public/app/lib/`, views in `public/app/views/`, assets in `public/assets/`.
+- Code lives in `public/app/lib/`, views in `public/app/views/`, assets in `public/assets/`. The admin: `public/app/admin/router.php`, `public/app/views/admin/`, `public/assets/admin/` (served with no-cache, its modules import each other).
 - All dates are stored in UTC as `Y-m-d H:i:s`. A post is public when `status = 'published' AND published_at <= now`.
 - Pictures are AVIF + WebP made in the admin's browser (jSquash). PHP GD is the fallback.
 - Local tools are on D: (`D:\codex system\tools\php`, `nodejs`, `mysql`). Playwright browsers are in `D:/dev/playwright`.

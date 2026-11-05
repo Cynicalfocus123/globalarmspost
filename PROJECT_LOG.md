@@ -31,6 +31,7 @@ Newest entry first. Wireframes: [docs/wireframes.html](docs/wireframes.html)
     - **Widths:** 320 px up to 1920 px. No sideways scroll, no cut-off or overlapping text, no squashed or stretched images.
     - **Menus:** usable by touch on phones and tablets.
     - **Tests:** every change is tested on phone, tablet and desktop, in Chromium, Firefox and WebKit (Safari's engine). A change that breaks on any of them is not done.
+11. **Build first, then test** (owner's hard rule, 2026-11-05). No trial or partial test runs while building. Finish all the code of the step first; only then run the tests (the 4 full runs).
 
 ## Folder layout
 ```
@@ -52,7 +53,7 @@ global arm post new site/
 | Article | `/#news/{slug}` | `/{category}/{slug}`, e.g. `/europe/us-lift-sanctions-turkey` |
 | Search | `/#search?q=` | `/search?q=ukraine+war` |
 | Contact, about … | `/#contact` | `/contact`, `/about` |
-| Admin | `/admin` (no `#`, same in both) | `/admin` |
+| Admin | `/admin` (no `#`, same in both) | `/admin`, `/admin/stories`, `/admin/stories/{id}`, `/admin/homepage` … |
 
 - In `live/`, category addresses sit at the top level (`/asia`, not `/category/asia`). Some names are reserved, so a category can't take them: `home`, `admin`, `api`, `search`, `tag`, `install`, `assets`, `uploads`, `feed`, `sitemap.xml`, `robots.txt`.
 - Old WordPress links (e.g. `/category/europe/`, `/2026/07/slug/`) get a 301 redirect to the new addresses.
@@ -157,6 +158,10 @@ Every change must keep the code:
     - dark mode and search buttons, on or off
   - Submenus can go under any parent item. Drag to reorder and nest.
   - Stored in `menus` + `menu_items` (parent, position, type, label, link, new tab).
+- **Admin** (`/admin`, built in step 3 from wireframe 5): same white look as the site, red only for the main button and warnings.
+  - Desktop (900 px and wider): left side menu (Dashboard, Stories, Homepage, Categories, Tags, Authors, Pictures, Menu, Users, Settings).
+  - Phones and tablets (under 900 px): bottom tab bar (Home, Stories, +, Pictures, More); settings, the More menu and "Add new author" open as sheets from the bottom.
+  - Story editor on phones: Write / Details / Photos tabs. Every button and field is at least 44 px tall.
 - **Smart search** (owner: "extremely smart and robust"):
   - Uses its own word index, built on every save and working on MySQL and SQLite.
   - Searches title, body, excerpt, summary, tags, categories and author.
@@ -171,6 +176,62 @@ Every change must keep the code:
 ---
 
 ## Change log
+
+### 2026-11-05 — Step 3 tested: 3 full runs pass, the 4th stopped by the owner (waiting for approval)
+
+The Step 3 admin was tested with the whole suite — `PLAYWRIGHT_BROWSERS_PATH=D:/dev/playwright WORKERS=8 npm test` (848 tests, 18 projects: git/live × Chromium/Firefox/WebKit × phone/tablet/desktop, three phases per copy: `setup` → site/stories/admin → `publish`). Every failure the first runs found was fixed in the code. On the same, final code:
+
+| Run | Report | Result |
+|---|---|---|
+| B | `test-results/1793873357332-report.json` | 786 passed, 62 skipped, 0 failed |
+| C | `test-results/1793874099027-report.json` | 786 passed, 62 skipped, 0 failed |
+| D | `test-results/runD-console.txt` | 786 passed, 62 skipped, 0 failed |
+| E | `test-results/runE-console.txt` | **stopped by the owner** ("no more tests") after 718 passing tests and 0 failures, in the publish phase; the tests that were running when it was stopped are not counted |
+
+So hard rule "4 full runs" was met with 3 full runs plus most of a 4th, at the owner's call. Nothing is marked Done until the owner approves.
+
+- **Save on WebKit did nothing** (`assets/admin/editor.js`, "schedule" and "move to trash" on WebKit). Safari drops a button's `click` when the button's own text is *replaced* while the press is in flight. A date typed into the field leaves it with an uncommitted value, so its `change` fires on blur, in the middle of the click on Save, and `updatePublish()` rewrote the button's text node: the click never came, no request went out, and `.ed-saved` stayed "Not saved yet". New `setButtonLabel()` writes the new text **into the existing text node**, and only when it really changes. Checked on WebKit desktop, tablet and phone.
+- **Homepage builder drag lost the order** (`assets/admin/builder.js`). `pointermove`/`pointerup` were only on the list, but the pointer is released above the first row, outside the list: the rows looked reordered while `sections` kept the old order, so Save stored the old order. The drag listeners now sit on the document.
+- **The More sheet** (`assets/admin/ui.js`): a touch press opens the sheet at once (a tap opens it even when the browser sends the follow-up click late or at stale coordinates, which Firefox on phones did); the click that follows the press that opened a sheet is ignored when its press started outside the sheet — that click used to land on the sheet's own **Sign out** button and sign the admin out; only a press that started on the backdrop closes it.
+- **SQLite waits** (`app/lib/db.php`): PDO's default busy timeout is 60 s, so a moment of database contention held a request — and its PHP session lock — for a minute, longer than a test's 45 s. Now `busy_timeout = 5000` and `synchronous = NORMAL` (WAL already makes every commit safe); a busy database answers or fails quickly instead of hanging.
+- **Test harness, no assertion weakened**: `playwright.config.ts` `expect` timeout 10 s (8 workers on three engines); `tests/serve.mjs` sends each request to the **least busy** PHP process (10 per copy) instead of strict round-robin, so a slow picture does not block the requests behind it; `tests/admin.spec.ts` gives "phones and tablets" 180 s (36 page loads: 6 widths × 6 pages) and "throttling" 120 s (six sign-in rounds); `tests/admin-publish.spec.ts` gives "schedule" and "move to trash" 150 s; the admin tests wait for `html[data-ui="ready"]` before tapping (set by `ui.js` when the admin modules have run), and `tests/admin-helpers.ts` has `sheetBottom()` for the bottom-sheet position.
+- **Also fixed while testing**: WebKit gives `.webp` files an empty `type`, so profile pictures were refused — pictures are now recognised by their first bytes (`images.js` `sniffType`); the tag/author pickers keep their list open (blur timer only when focus did not come back, `pressing` flag, focus kept by cancelling **mousedown only**, because cancelling `pointerdown` makes WebKit send no click on a tap); `.a-sheet-wrap .a-sheet{margin:0}` so bottom sheets sit on the bottom edge (as the wireframe shows); `sanitize.php` trims a trailing `<br>` at the end of paragraphs and list items (Safari's editor stores `<li>Point one<br></li>`); `content.php` makes AVIF at speed 8 instead of 6 (0.11 s instead of 4.1 s for a 960 px picture, about 6% bigger) so WebKit uploads do not tie up PHP workers.
+- **The 62 skips, by name**: "database: migrations ran and a saved setting shows on the page" (16 projects — the server and database check runs once per copy, on desktop Chromium), "phone menu opens and closes" (6 — desktop has the full menu bar and no menu button), "a scheduled story appears at its time (saved in the database)" (16 — it changes the database, so once per copy), "desktop: section layouts use their columns" (12 — desktop only, from 1100 px), "phones: each section is one big story, then rows with the photo on the right" (12 — phone only). The admin tests have no skips.
+- Test pictures: the git copy's test server serves `public/` directly, so the admin tests' uploads land in `public/uploads/` (ignored by git, never copied to `live/`). They pile up there; the owner decides when to clear them.
+- Task list v18.
+
+### 2026-11-05 — Step 3: the admin (backend) (waiting for approval)
+Built from the approved admin wireframe (section 5). Everything is at `/admin`, the same in both copies.
+- **Database** (migration `005_admin`): `users`, `login_attempts`, `remember_tokens`, `authors`, `post_gallery`, `views_daily`, `audit_log`; on `posts`: `author_id`, `featured_caption`, `featured_credit`. Each existing `author_name` became an author and its stories were linked, so the sample stories keep working.
+- **Sign-in** (`app/lib/auth.php`, tasks B4, B16):
+  - the first admin is made by the **setup step** (`/admin/setup`, only while there is no user at all); never hard-coded
+  - email + password (`password_hash`), hardened session cookie (HttpOnly, SameSite=Lax, Secure on https, path `/admin`)
+  - **keep me signed in**: 30-day token, only its hash is stored, swapped on each use
+  - **throttling**: 5 wrong tries per email (from one address) in 15 minutes, plus an all-emails limit per address (`login_ip_limit`, default 50)
+  - **CSRF** token on every form and API call, and the Origin is checked
+  - **roles**: editor (stories, categories, tags, authors, pictures) and admin (also homepage, users, menu, settings)
+  - optional **two-step login** (authenticator app, TOTP; a code works once), turned on under Account
+  - every sign-in and change goes into `audit_log`
+- **Dashboard**: published / scheduled / drafts, views today (site time zone), scheduled next, recent drafts, server check (PHP, database, uploads, GD WebP/AVIF, HTTPS, AVIF in this browser).
+- **Stories list**: All / Published / Scheduled / Drafts / Trash with counts, search, category and author filters, sort by any column, tick several to publish / move to trash / restore.
+- **Story editor** (F13, F14):
+  - headline, toolbar (bold, italic, underline, H2, H3, lists, quote, link, picture)
+  - pictures anywhere in the body by toolbar button, paste or drag and drop, each with its own caption + credit and full width / inline / replace / up / down / remove
+  - Summary, excerpt, credits line; Draft / Published, date + time (future = scheduled), pin to top, Live updates label, move to trash
+  - category with search and "+ Add new category" on the spot; tags with suggestions and "Add new tag: <name>" (saved to the database at once, added to the story, no reload); author picker with search and "+ Add new author" (name, email, profile picture; saved at once, chosen, added to the list)
+  - main photo + caption + credit, gallery photos with captions, search preview + address (slug)
+  - phones and tablets: Write / Details / Photos tabs; new author opens as a sheet from the bottom
+- **Pictures** (B6, F15): the admin's browser makes WebP (canvas) and AVIF (jSquash in a worker, `assets/admin/vendor/`) at 480 / 960 / 1600 px (profile pictures 160 / 320). Browsers that cannot make WebP (Safari) send the picture once and PHP GD makes the sizes. The server checks every file by its content and size.
+- **HTML allow-list cleaner** (B5, `app/lib/sanitize.php`): keeps paragraphs, bold, italic, underline, H2/H3, lists, quotes, safe links and body pictures (only from the site's own media table); removes scripts, styles, frames, forms, remote images and every other attribute. Runs on save and again on the page. The story page now shows the cleaned body, body pictures with caption + credit, and the gallery photos.
+- **Authors** (B19): Authors page (list with story counts, add, edit with profile picture).
+- **Homepage builder** (F16): drag sections into order (mouse, touch or pen; ↑ ↓ buttons too), every setting from the layout registry (layout, title, span, stories, columns, tabs, order, direction, skip, pinned first, avoid duplicates, show/hide), categories as a checkbox list (children indented) with "All categories" and a search box, the same list for "Leave out", tags; saved to `home_sections`. Sections are never deleted, only hidden. On phones the settings open as a sheet from the bottom.
+- **Also**: Categories, Tags and Pictures pages (lists), Users (admins add admins or editors), Account (two-step login, password). Menu and Settings show "comes in a later step" (F5, F17).
+- **Phones and tablets**: under 900 px the admin has a bottom tab bar (Home, Stories, +, Pictures, More) and settings open as sheets from the bottom; 44 px touch targets; 16 px inputs so phones do not zoom.
+- **Security headers**: the admin's CSP also allows `wasm-unsafe-eval` (AVIF encoder), `worker-src 'self'` and `blob:` pictures; admin pages are `no-store` and `noindex`.
+- `assets/admin/.htaccess` serves the admin scripts with `no-cache` (they import each other by plain address).
+- **Tests**: `tests/admin-setup.spec.ts` (setup phase), `tests/admin.spec.ts` (16 tests: sign-in, throttling, keep me signed in, CSRF, roles, two-step, dashboard, stories list + bulk, editor with new tag + new author saved at once and shown in the picker with no reload, body pictures by toolbar / paste / drop, cleaner, authors, sample stories, phones and tablets), `tests/admin-publish.spec.ts` (4 tests: publish with new category + photos, schedule, trash, homepage builder). **3 full runs pass and a 4th passed 718 tests before the owner stopped it** (see the entry above: 786 passed, 62 skipped each full run); `WORKERS=8 npm test` runs on a big machine; the test server has 10 PHP processes per copy.
+- **Demo admin for the local preview**: `npm run preview` (or the app's preview) adds a demo admin to the preview's own test database (`tests/seed-admin.php`; login in `tests/fixtures/test-users.json` → `demo_admin`). Never in `live/` or the real site; test runs never add it.
+- Task list v16.
 
 ### 2026-11-05 — Step 2 approved
 - The owner approved step 2 (commit `ba82f56`). Task list v15: F4 header, F6 phone menu, B9 query engine, F8 homepage sections, F9 category page and P16 sample stories are **Done**.

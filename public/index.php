@@ -32,6 +32,13 @@ $send = function (string $title, string $body, int $status = 200): never {
     exit;
 };
 
+// Admin (same address in both copies): sign-in, stories, homepage builder ...
+if (($parts[0] ?? '') === 'admin') {
+    require APP_DIR . '/admin/router.php';
+    admin_route(array_slice($parts, 1));
+    exit;
+}
+
 if ($parts === [] || $parts === ['home']) {
     $send('', view('home'));
 }
@@ -49,7 +56,7 @@ if (count($parts) === 2) {
     $post = post_by_slug($parts[1]);
     if ($post !== null && ($parts[0] === 'news' || $parts[0] === $post['cat_slug'])) {
         if ($parts[0] !== 'news' || build_info()['link_mode'] === 'hash') {
-            q('UPDATE posts SET views = views + 1 WHERE id = ?', [(int) $post['id']]);
+            count_view((int) $post['id']);
             $send((string) $post['title'], view('article', ['p' => $post]));
         }
     }

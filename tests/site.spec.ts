@@ -236,8 +236,10 @@ test('pages and protected folders answer with the right status', async ({ page }
   expect((await page.request.get('/storage/')).status()).toBe(403);
   expect((await page.request.get('/home')).status()).toBe(200);
   expect((await page.request.get('/asia')).status()).toBe(200);
-  const res = await page.request.get('/admin');
-  expect(res.status(), 'admin is not built yet; reserved name, not a category').toBe(404);
+  const res = await page.request.get('/admin', { maxRedirects: 0 });
+  expect(res.status(), 'admin (reserved name, not a category) sends visitors to the sign-in page').toBe(303);
+  expect(res.headers()['location']).toBe('/admin/login');
+  expect((await page.request.get('/app/admin/router.php')).status()).toBe(403);
   void info;
 });
 
@@ -245,7 +247,7 @@ test('database: migrations ran and a saved setting shows on the page', async ({ 
   test.skip(meta(info).device !== 'desktop' || meta(info).engine !== 'chromium', 'Server and database check: the same on every browser and device, so it runs once per copy (desktop Chromium). The other tests read this same database on every browser and device.');
   const copy = dbKey(info);
   const migrations = sql(copy, 'SELECT id FROM migrations ORDER BY id').map((r: any) => r.id);
-  expect(migrations).toEqual(['001_core', '002_starter_content', '003_content', '004_home_sections']);
+  expect(migrations).toEqual(['001_core', '002_starter_content', '003_content', '004_home_sections', '005_admin']);
   expect(sql(copy, 'SELECT COUNT(*) AS n FROM categories')[0].n).toBe(11);
   const regions = sql(copy, "SELECT c.slug FROM categories c JOIN categories p ON p.id = c.parent_id WHERE p.slug = 'regions' ORDER BY c.position").map((r: any) => r.slug);
   expect(regions).toEqual(['us', 'asia', 'europe', 'middle-east-africa']);

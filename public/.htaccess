@@ -26,4 +26,5 @@ DirectoryIndex index.php
 <IfModule mod_mime.c>
   AddType image/avif .avif
   AddType application/manifest+json .webmanifest
+  AddType application/wasm .wasm
 </IfModule>

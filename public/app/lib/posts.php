@@ -50,14 +50,19 @@ function posts_count(array $o): int
 
 function posts_select(): string
 {
-    return 'SELECT p.id, p.title, p.slug, p.excerpt, p.summary, p.body, p.credits, p.author_name, p.sticky, p.live_label, p.views,
-                   p.published_at, p.updated_at, c.slug AS cat_slug, c.name AS cat_name, pc.slug AS cat_parent, pc.name AS cat_parent_name,
-                   m.path AS m_path, m.widths AS m_widths, m.has_avif AS m_has_avif, m.width AS m_width, m.height AS m_height,
-                   m.alt AS m_alt, m.caption AS m_caption, m.credit AS m_credit
+    // The author comes from the authors table (B19); author_name is the fallback for stories without one.
+    // The main photo's caption and credit are the story's own, else the picture's.
+    return "SELECT p.id, p.title, p.slug, p.excerpt, p.summary, p.body, p.credits, COALESCE(a.name, p.author_name) AS author_name,
+                   p.author_id, p.sticky, p.live_label, p.views, p.published_at, p.updated_at,
+                   c.slug AS cat_slug, c.name AS cat_name, pc.slug AS cat_parent, pc.name AS cat_parent_name,
+                   m.path AS m_path, m.widths AS m_widths, m.has_avif AS m_has_avif, m.width AS m_width, m.height AS m_height, m.alt AS m_alt,
+                   CASE WHEN COALESCE(p.featured_caption, '') <> '' THEN p.featured_caption ELSE m.caption END AS m_caption,
+                   CASE WHEN p.featured_credit <> '' THEN p.featured_credit ELSE m.credit END AS m_credit
               FROM posts p
               JOIN categories c ON c.id = p.category_id
               LEFT JOIN categories pc ON pc.id = c.parent_id
-              LEFT JOIN media m ON m.id = p.media_id';
+              LEFT JOIN authors a ON a.id = p.author_id
+              LEFT JOIN media m ON m.id = p.media_id";
 }
 
 /**
@@ -139,4 +144,28 @@ function category_url_of(array $p): string
 function post_by_slug(string $slug): ?array
 {
     return q_one(posts_select() . " WHERE p.slug = ? AND p.status = 'published' AND p.published_at <= ?", [$slug, now_utc()]);
+}
+
+/**
+ * Extra gallery photos of a story, in order, each with its caption and credit.
+ * @return list<array<string, mixed>>
+ */
+function post_gallery(int $postId): array
+{
+    return q_all('SELECT m.path, m.widths, m.has_avif, m.width, m.height, m.alt, g.caption, g.credit
+                    FROM post_gallery g JOIN media m ON m.id = g.media_id WHERE g.post_id = ? ORDER BY g.position, g.id', [$postId]);
+}
+
+/** One more story view today (site time zone), for the dashboard. */
+function count_view(int $postId): void
+{
+    q('UPDATE posts SET views = views + 1 WHERE id = ?', [$postId]);
+    $day = (new DateTimeImmutable('now', site_tz()))->format('Y-m-d');
+    if (q('UPDATE views_daily SET views = views + 1 WHERE day = ?', [$day])->rowCount() === 0) {
+        try {
+            q('INSERT INTO views_daily (day, views) VALUES (?, 1)', [$day]);
+        } catch (PDOException) {
+            q('UPDATE views_daily SET views = views + 1 WHERE day = ?', [$day]); // another request added the day first
+        }
+    }
 }

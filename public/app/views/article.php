@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 /** @var array<string, mixed> $p */
-// Basic story page so links work. The full article page (gallery, Aa, share, related rows) is task F10.
+// Story page: photo, extra gallery photos, summary, body with pictures. The full article page (gallery slider, Aa, share, related rows) is task F10.
 $m = post_media($p);
 $updated = (string) $p['updated_at'] > (string) $p['published_at'] ? (string) $p['updated_at'] : '';
 $summary = array_values(array_filter(array_map('trim', explode("\n", (string) $p['summary']))));
@@ -22,14 +22,16 @@ $summary = array_values(array_filter(array_map('trim', explode("\n", (string) $p
     <?php if ((string) $m['caption'] !== '' || (string) $m['credit'] !== ''): ?><figcaption><?= e((string) $m['caption']) ?><?php if ((string) $m['credit'] !== ''): ?> <span class="mute">Photo: <?= e((string) $m['credit']) ?></span><?php endif; ?></figcaption><?php endif; ?>
   </figure>
   <?php endif; ?>
+  <?php foreach (post_gallery((int) $p['id']) as $g): ?>
+  <figure class="article-figure gallery-photo">
+    <?= picture(['alt' => (string) ($g['caption'] ?: $g['alt'])] + $g, '(max-width: 900px) 100vw, 860px') ?>
+    <?php if ((string) $g['caption'] !== '' || (string) $g['credit'] !== ''): ?><figcaption><?= e((string) $g['caption']) ?><?php if ((string) $g['credit'] !== ''): ?> <span class="mute">Photo: <?= e((string) $g['credit']) ?></span><?php endif; ?></figcaption><?php endif; ?>
+  </figure>
+  <?php endforeach; ?>
   <?php if ($summary !== []): ?>
   <div class="summary"><h2>Summary</h2><ul><?php foreach ($summary as $line): ?><li><?= e($line) ?></li><?php endforeach; ?></ul></div>
   <?php endif; ?>
-  <div class="article-body">
-    <?php // Body is shown as plain paragraphs until the HTML allow-list cleaner (task B5) is built. ?>
-    <?php foreach (preg_split('/\R{2,}/', trim((string) $p['body'])) ?: [] as $para): if (trim($para) === '') continue; ?>
-    <p><?= e(trim($para)) ?></p>
-    <?php endforeach; ?>
-  </div>
+  <?php // Body: cleaned by the allow-list (task B5); body pictures show with their caption and credit. ?>
+  <div class="article-body"><?= body_html((string) $p['body']) ?></div>
   <?php if ((string) $p['credits'] !== ''): ?><p class="credits"><?= e((string) $p['credits']) ?></p><?php endif; ?>
 </article>

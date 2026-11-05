@@ -1,0 +1,7 @@
+# Admin scripts import each other by plain address, so browsers must check for a newer copy every time
+# (this overrides the one-year cache of the main .htaccess for this folder).
+<IfModule mod_headers.c>
+  <FilesMatch "\.(js|css|wasm)$">
+    Header set Cache-Control "no-cache"
+  </FilesMatch>
+</IfModule>

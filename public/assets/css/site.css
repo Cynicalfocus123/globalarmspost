@@ -225,6 +225,17 @@ button{font:inherit;color:inherit}
 .summary ul{margin:6px 0 0;padding-left:20px}
 .article-body{font:19px/1.65 var(--serif)}
 .credits{color:var(--mute);font-size:14px}
+.article-body h2{font:600 24px/1.3 var(--serif);margin:28px 0 8px}
+.article-body h3{font:600 20px/1.3 var(--serif);margin:22px 0 6px}
+.article-body blockquote{border-left:3px solid var(--red);margin:18px 0;padding:2px 0 2px 16px}
+.body-fig{margin:22px 0}
+.body-fig img{display:block;width:100%;height:auto;border-radius:10px}
+.body-fig figcaption{font:14px/1.45 var(--sans);margin-top:8px}
+.body-fig .credit{color:var(--mute)}
+.body-fig.fig-inline{max-width:380px}
+@media (min-width:700px){.body-fig.fig-inline{float:right;margin:4px 0 14px 22px;width:45%}}
+.article-body::after{content:"";display:table;clear:both}
+.preview-note{background:#fdf1d8;color:#7a4b00;border-radius:8px;padding:8px 12px;font-size:14px;margin:12px 0}
 
 
 main{min-height:50vh;padding-top:24px;padding-bottom:48px}

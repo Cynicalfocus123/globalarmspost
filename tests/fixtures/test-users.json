@@ -1,0 +1,19 @@
+{
+  "_note": "Test accounts for the TEST databases only (tests/serve.mjs makes a fresh database per run). Never used on the real site.",
+  "admin": {
+    "name": "Test Admin",
+    "email": "admin@test.localhost",
+    "password": "T-qVW093FlJ06p2NKi5qE"
+  },
+  "editor": {
+    "name": "Test Editor",
+    "email": "editor@test.localhost",
+    "password": "T-zavG0iJ4B_m_kEfPeCk"
+  },
+  "demo_admin": {
+    "name": "Demo Admin",
+    "email": "demo-admin@test.localhost",
+    "password": "Demo-TrmdQoMvWrfx8A",
+    "_note": "Only for the local preview (npm run preview / .claude/launch.json): made by tests/seed-admin.php. Never on live/."
+  }
+}

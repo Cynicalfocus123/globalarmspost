@@ -13,10 +13,13 @@ if (preg_match('~^/(app|storage)(/|$)|/\.~', $path) === 1) {
 }
 $file = realpath($root . $path);
 if ($file !== false && is_file($file) && str_starts_with($file, realpath($root)) && !str_ends_with($file, '.php')) {
-    $types = ['avif' => 'image/avif', 'webmanifest' => 'application/manifest+json', 'woff2' => 'font/woff2'];
+    $types = ['avif' => 'image/avif', 'webmanifest' => 'application/manifest+json', 'woff2' => 'font/woff2', 'wasm' => 'application/wasm', 'js' => 'text/javascript'];
     $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
     if (isset($types[$ext])) {
         header('Content-Type: ' . $types[$ext]);
+        if (str_contains($path, '/assets/admin/')) {
+            header('Cache-Control: no-cache'); // as public/assets/admin/.htaccess
+        }
         readfile($file);
         return true;
     }

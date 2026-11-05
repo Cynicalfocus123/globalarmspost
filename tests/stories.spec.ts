@@ -176,10 +176,11 @@ test('category page: Older stories opens the next page', async ({ page }, info) 
 
 test('story page opens from the homepage and counts the view', async ({ page }, info) => {
   await page.goto('/');
-  const link = page.locator('.hs-hero-grid .v-hero .card-title a');
+  // A sample story: another test's "timed" story can be the newest for a moment and is then moved to the trash.
+  const link = page.locator('.hs-hero-grid .card-title a[href*="sample-"]').first();
   const title = (await link.textContent())!.trim();
   const href = (await link.getAttribute('href'))!;
-  expect(href).toMatch(isLive(info) ? /^\/[a-z-]+\/sample-1-[a-z0-9-]+$/ : /^\/#news\/sample-1-[a-z0-9-]+$/);
+  expect(href).toMatch(isLive(info) ? /^\/[a-z-]+\/[a-z0-9-]+$/ : /^\/#news\/[a-z0-9-]+$/);
   const slug = href.split('/').pop()!;
   const before = Number(sql(dbKey(info), 'SELECT views FROM posts WHERE slug = ?', slug)[0].views);
   await link.click();
@@ -204,7 +205,8 @@ test('links: live copy uses proper story and category addresses, git copy uses #
 
 test('no sideways scroll on story pages from 320 to 1920 px', async ({ page }, info) => {
   await page.goto('/');
-  const href = (await page.locator('.card-title a').first().getAttribute('href'))!;
+  // A sample story (another test's "timed" story can be the newest for a moment, then goes to the trash).
+  const href = (await page.locator('.card-title a[href*="sample-"]').first().getAttribute('href'))!;
   for (const width of [320, 390, 768, 1100, 1440, 1920]) {
     await page.setViewportSize({ width, height: 900 });
     await page.goto(href);
