@@ -1,9 +1,10 @@
 """Builds the task list Excel from docs/tasks.json (same layout as the CoreCart task list).
 
 Usage: python scripts/build-tasks.py [output.xlsx]
-Default output: ../Claude outputs/Global Arms Post task list <date> v<version>.xlsx
-Only the latest version is kept: older "Global Arms Post task list ... .xlsx" files in that
-folder are deleted after each build (owner's rule, 2026-11-03).
+Default output: ../Claude outputs/Global Arms Post task list.xlsx  (always the same file)
+Hard rule 7 (owner, 2026-11-05): never make a new Excel. The same file is updated in place;
+the version number and date are written inside it, not in the file name. Old files with a
+version in the name (from before this rule) are removed after the build.
 
 Tabs: Frontend, Backend, Project (open tasks only), then Done, Pending, Not started.
 Status rules: Not started = not begun; Pending = started but not finished;
@@ -164,14 +165,13 @@ def main():
     if len(sys.argv) > 1:
         out = Path(sys.argv[1])
     else:
-        out = ROOT.parent / "Claude outputs" / f"{name} task list {DATA['updated']} v{DATA['version']}.xlsx"
+        out = ROOT.parent / "Claude outputs" / f"{name} task list.xlsx"
     out.parent.mkdir(parents=True, exist_ok=True)
     wb.save(out)
     counts = {s: sum(t["status"] == s for t in tasks) for s in STATUSES}
     print(out)
     print(counts)
-    # Hard rule 7 (owner, 2026-11-03): only the latest task list is kept. Older versions
-    # of this task list (same name pattern, same folder) are deleted after the new one is saved.
+    # Hard rule 7: one task list file only. Files from before the rule (version in the name) are removed.
     if len(sys.argv) == 1:
         for old in out.parent.glob(f"{name} task list * v*.xlsx"):
             if old != out:
