@@ -178,6 +178,10 @@ Every change must keep the code:
 
 ## Change log
 
+### 2026-11-11 — B18 is the owner's
+
+The owner brings the stories from the current globalarmspost.com over himself, so B18 (scrape the old site) is not Claude's work. The task stays in the list as the owner's reminder. Task list v23.
+
 ### 2026-11-11 — Steps 3 and 4 and the security review approved
 
 The owner approved step 3 (the admin), step 4 (the reader side) and the security review. Task list v22:
