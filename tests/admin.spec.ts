@@ -1,4 +1,4 @@
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect, type Page } from './fixtures';
 import { users, sql, login, logout, addUser, csrf, totp, uniq, narrow, sheetBottom, fileThere, noSidewaysScroll, photoFile, photoFile2, avatarFile, meta } from './admin-helpers';
 import { readFileSync } from 'node:fs';
 

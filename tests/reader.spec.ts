@@ -1,4 +1,4 @@
-import { test, expect, type Page, type TestInfo } from '@playwright/test';
+import { test, expect, type Page, type TestInfo } from './fixtures';
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { users, sql, login, csrf, uniq, isLive, serverInfo, inLine } from './admin-helpers';

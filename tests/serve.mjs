@@ -65,6 +65,17 @@ if (process.argv.includes('--demo-admin')) execFileSync(PHP, [...ext, join(ROOT,
 
 if (!existsSync(docroot)) process.exit(1);
 
+// SQLite on Windows: one connection stays open for the whole run. SQLite deletes its -wal and -shm files
+// whenever the last connection closes and makes them again on the next open; with 20 short PHP processes
+// that happens all the time, and when another program (a virus scanner) holds the old file at that moment,
+// Windows keeps it "delete pending" and every later open fails with "disk I/O error" (seen 2026-11-10).
+// With this connection open the files are never deleted during the run.
+let keeper = null;
+if (!USE_MYSQL) {
+  keeper = spawn(PHP, [...ext, '-r', 'require $argv[1] . "/app/bootstrap.php"; db()->query("SELECT 1"); fwrite(STDOUT, "open\n"); while (true) { sleep(3600); }', docroot], { env, stdio: ['ignore', 'pipe', 'inherit'] });
+  await new Promise((res, rej) => { keeper.stdout.once('data', res); keeper.once('exit', () => rej(new Error('the SQLite keeper stopped'))); });
+}
+
 // PHP's built-in server answers one connection at a time, and browsers open idle "preconnect"
 // sockets that would block it. So a small Node proxy takes the browser connections and hands each
 // request to one of several PHP processes, like a real web server (Apache + PHP) does.
@@ -99,7 +110,7 @@ const proxy = http.createServer((req, res) => {
 });
 proxy.listen(Number(port), '127.0.0.1');
 
-const stop = () => { stopping = true; for (const b of backends) b.proc.kill(); stopMysql(); proxy.close(); process.exit(0); };
+const stop = () => { stopping = true; for (const b of backends) b.proc.kill(); if (keeper) keeper.kill(); stopMysql(); proxy.close(); process.exit(0); };
 process.on('SIGINT', stop);
 process.on('SIGTERM', stop);
 for (const b of backends) b.proc.on('exit', () => stop());

@@ -27,6 +27,7 @@ $site = setting('site_name', 'Global Arms Post');
     <label for="password">Password</label>
     <input id="password" name="password" type="password" autocomplete="current-password" required>
     <label class="a-check"><input type="checkbox" name="remember" value="1"> Keep me signed in on this device</label>
+    <div class="a-hp" aria-hidden="true"><label for="website">Website</label><input id="website" name="website" type="text" tabindex="-1" autocomplete="off"></div>
     <button class="a-btn wide" type="submit">Sign in</button>
   </form>
   <p class="a-small">After 5 wrong tries, wait 15 minutes.</p>

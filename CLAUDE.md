@@ -26,32 +26,35 @@ Full history, status and the wireframe notes are in `PROJECT_LOG.md`. Read it be
     - Browsers: Chrome, Edge, Safari, Firefox.
     - Widths: 320–1920 px. No sideways scroll, cut-off text or stretched images. Menus work by touch.
     - Tested on phone, tablet and desktop in Chromium, Firefox and WebKit. A break on any of them means not done.
-11. **Build first, then test** (2026-11-05). No trial or partial test runs while building. Finish all the code of the step, then run the tests (the 4 full runs).
+11. **Build first, then test** (2026-11-05). No trial or partial test runs while building. Finish all the code of the step, then run the tests: one full run of the live copy; if it is good, stop (owner, 2026-11-10/11).
 
 ## Code standards (owner's requirements; details in PROJECT_LOG.md)
 Every change keeps the code **customizable** (settings in the admin, theme tokens), **future proof** (migrations, strict types, standard PHP, JSON API), **fast and easy to extend** (server rendering, cache, layout registry, PHPStan + tests in CI), and **safe and secure**:
 - prepared statements, escaped output, an HTML allow-list
-- CSRF, hashed passwords, login throttling, optional TOTP, roles
+- CSRF, hashed passwords, login throttling (5 per account + address, 20 per account from all addresses, 50 per address), a sign-in honeypot, sign-out everywhere on a password change, optional TOTP, roles
 - uploads checked by content
 - security headers, no third-party scripts, audit log
 
 ## Testing
-- `npm test` runs on 18 projects (git/live × Chromium/Firefox/WebKit × phone/tablet/desktop) against the real PHP server (`tests/serve.mjs`) and SQLite (or MySQL 8.4 with `GAP_DB=mysql`), loaded with sample stories (`tests/seed-demo.php`, test database only), in three phases per copy:
+- `npm test` runs on the **live copy only** (owner, 2026-11-10: `live/` is what goes to the real server; `COPIES=git,live` runs both): 9 projects (Chromium/Firefox/WebKit × phone/tablet/desktop) against the real PHP server (`tests/serve.mjs`) and SQLite (or MySQL 8.4 with `GAP_DB=mysql`), loaded with sample stories (`tests/seed-demo.php`, test database only), in three phases per copy:
   1. `setup-<copy>`: `tests/admin-setup.spec.ts` makes the first admin through the real `/admin/setup` step and adds an editor (accounts in `tests/fixtures/test-users.json`, test only).
-  2. `<copy>-<engine>-<device>`: `site.spec.ts`, `stories.spec.ts`, `article.spec.ts`, `search.spec.ts`, `reader.spec.ts` (page cache, trending tags, search index tools), `admin.spec.ts`.
+  2. `<copy>-<engine>-<device>`: `site.spec.ts`, `stories.spec.ts`, `article.spec.ts`, `search.spec.ts`, `reader.spec.ts` (page cache, trending tags, search index tools), `admin.spec.ts`, `security.spec.ts` (botnet cap, honeypot, sign-out on password change, code typed into pages, Host header cache poisoning).
   3. `<copy>-<engine>-<device>-publish`: `admin-publish.spec.ts` (publishing, new categories, homepage builder), after phase 2, so the site tests never see a half-changed homepage.
 - Local preview (`npm run preview` or `.claude/launch.json`, port 8091) adds a demo admin (`tests/seed-admin.php`, login in `tests/fixtures/test-users.json` → `demo_admin`); test runs never do.
 - Test ports 8190/8191; the preview (`.claude/launch.json`) uses 8091. Each run writes new folders in `test-data/` and `test-results/`; nothing is deleted. Playwright browsers: `PLAYWRIGHT_BROWSERS_PATH=D:/dev/playwright`.
 - The test server (`tests/serve.mjs`) runs 10 PHP processes per copy behind a small proxy that sends each request to the **least busy** one, so a slow picture (PHP GD) never blocks the requests behind it. `expect` timeout is 10 s because many browsers at once can make one answer take seconds. The admin scripts mark `html[data-ui="ready"]` when the admin modules have run, and the tests wait for it before tapping.
 - SQLite is in WAL mode with `busy_timeout = 5000` and `synchronous = NORMAL` (`app/lib/db.php`): PDO's 60 s default meant a busy database held a request — and its PHP session lock — for a minute, which reads as a hang.
 - Test phone, tablet AND desktop (Chromium, Firefox, WebKit; 320–1920 px), against the real running PHP server and database. Check that values were really saved, not just status codes.
-- Run the full suite (`PLAYWRIGHT_BROWSERS_PATH=D:/dev/playwright WORKERS=6 npm test`; 6 workers, owner 2026-11-05: with 8, seven Chromium browsers starting at once took 40 s on this PC). 1352 tests; a passing run is **1290 passed, 62 skipped, 0 failed**. The rule is 4 runs; for step 4 the owner asked for one final run.
+- Run the full suite (`PLAYWRIGHT_BROWSERS_PATH=D:/dev/playwright WORKERS=6 npm test`; 6 workers, owner 2026-11-05: with 8, seven Chromium browsers starting at once took 40 s on this PC). 721 tests; a passing run is **690 passed, 31 skipped, 0 failed**. **One good full run is enough** (owner, 2026-11-10/11): no repeat runs. If phase 2 has a failure Playwright skips the publish phase; then run it on its own with `PUBLISH_ONLY=1 npx playwright test --project='live-*-publish'`, so every test gets a result before anything is called done.
+- `tests/fixtures.ts` is the `test` every spec imports: a worker still shutting down after 60 s ends itself (a browser's "closed" answer that never came froze two runs), and each worker opens one warm-up page on its own 120 s budget. Run temp files: `D:/dev/tmp/gap-playwright/<run>`.
 - **MySQL mode** (task P15): `GAP_DB=mysql PLAYWRIGHT_BROWSERS_PATH=D:/dev/playwright WORKERS=6 npm test`. `tests/serve.mjs` makes a new MySQL 8.4 data folder in `test-data/<run>/<copy>/mysql-data` (`mysqld --no-defaults --initialize-insecure`, never the owner's `my.ini` or data), starts it on port 33000 + (port % 1000) = 33190/33191 (strict `sql_mode`, utf8mb4), makes database `gap` and stops mysqld with the server. `webServer` timeout 180 s.
 - Test runs keep their temporary files (browser profiles) in `test-data/<run>/tmp` on D:, never on C: (`playwright.config.ts`).
 - Heavy tests get a longer budget for their own work, never weaker assertions: "phones and tablets" 180 s (36 page loads), "throttling" 120 s (six sign-in rounds), publish "schedule" and "move to trash" 150 s.
 - Step 4 tests: `tests/seed-demo.php` gives the first three sample stories a photo gallery and builds the search index at seed time. The page cache is **on in the test runs**, the same as on the real site (owner, 2026-11-05). `tests/db.php` clears it after every raw SQL write, as an admin save does; `?cache=1` forces it on for one page and responses say `X-Cache: HIT|MISS`. The cache tests use a page only they ask for and retry when another test's save cleared the cache in between. Tests that switch a site-wide setting (the trending row) wait in `inLine()` with the tests that read it.
 - The first test (`admin-setup`) has 120 s: its time includes the cold start of the browser and the servers.
-- Each report lists every skipped test by name with its reason.
+- SQLite on Windows: `tests/serve.mjs` keeps one database connection open for the whole run, so SQLite never deletes and re-creates its `-wal`/`-shm` files between requests (a virus scanner holding the old file left it "delete pending" and every open failed with "disk I/O error"); `db()` also retries that error up to 5 times.
+- Don't stop a run half-way: its test servers stay behind on 8190/8191 and 21900-21919 and block the next run.
+- Each report lists every skipped test by name with its reason. Give the owner a progress line about every 6 minutes during a run, and report each failure when it happens.
 
 ## Design
 - All wireframes live in `docs/wireframes.html`. Update it with every design change.

@@ -75,7 +75,9 @@ function cache_key(): ?string
     // both serve public/) must never get each other's pages.
     $db = config()['db'] ?? [];
     $site = is_array($db) ? json_encode([$db['driver'] ?? '', $db['path'] ?? '', $db['host'] ?? '', $db['port'] ?? '', $db['name'] ?? '']) : '';
-    return sha1(implode('|', [$generation, (string) $site, $info['link_mode'], $info['commit'], $path, http_build_query($query), $partial]));
+    // The host is part of the key too: a page asked for with a made-up Host header (its share links use the
+    // host when site_url is not set) lands in its own entry, which real visitors never get (cache poisoning).
+    return sha1(implode('|', [$generation, (string) $site, request_host(), $info['link_mode'], $info['commit'], $path, http_build_query($query), $partial]));
 }
 
 /** The current cache generation; cache_clear() starts a new one. */

@@ -23,6 +23,16 @@ function request_path(): string
     return $path;
 }
 
+/**
+ * The Host the request was sent to, lower case, or 'localhost' when it is not a plain host name (with an
+ * optional port). The Host header comes from the visitor: it must never put strange text into a page.
+ */
+function request_host(): string
+{
+    $host = strtolower((string) ($_SERVER['HTTP_HOST'] ?? ''));
+    return preg_match('/^[a-z0-9.-]{1,253}(:\d{1,5})?$/', $host) === 1 ? $host : 'localhost';
+}
+
 /** The visitor's address (sign-in throttling, the suggestions rate limit). Public pages use it too. */
 function client_ip(): string
 {

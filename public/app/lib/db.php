@@ -27,9 +27,22 @@ function db(): PDO
         if (!is_dir($dir)) {
             mkdir($dir, 0775, true);
         }
-        $pdo = new PDO('sqlite:' . $path, null, null, $options);
-        $pdo->exec('PRAGMA foreign_keys = ON');
-        $pdo->exec('PRAGMA journal_mode = WAL');
+        // Windows can refuse the -wal/-shm files for a moment while another program (a virus scanner) has them
+        // open ("disk I/O error"): try the open a few times before giving up.
+        for ($try = 1; ; $try++) {
+            try {
+                $pdo = new PDO('sqlite:' . $path, null, null, $options);
+                $pdo->exec('PRAGMA foreign_keys = ON');
+                $pdo->exec('PRAGMA journal_mode = WAL');
+                break;
+            } catch (PDOException $e) {
+                $pdo = null;
+                if ($try >= 5 || !str_contains($e->getMessage(), 'disk I/O error')) {
+                    throw $e;
+                }
+                usleep(200_000 * $try);
+            }
+        }
         // Wait at most 5 s for another request's write. PDO's default is 60 s, so a busy database turned
         // into a request that answered minutes later (a 45 s test sees it as "never answered").
         $pdo->exec('PRAGMA busy_timeout = 5000');

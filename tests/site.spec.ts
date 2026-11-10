@@ -1,4 +1,4 @@
-import { test, expect, type Page, type TestInfo } from '@playwright/test';
+import { test, expect, type Page, type TestInfo } from './fixtures';
 import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';

@@ -286,3 +286,6 @@ details.hb-field summary{cursor:pointer;min-height:40px;display:flex;align-items
   .a-stat b{font-size:22px}
   .a-tabbar .tab{font-size:11px}
 }
+
+/* Sign-in honeypot: off screen, never seen or filled by people (app/admin/router.php admin_login). */
+.a-hp{position:absolute;left:-10000px;top:auto;width:1px;height:1px;overflow:hidden}

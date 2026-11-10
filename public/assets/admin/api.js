@@ -11,6 +11,9 @@ async function send(url, init) {
   let data = null;
   try { data = await res.json(); } catch { /* not JSON */ }
   if (!res.ok) throw new Error(data?.error || `The server answered ${res.status}. Please try again.`);
+  // Every admin API call answers with JSON. An answer that cannot be read (cut off on the way) is an error,
+  // not a success with nothing in it: callers use fields of it straight away (a picture's id).
+  if (data === null || typeof data !== 'object') throw new Error('The answer from the server was incomplete. Please try again.');
   return data;
 }
 

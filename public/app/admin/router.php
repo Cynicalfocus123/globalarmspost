@@ -183,7 +183,14 @@ function admin_login(): void
     $next = preg_match('~^/admin(/[^\s]*)?$~', $next) === 1 ? $next : '/admin';
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $email = strtolower(clean_text($_POST['email'] ?? '', 190));
-        $result = attempt_login($email, (string) ($_POST['password'] ?? ''), !empty($_POST['remember']));
+        // The hidden "website" field (honeypot): people never see it, scripts that fill every field do. Such a
+        // try counts as a wrong one (so it is throttled too) and gets the same answer, so the script learns nothing.
+        $bot = trim((string) ($_POST['website'] ?? '')) !== '';
+        if ($bot) {
+            record_attempt($email, false);
+            audit('login.bot', $email);
+        }
+        $result = $bot ? ['ok' => false, 'error' => 'Wrong email or password.'] : attempt_login($email, (string) ($_POST['password'] ?? ''), !empty($_POST['remember']));
         if ($result['ok']) {
             admin_redirect(!empty($result['two_step']) ? '/admin/two-step?next=' . rawurlencode($next) : $next);
         }
@@ -510,6 +517,7 @@ function admin_account(array $user, string $action): never
             };
             if ($error === '') {
                 q('UPDATE users SET password_hash = ? WHERE id = ?', [password_hash($new, PASSWORD_DEFAULT), (int) $user['id']]);
+                sign_out_everywhere_else((int) $user['id']); // this session stays signed in
                 audit('password.change');
                 flash('Password changed.');
                 admin_redirect('/admin/account');

@@ -31,7 +31,7 @@ Newest entry first. Wireframes: [docs/wireframes.html](docs/wireframes.html)
     - **Widths:** 320 px up to 1920 px. No sideways scroll, no cut-off or overlapping text, no squashed or stretched images.
     - **Menus:** usable by touch on phones and tablets.
     - **Tests:** every change is tested on phone, tablet and desktop, in Chromium, Firefox and WebKit (Safari's engine). A change that breaks on any of them is not done.
-11. **Build first, then test** (owner's hard rule, 2026-11-05). No trial or partial test runs while building. Finish all the code of the step first; only then run the tests (the 4 full runs).
+11. **Build first, then test** (owner's hard rule, 2026-11-05). No trial or partial test runs while building. Finish all the code of the step first; only then run the tests: one full run of the live copy, and if it is good, stop (owner, 2026-11-10/11: no repeat runs; only `live/` is tested because it is what goes to the real server).
 
 ## Folder layout
 ```
@@ -60,7 +60,7 @@ global arm post new site/
 
 ## How to make a change (every time)
 1. Code the change in `git/`.
-2. Run the full test suite on phone, tablet and desktop (Chromium, Firefox, WebKit) 4 times. Stop when all 4 runs pass. List every skipped test by name with its reason.
+2. Run the full test suite once on the live copy, on phone, tablet and desktop (Chromium, Firefox, WebKit). Every test must get a result (if the publish phase was skipped, run it with `PUBLISH_ONLY=1`). List every skipped test by name with its reason.
 3. Update every `.md` file (rule 5).
 4. Show the changes in the diff panel (rule 6).
 5. Commit, rebuild `live/`, verify it matches, push.
@@ -95,7 +95,7 @@ Every change must keep the code:
 4. **Safe and secure**
    - Database: prepared statements only.
    - Output: everything is escaped on output, and post HTML goes through an allow-list.
-   - Login and sessions: CSRF tokens on every form and API call; bcrypt/argon2 passwords; hardened session cookies; login throttling; optional two-step login (TOTP); editor and admin roles.
+   - Login and sessions: CSRF tokens on every form and API call; bcrypt/argon2 passwords; hardened session cookies; login throttling (per account + address, per account from all addresses, per address); a honeypot field against scripts; a password change signs out every other session; optional two-step login (TOTP); editor and admin roles.
    - Uploads: checked by file content; PHP can't run in `uploads/`.
    - Headers: CSP, HSTS, X-Frame-Options, Referrer-Policy.
    - No third-party scripts on public pages.
@@ -177,6 +177,73 @@ Every change must keep the code:
 ---
 
 ## Change log
+
+### 2026-11-10 — Security review: sign-in and the public pages (waiting for approval)
+
+The owner asked that nobody can get into the admin by brute force or scripts, and nobody can get in through the articles or any other public page. Claude reviewed the code and fixed what it found.
+
+**Already safe (checked):**
+- **Sign-in:**
+  - bcrypt passwords;
+  - a new session ID at sign-in;
+  - session cookie: HttpOnly, SameSite=Lax, path `/admin`, Secure on https, strict mode;
+  - a CSRF token and an Origin check on every POST, the sign-in form included;
+  - the same work and the same answer whether or not an email exists;
+  - 5 wrong tries per account + address in 15 minutes, and 50 per address;
+  - two-step codes usable once;
+  - "keep me signed in" tokens stored only as a hash and swapped on each use;
+  - `next=` only goes to `/admin…`.
+- **Public pages:**
+  - every value is escaped on output;
+  - story bodies go through the allow-list cleaner, both on save and on show;
+  - links must be http(s), `/` or `mailto:`;
+  - the JSON in admin pages can't close its `<script>`;
+  - every query uses placeholders, and sort columns come from fixed lists;
+  - `app/` and `storage/` are never served, and nothing runs in `uploads/`;
+  - strict CSP with no outside scripts, no framing, HSTS on https.
+
+**Fixed:**
+- **Brute force from many addresses (a botnet).** The limit counted per account *and* address, so a script spread over many machines had no limit per account. Now an account also has a cap: 20 wrong tries in 15 minutes from all addresses together (`login_email_limit` in `config.php`). The account's own successful sign-in starts the count again (`app/lib/auth.php`).
+- **Scripts:** the sign-in form has a hidden honeypot field (`website`). People never see it. A post that fills it gets the normal "Wrong email or password.", even with the right password, counts as a wrong try and is logged (`login.bot` in `audit_log`).
+- **A stolen session survived a password change.** A session now carries a mark of the password it was opened with. Changing the password signs out every other session and cancels every "keep me signed in" token; the session that changed it stays signed in.
+- **Page cache poisoning with the Host header.** `site_url` is not set, so share links and the canonical address used the Host header the visitor sent. A request with a made-up Host could have put another site's address into the cached story that everyone gets. Now the host is part of the cache key, and `request_host()` (`app/lib/http.php`) only accepts a plain host name (anything else is `localhost`).
+
+**Test harness (owner's decisions 2026-11-10/11):**
+- **Only the `live/` copy is tested** (it is what goes to the real server): 9 projects (Chromium, Firefox, WebKit × phone, tablet, desktop) + the setup step + the publish phase = 721 tests. `COPIES=git,live` still runs both.
+- **One good full run is enough**; no repeat runs.
+- **Run froze twice** (8 to 10 minutes, no browser left): a worker shutting down waited forever for its browser's "closed" answer, and Playwright started nothing new. `tests/fixtures.ts` (now the `test` every spec imports) ends a worker that is still shutting down after 60 s, and warms each worker's browser up with one page on its own 120 s budget (a cold first page took up to 20 s and counted against the first test). Run temp files moved to `D:/dev/tmp/gap-playwright/<run>`, outside the repo.
+- **"disk I/O error" on SQLite**: the git copy's `-wal` file was left "delete pending" by another program (most likely the virus scanner) at the moment SQLite deleted and re-made it (it does that whenever its last connection closes). `tests/serve.mjs` keeps one connection open for the whole run; `db()` retries that error up to 5 times.
+- **Publish phase never skipped silently**: Playwright skips it when phase 2 has any failure; `PUBLISH_ONLY=1 npx playwright test --project='live-*-publish'` runs it on its own after the setup step, so every test gets a result.
+- A test mistake: the password-change test posted to `/admin/account`, not the form's `/admin/account/password` (fixed). Runs stopped half-way left their servers behind (stopped by hand before the next run).
+- Admin `api.js`: an answer that cannot be read (cut off on the way) is now an error with a clear message, not a crash ("Cannot read properties of null (reading 'id')" after one picture upload under load).
+
+**New tests:** `tests/security.spec.ts`, on all 9 live projects (and 18 when both copies run), against the real server and database:
+- the per-account cap from 20 different addresses;
+- the honeypot (refused, counted, logged; the same person gets in with the field empty);
+- a password change signs out a second browser and its "keep me signed in" cookie (checked in `remember_tokens`);
+- code typed into the search box, tag and story addresses comes back as text and never runs;
+- a made-up Host header never reaches another visitor's page.
+
+**Runs** (`test-results/<run>-report.json`):
+
+| Run | Copies | Result | Note |
+|---|---|---|---|
+| `1794316597943` | git + live | stopped | SQLite "disk I/O error" on the git copy (fixed) |
+| `1794316863308` | git + live | stopped | password-change test posted to the wrong address (fixed) |
+| `1794320904893` | live | 652 passed, 2 failed, 31 skipped, 36 not run | froze twice; 2 Firefox-phone sign-in timeouts at browser start |
+| `1794322987092` | live | 653 passed, 1 failed, 31 skipped, 36 not run | no freeze; one picture upload got a cut-off answer |
+| **`1794324621175`** | **live** | **690 passed, 31 skipped, 0 failed** | **every test ran, the 36 publish tests included (721 tests, 11 min)** |
+
+**The 31 skips, by name (by design):**
+- "database: migrations ran and a saved setting shows on the page" (8): the server and database check runs once (desktop Chromium).
+- "a scheduled story appears at its time (saved in the database)" (8): it changes the database, so once.
+- "phone menu opens and closes" (3): desktop has no menu button.
+- "desktop: section layouts use their columns" (6): desktop only.
+- "phones: each section is one big story, then rows with the photo on the right" (6): phone only.
+
+The new security tests skip nothing.
+
+Task list v21: B4, B16, B12 and P13 Pending until the owner approves.
 
 ### 2026-11-05 — Step 4 tested (waiting for approval)
 

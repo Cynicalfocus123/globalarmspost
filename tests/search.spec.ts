@@ -1,4 +1,4 @@
-import { test, expect, type Page, type TestInfo } from '@playwright/test';
+import { test, expect, type Page, type TestInfo } from './fixtures';
 import { sql, isLive } from './admin-helpers';
 
 // Step 4: smart search (tasks B11 + F7). The sample stories (tests/seed-demo.php) are indexed at seed time,

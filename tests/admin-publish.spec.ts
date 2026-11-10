@@ -1,4 +1,4 @@
-import { test, expect, type Page, type TestInfo } from '@playwright/test';
+import { test, expect, type Page, type TestInfo } from './fixtures';
 import { users, sql, login, uniq, narrow, sheetBottom, isLive, inLine, photoFile, photoFile2, bangkokInput } from './admin-helpers';
 
 // Step 3, second part: admin actions that change what visitors see (publishing, new categories, the homepage).

@@ -66,7 +66,7 @@ function absolute_url(string $path = '/'): string
     $base = rtrim(setting('site_url', ''), '/');
     if ($base === '') {
         $https = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || ($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https';
-        $host = (string) ($_SERVER['HTTP_HOST'] ?? 'localhost');
+        $host = request_host();
         $base = ($https ? 'https://' : 'http://') . $host;
     }
     return $base . '/' . ltrim($path, '/');

@@ -1,19 +1,22 @@
 import { defineConfig, devices } from '@playwright/test';
 import { mkdirSync } from 'node:fs';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { join } from 'node:path';
 
 // Every test runs on phone, tablet and desktop in Chromium, Firefox and WebKit (hard rule 10),
 // against both copies of the site: git/ ('#' links) and live/ (proper addresses, hard rule 9).
 // The servers are the real PHP server with a real SQLite database (tests/serve.mjs).
-const copies = { git: 8190, live: 8191 } as const; // 8090/8091 stay free for the preview (.claude/launch.json)
+// Only the live/ copy is tested (owner, 2026-11-10: live/ is what goes to the real server). COPIES=git,live
+// runs both copies when that is ever wanted. 8090/8091 stay free for the preview (.claude/launch.json).
+const allCopies = { git: 8190, live: 8191 } as const;
+const copies = Object.fromEntries((process.env.COPIES ?? 'live').split(',').map((c) => [c, allCopies[c as keyof typeof allCopies]]).filter(([, p]) => p)) as Partial<typeof allCopies>;
 
 // One id per run, shared with the workers and the servers. Each run writes to new folders,
 // so Playwright's start-of-run cleanup never removes earlier files (owner rule: no deleting).
 process.env.GAP_RUN ??= String(Date.now());
 // Temporary files of the run (browser profiles and the like) on D:, never on C: (owner's rule: C: has little
-// space). The workers and the servers inherit this; Playwright removes its own browser profiles when a browser closes.
-const RUN_TMP = join(dirname(fileURLToPath(import.meta.url)), 'test-data', process.env.GAP_RUN, 'tmp');
+// space), and outside the repo folder, which Windows indexes and scans more. The workers and the servers inherit
+// this; Playwright removes its own browser profiles when a browser closes.
+const RUN_TMP = join(process.env.GAP_TMP ?? 'D:/dev/tmp/gap-playwright', process.env.GAP_RUN);
 mkdirSync(RUN_TMP, { recursive: true });
 process.env.TMP = process.env.TEMP = process.env.TMPDIR = RUN_TMP;
 
@@ -62,7 +65,9 @@ for (const [copy, port] of Object.entries(copies)) {
   }
   for (const name of [...main]) {
     const base = projects.find((p) => p.name === name);
-    projects.push({ ...base, name: `${name}-publish`, testIgnore: undefined, testMatch: /admin-publish\.spec\.ts/, dependencies: main });
+    // PUBLISH_ONLY=1: the publish phase on its own (after the setup step only), for when a failure in phase 2
+    // made Playwright skip it, so every test still gets a result in the same go.
+    projects.push({ ...base, name: `${name}-publish`, testIgnore: undefined, testMatch: /admin-publish\.spec\.ts/, dependencies: process.env.PUBLISH_ONLY ? [`setup-${copy}`] : main });
   }
 }
 

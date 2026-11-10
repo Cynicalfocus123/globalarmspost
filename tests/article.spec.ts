@@ -1,4 +1,4 @@
-import { test, expect, type Page, type TestInfo } from '@playwright/test';
+import { test, expect, type Page, type TestInfo } from './fixtures';
 import { sql, narrow, isLive } from './admin-helpers';
 
 // Step 4: the reader side — the full article page (task F10).

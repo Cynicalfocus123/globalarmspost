@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures';
 import { users, sql } from './admin-helpers';
 
 // Runs first, once per copy (projects setup-git / setup-live, desktop Chromium), on a fresh database with no users:

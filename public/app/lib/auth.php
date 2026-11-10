@@ -8,6 +8,7 @@ declare(strict_types=1);
  */
 
 const LOGIN_TRIES = 5;          // wrong tries per email + address ...
+const LOGIN_EMAIL_TRIES = 20;   // ... and per email from all addresses together (a botnet), same window
 const LOGIN_WINDOW = 15 * 60;   // ... in this many seconds
 const REMEMBER_DAYS = 30;
 
@@ -70,9 +71,17 @@ function current_user(): ?array
     $user = null;
     $id = (int) ($_SESSION['uid'] ?? 0);
     if ($id > 0) {
-        $user = q_one('SELECT id, email, name, role, totp_enabled FROM users WHERE id = ?', [$id]);
+        $user = q_one('SELECT id, email, name, role, totp_enabled, password_hash FROM users WHERE id = ?', [$id]);
+        // A session belongs to the password it was opened with: after a password change every other
+        // session is signed out (a stolen session ends with the old password).
+        if ($user !== null && isset($_SESSION['pw']) && !hash_equals((string) $_SESSION['pw'], password_mark((string) $user['password_hash']))) {
+            $user = null;
+        }
         if ($user === null) {
-            unset($_SESSION['uid']);
+            unset($_SESSION['uid'], $_SESSION['pw']);
+        } else {
+            $_SESSION['pw'] ??= password_mark((string) $user['password_hash']);
+            unset($user['password_hash']);
         }
     } elseif (isset($_COOKIE['gap_remember'])) {
         $user = remember_login((string) $_COOKIE['gap_remember']);
@@ -91,7 +100,13 @@ function login_blocked(string $email): int
     $row = q_one('SELECT COUNT(*) AS n, MIN(at) AS first FROM login_attempts WHERE email = ? AND ip = ? AND ok = 0 AND at > ?', [$email, $ip, $from]);
     $limitIp = (int) (config()['login_ip_limit'] ?? 50); // all emails from one address
     $ipRow = q_one('SELECT COUNT(*) AS n, MIN(at) AS first FROM login_attempts WHERE ip = ? AND ok = 0 AND at > ?', [$ip, $since]);
-    foreach ([[$row, LOGIN_TRIES], [$ipRow, $limitIp]] as [$r, $limit]) {
+    // One account from every address together: a script spread over many addresses (a botnet) gets 5 tries
+    // per address, so the account itself has a cap too. A real sign-in of the account starts it again.
+    $lastOkAny = (string) (q_one('SELECT MAX(at) AS at FROM login_attempts WHERE email = ? AND ok = 1', [$email])['at'] ?? '');
+    $fromAny = $lastOkAny > $since ? $lastOkAny : $since;
+    $emailRow = q_one('SELECT COUNT(*) AS n, MIN(at) AS first FROM login_attempts WHERE email = ? AND ok = 0 AND at > ?', [$email, $fromAny]);
+    $limitEmail = max(LOGIN_TRIES, (int) (config()['login_email_limit'] ?? LOGIN_EMAIL_TRIES));
+    foreach ([[$row, LOGIN_TRIES], [$ipRow, $limitIp], [$emailRow, $limitEmail]] as [$r, $limit]) {
         if ((int) ($r['n'] ?? 0) >= $limit) {
             $left = strtotime((string) $r['first'] . ' UTC') + LOGIN_WINDOW - time();
             return max(1, (int) ceil($left / 60));
@@ -164,10 +179,26 @@ function attempt_two_step(string $code): array
     return ['ok' => true];
 }
 
+/** A short mark of the password hash, kept in the session (not the hash itself). */
+function password_mark(string $hash): string
+{
+    return substr(hash('sha256', 'gap-session|' . $hash), 0, 24);
+}
+
+/** After a password change: the other sessions end and every "keep me signed in" cookie stops working. */
+function sign_out_everywhere_else(int $userId): void
+{
+    q('UPDATE remember_tokens SET expires_at = ? WHERE user_id = ?', [gmdate('Y-m-d H:i:s', time() - 1), $userId]);
+    $row = q_one('SELECT password_hash FROM users WHERE id = ?', [$userId]);
+    $_SESSION['pw'] = password_mark((string) ($row['password_hash'] ?? ''));
+    session_regenerate_id(true);
+}
+
 function finish_login(int $id, bool $remember): void
 {
     session_regenerate_id(true);
     $_SESSION['uid'] = $id;
+    $_SESSION['pw'] = password_mark((string) (q_one('SELECT password_hash FROM users WHERE id = ?', [$id])['password_hash'] ?? ''));
     $_SESSION['csrf'] = bin2hex(random_bytes(32));
     q('UPDATE users SET last_login_at = ? WHERE id = ?', [now_utc(), $id]);
     if ($remember) {
@@ -196,12 +227,14 @@ function remember_login(string $cookie): ?array
         return null;
     }
     q('UPDATE remember_tokens SET expires_at = ? WHERE id = ?', [gmdate('Y-m-d H:i:s', time() - 1), (int) $row['id']]); // used up
-    $user = q_one('SELECT id, email, name, role, totp_enabled FROM users WHERE id = ?', [(int) $row['user_id']]);
+    $user = q_one('SELECT id, email, name, role, totp_enabled, password_hash FROM users WHERE id = ?', [(int) $row['user_id']]);
     if ($user === null) {
         return null;
     }
     session_regenerate_id(true);
     $_SESSION['uid'] = (int) $user['id'];
+    $_SESSION['pw'] = password_mark((string) $user['password_hash']);
+    unset($user['password_hash']);
     issue_remember_token((int) $user['id']);
     return $user;
 }
