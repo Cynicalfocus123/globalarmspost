@@ -1,8 +1,8 @@
 {
   "project": "Global Arms Post",
-  "updated": "2026-11-10",
-  "version": 21,
-  "update_note": "Updated 2026-11-10 v21 (security review of the sign-in and the public pages: per-account cap from all addresses, a honeypot against scripts, a password change signs out every other session, the page cache can no longer be poisoned with a made-up Host; new tests/security.spec.ts; full run on SQLite 690 passed, 31 skipped, 0 failed (test-results/1794324621175-report.json); B4, B16, B12 and P13 Pending until you approve). Updated 2026-11-05 v20 (step 4 tested: the final full run on MySQL passed, 1290 passed / 62 skipped / 0 failed on 18 projects; the owner asked for one final run instead of four; twelve bugs in the step 4 code were fixed while testing; F7, F10, F11, F21, B11, B12 and P15 stay Pending until you approve). Earlier v19 (step 4, the reader side, built and waiting for the tests). Earlier v18 (step 3 tested; still waiting for the owner's approval, so its tasks stay Pending). Updated 2026-11-05 v18 (step 3 tested: 3 full runs passed, 786 passed / 62 skipped / 0 failed each, and a 4th run was stopped by the owner after 718 passing tests with 0 failed; committed, pushed, live/ rebuilt and verified; B2, B4, B5, B6, B13, B16, B19, F13, F14, F15, F16, F17 Pending until you approve). Earlier v17 (step 3 testing; every failure found by the runs was fixed: the WebKit Save click, the homepage builder drag, the More sheet on touch, SQLite busy timeout; B2, B4, B5, B6, B13, B16, B19, F13, F14, F15, F16, F17 Pending until you approve). Earlier v16 (step 3, the admin, built and tested: B2, B4, B5, B6, B13, B16, B19, F13, F14, F15, F16, F17 Pending until you approve). Updated 2026-11-05 v16 (step 3, the admin, built and tested: B2, B4, B5, B6, B13, B16, B19, F13, F14, F15, F16, F17 Pending until you approve; B7, B8, F10 moved forward). Earlier v15 (owner approved step 2: F4 header, F6 phone menu, B9 query engine, F8 homepage sections, F9 category page, P16 sample stories are Done; B7, B8, F10, F11 stay Pending because parts come in later steps). Earlier v14 (admin wireframe F20 approved with the owner's changes; new task B19 authors). Earlier v13 (step 2 passed the full suite 4 times; admin wireframes F20 added for approval). Earlier v12 (step 2 built: stories database, query engine B9, homepage sections F8, category page F9, basic story page F10; header redesigned F4/F6; sample stories P16; all Pending until you approve). Earlier v11 (new rule: only the latest task list Excel is kept; old versions are deleted on every build). Earlier v10 (owner approved step 1: F18 logo, F4 header, F6 phone menu, B10 menu data, B14 migrations, P10 live build + verify, P14 site_link(), P8 test suite, P11 first push, P7 approval are Done). Earlier v9 (step 1 passed the full suite 4 times on Chromium, Firefox, WebKit; first commit pushed; live/ built and verified). Earlier v8 (step 1 built: logo F18, header F4, phone menu F6, menu data B10, migrations B14, live build + verify P10, site_link() P14, tests P8; all Pending until you approve, Firefox + WebKit not run yet). Earlier v7 (the 6 draft backend files were removed at the owner's request; B1-B6 are back to Not started and get written fresh in Phase 1). Earlier v6 (owner approved all wireframes: F1, F2, F3 and the new category page F19 are Done; header = centred logo + red menu, no date bar or social links; phones use one lead story + headline/date rows; no WordPress import, B18 is now scraping the current site later). Earlier v5 (new logo for header + footer added to step 1 as F18). Earlier v4 (hard rule 10: correct on all modern phones, tablets, desktops; test task P8 widened). Earlier v3 (hard rule 9: live/ mirrors git/ with proper addresses like globalarmspost.com/asia; new task P14). Earlier v2 (nothing is Done: the owner has not approved the wireframes or plan yet, so every started item is Pending). Earlier v1 (task list created; header builder + smart search added as Not started).",
+  "updated": "2026-11-11",
+  "version": 22,
+  "update_note": "Updated 2026-11-11 v22 (the owner approved step 3, step 4 and the security review: B2, B4, B5, B6, B11, B12, B16, B19, F7, F10, F11, F13, F14, F15, F21 and P15 are Done; F16, F17, B7, B8, B13 and P13 stay Pending for their parts that come in later steps). Updated 2026-11-10 v21 (security review of the sign-in and the public pages: per-account cap from all addresses, a honeypot against scripts, a password change signs out every other session, the page cache can no longer be poisoned with a made-up Host; new tests/security.spec.ts; full run on SQLite 690 passed, 31 skipped, 0 failed (test-results/1794324621175-report.json); B4, B16, B12 and P13 Pending until you approve). Updated 2026-11-05 v20 (step 4 tested: the final full run on MySQL passed, 1290 passed / 62 skipped / 0 failed on 18 projects; the owner asked for one final run instead of four; twelve bugs in the step 4 code were fixed while testing; F7, F10, F11, F21, B11, B12 and P15 stay Pending until you approve). Earlier v19 (step 4, the reader side, built and waiting for the tests). Earlier v18 (step 3 tested; still waiting for the owner's approval, so its tasks stay Pending). Updated 2026-11-05 v18 (step 3 tested: 3 full runs passed, 786 passed / 62 skipped / 0 failed each, and a 4th run was stopped by the owner after 718 passing tests with 0 failed; committed, pushed, live/ rebuilt and verified; B2, B4, B5, B6, B13, B16, B19, F13, F14, F15, F16, F17 Pending until you approve). Earlier v17 (step 3 testing; every failure found by the runs was fixed: the WebKit Save click, the homepage builder drag, the More sheet on touch, SQLite busy timeout; B2, B4, B5, B6, B13, B16, B19, F13, F14, F15, F16, F17 Pending until you approve). Earlier v16 (step 3, the admin, built and tested: B2, B4, B5, B6, B13, B16, B19, F13, F14, F15, F16, F17 Pending until you approve). Updated 2026-11-05 v16 (step 3, the admin, built and tested: B2, B4, B5, B6, B13, B16, B19, F13, F14, F15, F16, F17 Pending until you approve; B7, B8, F10 moved forward). Earlier v15 (owner approved step 2: F4 header, F6 phone menu, B9 query engine, F8 homepage sections, F9 category page, P16 sample stories are Done; B7, B8, F10, F11 stay Pending because parts come in later steps). Earlier v14 (admin wireframe F20 approved with the owner's changes; new task B19 authors). Earlier v13 (step 2 passed the full suite 4 times; admin wireframes F20 added for approval). Earlier v12 (step 2 built: stories database, query engine B9, homepage sections F8, category page F9, basic story page F10; header redesigned F4/F6; sample stories P16; all Pending until you approve). Earlier v11 (new rule: only the latest task list Excel is kept; old versions are deleted on every build). Earlier v10 (owner approved step 1: F18 logo, F4 header, F6 phone menu, B10 menu data, B14 migrations, P10 live build + verify, P14 site_link(), P8 test suite, P11 first push, P7 approval are Done). Earlier v9 (step 1 passed the full suite 4 times on Chromium, Firefox, WebKit; first commit pushed; live/ built and verified). Earlier v8 (step 1 built: logo F18, header F4, phone menu F6, menu data B10, migrations B14, live build + verify P10, site_link() P14, tests P8; all Pending until you approve, Firefox + WebKit not run yet). Earlier v7 (the 6 draft backend files were removed at the owner's request; B1-B6 are back to Not started and get written fresh in Phase 1). Earlier v6 (owner approved all wireframes: F1, F2, F3 and the new category page F19 are Done; header = centred logo + red menu, no date bar or social links; phones use one lead story + headline/date rows; no WordPress import, B18 is now scraping the current site later). Earlier v5 (new logo for header + footer added to step 1 as F18). Earlier v4 (hard rule 10: correct on all modern phones, tablets, desktops; test task P8 widened). Earlier v3 (hard rule 9: live/ mirrors git/ with proper addresses like globalarmspost.com/asia; new task P14). Earlier v2 (nothing is Done: the owner has not approved the wireframes or plan yet, so every started item is Pending). Earlier v1 (task list created; header builder + smart search added as Not started).",
   "tasks": [
     {
       "id": "P1",
@@ -107,10 +107,10 @@
       "id": "F21",
       "area": "Tag page",
       "side": "Frontend",
-      "status": "Pending",
+      "status": "Done",
       "task": "Tag page /tag/{slug} (/#tag/{slug} links in the git copy): every public story with the tag, newest first, 20 a page, \"Search instead\" button; wireframe section 7",
-      "why": "built in step 4, waiting for approval Tested 2026-11-05 (step 4): the final full run on MySQL passed on all 18 projects (git/live x Chromium/Firefox/WebKit x phone/tablet/desktop): 1290 passed, 62 skipped, 0 failed (test-results/1793892035032-report.json).",
-      "next": "You: review and approve"
+      "why": "built in step 4, waiting for approval Tested 2026-11-05 (step 4): the final full run on MySQL passed on all 18 projects (git/live x Chromium/Firefox/WebKit x phone/tablet/desktop): 1290 passed, 62 skipped, 0 failed (test-results/1793892035032-report.json). Approved by the owner 2026-11-11.",
+      "next": ""
     },
     {
       "id": "P7",
@@ -143,10 +143,10 @@
       "id": "B2",
       "area": "Database",
       "side": "Backend",
-      "status": "Pending",
+      "status": "Done",
       "task": "Tables (public/app/lib/schema.php): users, media, posts, categories, tags, links, home sections, settings, login attempts",
-      "why": "Tables made by numbered migrations instead of one schema.php: users, login attempts, remember tokens, authors, gallery, daily views, audit log (005_admin) on top of media, posts, categories, tags, home sections, settings (001-004). Built in step 3 (2026-11-05), tested with the full suite: 3 full runs passed (786 passed, 62 skipped, 0 failed each) and a 4th run was stopped by the owner after 718 passing tests, 0 failed (phone, tablet and desktop in Chromium, Firefox and WebKit); waiting for your approval. ",
-      "next": "You: approve step 3"
+      "why": "Tables made by numbered migrations instead of one schema.php: users, login attempts, remember tokens, authors, gallery, daily views, audit log (005_admin) on top of media, posts, categories, tags, home sections, settings (001-004). Built in step 3 (2026-11-05), tested with the full suite: 3 full runs passed (786 passed, 62 skipped, 0 failed each) and a 4th run was stopped by the owner after 718 passing tests, 0 failed (phone, tablet and desktop in Chromium, Firefox and WebKit); waiting for your approval. Approved by the owner 2026-11-11.",
+      "next": ""
     },
     {
       "id": "B3",
@@ -161,28 +161,28 @@
       "id": "B4",
       "area": "Security",
       "side": "Backend",
-      "status": "Pending",
+      "status": "Done",
       "task": "Login + sessions + CSRF + login throttling (5 tries / 15 min) + roles (public/app/lib/auth.php)",
-      "why": "Built in step 3 (2026-11-05), tested with the full suite: 3 full runs passed (786 passed, 62 skipped, 0 failed each) and a 4th run was stopped by the owner after 718 passing tests, 0 failed (phone, tablet and desktop in Chromium, Firefox and WebKit); waiting for your approval. app/lib/auth.php: hashed passwords, hardened session, keep me signed in (hashed 30-day token), 5 wrong tries per email in 15 minutes, CSRF on every form and API call, admin + editor roles; first admin made by the /admin/setup step Security review 2026-11-10: an account now also has a cap of 20 wrong tries in 15 minutes from all addresses together (a botnet), a hidden honeypot field catches scripts, and a password change signs out every other session and every \"keep me signed in\" cookie. Tested in tests/security.spec.ts on all 18 projects: 690 passed, 31 skipped, 0 failed (test-results/1794324621175-report.json).",
-      "next": "You: review and approve"
+      "why": "Built in step 3 (2026-11-05), tested with the full suite: 3 full runs passed (786 passed, 62 skipped, 0 failed each) and a 4th run was stopped by the owner after 718 passing tests, 0 failed (phone, tablet and desktop in Chromium, Firefox and WebKit); waiting for your approval. app/lib/auth.php: hashed passwords, hardened session, keep me signed in (hashed 30-day token), 5 wrong tries per email in 15 minutes, CSRF on every form and API call, admin + editor roles; first admin made by the /admin/setup step Security review 2026-11-10: an account now also has a cap of 20 wrong tries in 15 minutes from all addresses together (a botnet), a hidden honeypot field catches scripts, and a password change signs out every other session and every \"keep me signed in\" cookie. Tested in tests/security.spec.ts on all 9 live projects: 690 passed, 31 skipped, 0 failed (test-results/1794324621175-report.json). Approved by the owner 2026-11-11.",
+      "next": ""
     },
     {
       "id": "B5",
       "area": "Security",
       "side": "Backend",
-      "status": "Pending",
+      "status": "Done",
       "task": "HTML cleaner for post bodies: keeps bold, italic, headings, lists, links, quotes, local pictures; removes scripts, styles, remote images (public/app/lib/sanitize.php)",
-      "why": "Built in step 3 (2026-11-05), tested with the full suite: 3 full runs passed (786 passed, 62 skipped, 0 failed each) and a 4th run was stopped by the owner after 718 passing tests, 0 failed (phone, tablet and desktop in Chromium, Firefox and WebKit); waiting for your approval. app/lib/sanitize.php: allow-list cleaner on save and on the page; body pictures only from the site's own media table",
-      "next": "You: approve step 3"
+      "why": "Built in step 3 (2026-11-05), tested with the full suite: 3 full runs passed (786 passed, 62 skipped, 0 failed each) and a 4th run was stopped by the owner after 718 passing tests, 0 failed (phone, tablet and desktop in Chromium, Firefox and WebKit); waiting for your approval. app/lib/sanitize.php: allow-list cleaner on save and on the page; body pictures only from the site's own media table Approved by the owner 2026-11-11.",
+      "next": ""
     },
     {
       "id": "B6",
       "area": "Media",
       "side": "Backend",
-      "status": "Pending",
+      "status": "Done",
       "task": "Picture storage: AVIF + WebP in 480 / 960 / 1600 px, file checks by content, GD fallback, <picture> output (public/app/lib/media.php)",
-      "why": "Built in step 3 (2026-11-05), tested with the full suite: 3 full runs passed (786 passed, 62 skipped, 0 failed each) and a 4th run was stopped by the owner after 718 passing tests, 0 failed (phone, tablet and desktop in Chromium, Firefox and WebKit); waiting for your approval. AVIF + WebP at 480 / 960 / 1600 (profile pictures 160 / 320), files checked by content and size, PHP GD fallback (Safari), <picture> output",
-      "next": "You: approve step 3"
+      "why": "Built in step 3 (2026-11-05), tested with the full suite: 3 full runs passed (786 passed, 62 skipped, 0 failed each) and a 4th run was stopped by the owner after 718 passing tests, 0 failed (phone, tablet and desktop in Chromium, Firefox and WebKit); waiting for your approval. AVIF + WebP at 480 / 960 / 1600 (profile pictures 160 / 320), files checked by content and size, PHP GD fallback (Safari), <picture> output Approved by the owner 2026-11-11.",
+      "next": ""
     },
     {
       "id": "F18",
@@ -215,10 +215,10 @@
       "id": "F7",
       "area": "Search",
       "side": "Frontend",
-      "status": "Pending",
+      "status": "Done",
       "task": "Search page + search box: results with highlighted words, filters (category, date), sort by best match or newest, 'Did you mean' for typos, suggestions while typing",
-      "why": "Built in step 4 (2026-11-05): /search page (/#search in the git copy) with results, highlighted matched words, category and date filters, sort by best match or newest, pages, \"Did you mean\", and suggestions while typing from a small JSON endpoint (/api/suggest, rate limited per address, no third-party code). Tested 2026-11-05 (step 4): the final full run on MySQL passed on all 18 projects (git/live x Chromium/Firefox/WebKit x phone/tablet/desktop): 1290 passed, 62 skipped, 0 failed (test-results/1793892035032-report.json). Fixed while testing: the search page and the header suggestions crashed (client_ip() was only loaded in the admin); headline words are highlighted too and a highlighted word keeps its ending; the # router only draws the newest page; the suggestion box closes on a real press, not on a phone's late click.",
-      "next": "You: review and approve"
+      "why": "Built in step 4 (2026-11-05): /search page (/#search in the git copy) with results, highlighted matched words, category and date filters, sort by best match or newest, pages, \"Did you mean\", and suggestions while typing from a small JSON endpoint (/api/suggest, rate limited per address, no third-party code). Tested 2026-11-05 (step 4): the final full run on MySQL passed on all 18 projects (git/live x Chromium/Firefox/WebKit x phone/tablet/desktop): 1290 passed, 62 skipped, 0 failed (test-results/1793892035032-report.json). Fixed while testing: the search page and the header suggestions crashed (client_ip() was only loaded in the admin); headline words are highlighted too and a highlighted word keeps its ending; the # router only draws the newest page; the suggestion box closes on a real press, not on a phone's late click. Approved by the owner 2026-11-11.",
+      "next": ""
     },
     {
       "id": "F8",
@@ -242,19 +242,19 @@
       "id": "F10",
       "area": "Article",
       "side": "Frontend",
-      "status": "Pending",
+      "status": "Done",
       "task": "Article page as in the wireframe: gallery with arrows + full screen, captions, Summary box, Aa text size, Share (phone share sheet), share row, credits, topics, More in category, Latest news",
-      "why": "Step 2: basic story page. Step 3: cleaned body with body pictures and gallery photos. Built in step 4 (2026-11-05): the full article page as the design rules say it — breadcrumb, headline, byline with the author's picture, date + time zone + \"Updated\", reading time, Aa (three sizes, remembered), Share (phone share sheet on touch, menu with plain links on desktop), photo gallery with arrows, counter, swipe and full screen, captions + credits, Summary box, body, credits line, topic chips that open the tag pages, share row, \"More in {category}\" with arrows and \"Latest news\"; \"Live updates\" when set. Tested 2026-11-05 (step 4): the final full run on MySQL passed on all 18 projects (git/live x Chromium/Firefox/WebKit x phone/tablet/desktop): 1290 passed, 62 skipped, 0 failed (test-results/1793892035032-report.json). Fixed while testing: the full screen gallery never opened (the dialog had no track, the script stopped); the byline box keeps its old name (article-meta).",
-      "next": "You: review and approve"
+      "why": "Step 2: basic story page. Step 3: cleaned body with body pictures and gallery photos. Built in step 4 (2026-11-05): the full article page as the design rules say it — breadcrumb, headline, byline with the author's picture, date + time zone + \"Updated\", reading time, Aa (three sizes, remembered), Share (phone share sheet on touch, menu with plain links on desktop), photo gallery with arrows, counter, swipe and full screen, captions + credits, Summary box, body, credits line, topic chips that open the tag pages, share row, \"More in {category}\" with arrows and \"Latest news\"; \"Live updates\" when set. Tested 2026-11-05 (step 4): the final full run on MySQL passed on all 18 projects (git/live x Chromium/Firefox/WebKit x phone/tablet/desktop): 1290 passed, 62 skipped, 0 failed (test-results/1793892035032-report.json). Fixed while testing: the full screen gallery never opened (the dialog had no track, the script stopped); the byline box keeps its old name (article-meta). Approved by the owner 2026-11-11.",
+      "next": ""
     },
     {
       "id": "F11",
       "area": "Look",
       "side": "Frontend",
-      "status": "Pending",
+      "status": "Done",
       "task": "Site look: white background, serif headlines (self-hosted fonts), section headers with divider + See more, red back-to-top button, dark mode switch, trending tags row, footer",
-      "why": "Built so far: white page, self-hosted fonts, theme tokens, dark mode, red back-to-top, footer, section headers with See more (step 2). Built in step 4 (2026-11-05): the trending tags row under the header (the tags most used by recent public stories), with on/off, how many tags and how many days in Settings. Tested 2026-11-05 (step 4): the final full run on MySQL passed on all 18 projects (git/live x Chromium/Firefox/WebKit x phone/tablet/desktop): 1290 passed, 62 skipped, 0 failed (test-results/1793892035032-report.json). Fixed while testing: a global .grid rule in reader.css broke the homepage on phones (sections squashed into 4 columns); the trending tests wait in one line, so switching the row off never hides it from another test.",
-      "next": "You: review and approve"
+      "why": "Built so far: white page, self-hosted fonts, theme tokens, dark mode, red back-to-top, footer, section headers with See more (step 2). Built in step 4 (2026-11-05): the trending tags row under the header (the tags most used by recent public stories), with on/off, how many tags and how many days in Settings. Tested 2026-11-05 (step 4): the final full run on MySQL passed on all 18 projects (git/live x Chromium/Firefox/WebKit x phone/tablet/desktop): 1290 passed, 62 skipped, 0 failed (test-results/1793892035032-report.json). Fixed while testing: a global .grid rule in reader.css broke the homepage on phones (sections squashed into 4 columns); the trending tests wait in one line, so switching the row off never hides it from another test. Approved by the owner 2026-11-11.",
+      "next": ""
     },
     {
       "id": "F12",
@@ -269,28 +269,28 @@
       "id": "F13",
       "area": "Admin",
       "side": "Frontend",
-      "status": "Pending",
+      "status": "Done",
       "task": "Post editor: title, body with toolbar (bold, italic, underline, headings, lists, links, quotes), paste or drop pictures into the body with captions, excerpt, summary bullets, credits, author byline, SEO fields; pictures anywhere in the body with caption + credit; author picker with add new author (name, email, profile picture) on the spot",
-      "why": "Built in step 3 (2026-11-05), tested with the full suite: 3 full runs passed (786 passed, 62 skipped, 0 failed each) and a 4th run was stopped by the owner after 718 passing tests, 0 failed (phone, tablet and desktop in Chromium, Firefox and WebKit); waiting for your approval. headline, toolbar, pictures anywhere in the body (toolbar, paste, drop) with caption + credit, full width / inline / replace / move / remove, summary, excerpt, credits, author picker with add new author, search preview",
-      "next": "You: approve step 3"
+      "why": "Built in step 3 (2026-11-05), tested with the full suite: 3 full runs passed (786 passed, 62 skipped, 0 failed each) and a 4th run was stopped by the owner after 718 passing tests, 0 failed (phone, tablet and desktop in Chromium, Firefox and WebKit); waiting for your approval. headline, toolbar, pictures anywhere in the body (toolbar, paste, drop) with caption + credit, full width / inline / replace / move / remove, summary, excerpt, credits, author picker with add new author, search preview Approved by the owner 2026-11-11.",
+      "next": ""
     },
     {
       "id": "F14",
       "area": "Admin",
       "side": "Frontend",
-      "status": "Pending",
+      "status": "Done",
       "task": "Post editor sidebar: Draft / Published, publish date + time (any date, past or future = scheduled), sticky, move to trash; categories with search + add on the spot; tags with suggestions + \"Add new tag\" on the spot (saved at once, no reload); featured photo + gallery",
-      "why": "Built in step 3 (2026-11-05), tested with the full suite: 3 full runs passed (786 passed, 62 skipped, 0 failed each) and a 4th run was stopped by the owner after 718 passing tests, 0 failed (phone, tablet and desktop in Chromium, Firefox and WebKit); waiting for your approval. Draft / Published, date + time (future = scheduled), pin, Live updates label, move to trash; category search + add on the spot; tags with \"Add new tag\" (no reload); main photo + caption + credit, gallery",
-      "next": "You: approve step 3"
+      "why": "Built in step 3 (2026-11-05), tested with the full suite: 3 full runs passed (786 passed, 62 skipped, 0 failed each) and a 4th run was stopped by the owner after 718 passing tests, 0 failed (phone, tablet and desktop in Chromium, Firefox and WebKit); waiting for your approval. Draft / Published, date + time (future = scheduled), pin, Live updates label, move to trash; category search + add on the spot; tags with \"Add new tag\" (no reload); main photo + caption + credit, gallery Approved by the owner 2026-11-11.",
+      "next": ""
     },
     {
       "id": "F15",
       "area": "Admin",
       "side": "Frontend",
-      "status": "Pending",
+      "status": "Done",
       "task": "Picture converting in the admin's browser: AVIF (jSquash, in a worker) + WebP, 3 widths, progress shown, fallback to server",
-      "why": "Built in step 3 (2026-11-05), tested with the full suite: 3 full runs passed (786 passed, 62 skipped, 0 failed each) and a 4th run was stopped by the owner after 718 passing tests, 0 failed (phone, tablet and desktop in Chromium, Firefox and WebKit); waiting for your approval. WebP by canvas, AVIF by jSquash in a worker, progress shown, server (GD) fallback when the browser cannot make WebP",
-      "next": "You: approve step 3"
+      "why": "Built in step 3 (2026-11-05), tested with the full suite: 3 full runs passed (786 passed, 62 skipped, 0 failed each) and a 4th run was stopped by the owner after 718 passing tests, 0 failed (phone, tablet and desktop in Chromium, Firefox and WebKit); waiting for your approval. WebP by canvas, AVIF by jSquash in a worker, progress shown, server (GD) fallback when the browser cannot make WebP Approved by the owner 2026-11-11.",
+      "next": ""
     },
     {
       "id": "F16",
@@ -332,10 +332,10 @@
       "id": "B19",
       "area": "Authors",
       "side": "Backend",
-      "status": "Pending",
+      "status": "Done",
       "task": "Authors: table (name, email, profile picture as AVIF + WebP), linked from stories; add new author on the spot from the story editor (saved at once, no reload); Authors admin page (list, edit)",
-      "why": "Built in step 3 (2026-11-05), tested with the full suite: 3 full runs passed (786 passed, 62 skipped, 0 failed each) and a 4th run was stopped by the owner after 718 passing tests, 0 failed (phone, tablet and desktop in Chromium, Firefox and WebKit); waiting for your approval. authors table (sample stories linked), add new author on the spot from the editor (saved at once, chosen, no reload), Authors page (list with story counts, add, edit)",
-      "next": "You: approve step 3"
+      "why": "Built in step 3 (2026-11-05), tested with the full suite: 3 full runs passed (786 passed, 62 skipped, 0 failed each) and a 4th run was stopped by the owner after 718 passing tests, 0 failed (phone, tablet and desktop in Chromium, Firefox and WebKit); waiting for your approval. authors table (sample stories linked), add new author on the spot from the editor (saved at once, chosen, no reload), Authors page (list with story counts, add, edit) Approved by the owner 2026-11-11.",
+      "next": ""
     },
     {
       "id": "B9",
@@ -359,19 +359,19 @@
       "id": "B11",
       "area": "Search",
       "side": "Backend",
-      "status": "Pending",
+      "status": "Done",
       "task": "Smart search engine: own word index (works on MySQL and SQLite); finds words joined or spaced ('ukrainewar' = 'ukraine war'), single words from title, body, tags, categories, author; word forms (missile = missiles); typo fixing; ranking with title boost, phrase match and newer-first boost; snippets with the matched words",
-      "why": "Built in step 4 (2026-11-05): own word index in three tables (search_terms vocabulary, search_post_terms inverted index with weights, search_docs fingerprints) filled on every story save, publish, trash and restore, plus a \"Rebuild search index\" button in Settings; searches title, body, excerpt, summary, tags, category and author; joined words split with the vocabulary (\"ukrainewar\"), longer forms match (\"strike\" finds \"strikes\"), typos are fixed with \"Did you mean\", results ranked (title and tag matches first, whole phrase higher, newer a little higher), snippets with the matched words highlighted; only public stories. Tested 2026-11-05 (step 4): the final full run on MySQL passed on all 18 projects (git/live x Chromium/Firefox/WebKit x phone/tablet/desktop): 1290 passed, 62 skipped, 0 failed (test-results/1793892035032-report.json). Fixed while testing: indexing one story runs as one transaction (two saves at once broke the primary key); words are cut to 64 letters (MySQL strict mode). Search keeps the 300 best matches (fine for hundreds of stories; raise it if the archive grows into the thousands).",
-      "next": "You: review and approve"
+      "why": "Built in step 4 (2026-11-05): own word index in three tables (search_terms vocabulary, search_post_terms inverted index with weights, search_docs fingerprints) filled on every story save, publish, trash and restore, plus a \"Rebuild search index\" button in Settings; searches title, body, excerpt, summary, tags, category and author; joined words split with the vocabulary (\"ukrainewar\"), longer forms match (\"strike\" finds \"strikes\"), typos are fixed with \"Did you mean\", results ranked (title and tag matches first, whole phrase higher, newer a little higher), snippets with the matched words highlighted; only public stories. Tested 2026-11-05 (step 4): the final full run on MySQL passed on all 18 projects (git/live x Chromium/Firefox/WebKit x phone/tablet/desktop): 1290 passed, 62 skipped, 0 failed (test-results/1793892035032-report.json). Fixed while testing: indexing one story runs as one transaction (two saves at once broke the primary key); words are cut to 64 letters (MySQL strict mode). Search keeps the 300 best matches (fine for hundreds of stories; raise it if the archive grows into the thousands). Approved by the owner 2026-11-11.",
+      "next": ""
     },
     {
       "id": "B12",
       "area": "Speed",
       "side": "Backend",
-      "status": "Pending",
+      "status": "Done",
       "task": "Page cache: cached pages expire at the next scheduled post; any admin save clears the cache",
-      "why": "Built in step 4 (2026-11-05): public pages are rendered once and served from storage/cache/pages; a cached page expires at the next scheduled story's time (or a time to live set in Settings); every admin save (story, bulk status, homepage, author) clears the cache; admin pages, API answers, POSTs and pages with unknown query parameters are never cached. Tested 2026-11-05 (step 4): the final full run on MySQL passed on all 18 projects (git/live x Chromium/Firefox/WebKit x phone/tablet/desktop): 1290 passed, 62 skipped, 0 failed (test-results/1793892035032-report.json). The cache is now on in the test runs too, as on the real site; raw SQL in the tests clears it (tests/db.php). Fixed while testing: a page rendered from old data during a clear is never served (cache generation); the database is part of the cache key; new tags and categories clear the cache. 2026-11-10: the Host header is part of the cache key and must be a plain host name, so a made-up Host can never put another site's address into the pages people get (cache poisoning; tested).",
-      "next": "You: review and approve"
+      "why": "Built in step 4 (2026-11-05): public pages are rendered once and served from storage/cache/pages; a cached page expires at the next scheduled story's time (or a time to live set in Settings); every admin save (story, bulk status, homepage, author) clears the cache; admin pages, API answers, POSTs and pages with unknown query parameters are never cached. Tested 2026-11-05 (step 4): the final full run on MySQL passed on all 18 projects (git/live x Chromium/Firefox/WebKit x phone/tablet/desktop): 1290 passed, 62 skipped, 0 failed (test-results/1793892035032-report.json). The cache is now on in the test runs too, as on the real site; raw SQL in the tests clears it (tests/db.php). Fixed while testing: a page rendered from old data during a clear is never served (cache generation); the database is part of the cache key; new tags and categories clear the cache. 2026-11-10: the Host header is part of the cache key and must be a plain host name, so a made-up Host can never put another site's address into the pages people get (cache poisoning; tested). Approved by the owner 2026-11-11.",
+      "next": ""
     },
     {
       "id": "B13",
@@ -404,10 +404,10 @@
       "id": "B16",
       "area": "Security",
       "side": "Backend",
-      "status": "Pending",
+      "status": "Done",
       "task": "Security headers (CSP, HSTS, X-Frame-Options, Referrer-Policy), optional two-step login (authenticator app), audit log of admin actions",
-      "why": "Security headers built in step 1. Built in step 3 (2026-11-05), tested with the full suite: 3 full runs passed (786 passed, 62 skipped, 0 failed each) and a 4th run was stopped by the owner after 718 passing tests, 0 failed (phone, tablet and desktop in Chromium, Firefox and WebKit); waiting for your approval. Two-step login (authenticator app, TOTP) under Account; audit log of sign-ins and changes Security review 2026-11-10: an account now also has a cap of 20 wrong tries in 15 minutes from all addresses together (a botnet), a hidden honeypot field catches scripts, and a password change signs out every other session and every \"keep me signed in\" cookie. Tested in tests/security.spec.ts on all 18 projects: 690 passed, 31 skipped, 0 failed (test-results/1794324621175-report.json).",
-      "next": "You: review and approve"
+      "why": "Security headers built in step 1. Built in step 3 (2026-11-05), tested with the full suite: 3 full runs passed (786 passed, 62 skipped, 0 failed each) and a 4th run was stopped by the owner after 718 passing tests, 0 failed (phone, tablet and desktop in Chromium, Firefox and WebKit); waiting for your approval. Two-step login (authenticator app, TOTP) under Account; audit log of sign-ins and changes Security review 2026-11-10: an account now also has a cap of 20 wrong tries in 15 minutes from all addresses together (a botnet), a hidden honeypot field catches scripts, and a password change signs out every other session and every \"keep me signed in\" cookie. Tested in tests/security.spec.ts on all 9 live projects: 690 passed, 31 skipped, 0 failed (test-results/1794324621175-report.json). Approved by the owner 2026-11-11.",
+      "next": ""
     },
     {
       "id": "B17",
@@ -440,10 +440,10 @@
       "id": "P15",
       "area": "Testing",
       "side": "Project",
-      "status": "Pending",
+      "status": "Done",
       "task": "Run the full test suite on MySQL too (same tests as SQLite), so Hostinger's database is covered",
-      "why": "Split from P8 on 2026-11-03: step 1 was tested on SQLite only. Built and run 2026-11-05: GAP_DB=mysql npm test starts its own MySQL 8.4 (--no-defaults, own data folder in test-data, port 33190/33191) and stops it after the run. The final full run on MySQL passed: 1290 passed, 62 skipped, 0 failed (test-results/1793892035032-report.json). MySQL-only fix: a test added SUM() counts as text.",
-      "next": "You: review and approve"
+      "why": "Split from P8 on 2026-11-03: step 1 was tested on SQLite only. Built and run 2026-11-05: GAP_DB=mysql npm test starts its own MySQL 8.4 (--no-defaults, own data folder in test-data, port 33190/33191) and stops it after the run. The final full run on MySQL passed: 1290 passed, 62 skipped, 0 failed (test-results/1793892035032-report.json). MySQL-only fix: a test added SUM() counts as text. Approved by the owner 2026-11-11.",
+      "next": ""
     },
     {
       "id": "P16",

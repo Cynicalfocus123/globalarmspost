@@ -178,7 +178,19 @@ Every change must keep the code:
 
 ## Change log
 
-### 2026-11-10 — Security review: sign-in and the public pages (waiting for approval)
+### 2026-11-11 — Steps 3 and 4 and the security review approved
+
+The owner approved step 3 (the admin), step 4 (the reader side) and the security review. Task list v22:
+- **Done:** B2, B4, B5, B6, B11, B12, B16, B19, F7, F10, F11, F13, F14, F15, F21, P15.
+- **Still Pending** for the parts planned for later steps:
+  - F16: image size sliders, live preview.
+  - F17: category order and editing, media library actions, site settings.
+  - B7: delete for good.
+  - B8: rename, merge, order.
+  - B13: the `/install` page.
+  - P13: the security review again before launch.
+
+### 2026-11-10 — Security review: sign-in and the public pages (approved 2026-11-11)
 
 The owner asked that nobody can get into the admin by brute force or scripts, and nobody can get in through the articles or any other public page. Claude reviewed the code and fixed what it found.
 
@@ -245,7 +257,7 @@ The new security tests skip nothing.
 
 Task list v21: B4, B16, B12 and P13 Pending until the owner approves.
 
-### 2026-11-05 — Step 4 tested (waiting for approval)
+### 2026-11-05 — Step 4 tested (approved 2026-11-11)
 
 Claude tested DeepSeek's Step 4 build (the entry below) with the whole suite: 1352 tests on 18 projects (git/live × Chromium/Firefox/WebKit × phone/tablet/desktop), against the real PHP server and database, in the three phases per copy. Every failure was read from its `error-context.md` and trace, and the cause was fixed in the code. No check was made weaker.
 
@@ -344,7 +356,7 @@ Built on branch `step-4-reader-side`. No test results yet: the tests are written
 - **Settings page** (the reader-side part of task F17) — `/admin/settings` replaces the "comes later" placeholder: trending tags, the page cache (on/off, time to live, size, "Clear the page cache"), and the search index with "Rebuild search index". Saving clears the cache.
 - **Tests written, not run yet**: `tests/article.spec.ts`, `tests/search.spec.ts`, `tests/reader.spec.ts` (cache, trending, rebuild). `tests/seed-demo.php` now gives the first three sample stories a photo gallery and builds the search index at seed time. Task list v19.
 
-### 2026-11-05 — Step 3 tested: 3 full runs pass, the 4th stopped by the owner (waiting for approval)
+### 2026-11-05 — Step 3 tested: 3 full runs pass, the 4th stopped by the owner (approved 2026-11-11)
 
 The Step 3 admin was tested with the whole suite — `PLAYWRIGHT_BROWSERS_PATH=D:/dev/playwright WORKERS=8 npm test` (848 tests, 18 projects: git/live × Chromium/Firefox/WebKit × phone/tablet/desktop, three phases per copy: `setup` → site/stories/admin → `publish`). Every failure the first runs found was fixed in the code. On the same, final code:
 
@@ -367,7 +379,7 @@ So hard rule "4 full runs" was met with 3 full runs plus most of a 4th, at the o
 - Test pictures: the git copy's test server serves `public/` directly, so the admin tests' uploads land in `public/uploads/` (ignored by git, never copied to `live/`). They pile up there; the owner decides when to clear them.
 - Task list v18.
 
-### 2026-11-05 — Step 3: the admin (backend) (waiting for approval)
+### 2026-11-05 — Step 3: the admin (backend) (approved 2026-11-11)
 Built from the approved admin wireframe (section 5). Everything is at `/admin`, the same in both copies.
 - **Database** (migration `005_admin`): `users`, `login_attempts`, `remember_tokens`, `authors`, `post_gallery`, `views_daily`, `audit_log`; on `posts`: `author_id`, `featured_caption`, `featured_credit`. Each existing `author_name` became an author and its stories were linked, so the sample stories keep working.
 - **Sign-in** (`app/lib/auth.php`, tasks B4, B16):
