@@ -1,8 +1,8 @@
 {
   "project": "Global Arms Post",
   "updated": "2026-11-11",
-  "version": 24,
-  "update_note": "Updated 2026-11-11 v24 (step 5 built and tested: F12, F5, F17, B7, B8, F16, B15, B17 and P9 Pending with the results; B1 and B3 Pending, their code exists since step 1; P13 notes the step 5 security review). Updated 2026-11-11 v23 (B18: the owner brings the old stories over himself; not a Claude task). Updated 2026-11-11 v22 (the owner approved step 3, step 4 and the security review: B2, B4, B5, B6, B11, B12, B16, B19, F7, F10, F11, F13, F14, F15, F21 and P15 are Done; F16, F17, B7, B8, B13 and P13 stay Pending for their parts that come in later steps). Updated 2026-11-10 v21 (security review of the sign-in and the public pages: per-account cap from all addresses, a honeypot against scripts, a password change signs out every other session, the page cache can no longer be poisoned with a made-up Host; new tests/security.spec.ts; full run on SQLite 690 passed, 31 skipped, 0 failed (test-results/1794324621175-report.json); B4, B16, B12 and P13 Pending until you approve). Updated 2026-11-05 v20 (step 4 tested: the final full run on MySQL passed, 1290 passed / 62 skipped / 0 failed on 18 projects; the owner asked for one final run instead of four; twelve bugs in the step 4 code were fixed while testing; F7, F10, F11, F21, B11, B12 and P15 stay Pending until you approve). Earlier v19 (step 4, the reader side, built and waiting for the tests). Earlier v18 (step 3 tested; still waiting for the owner's approval, so its tasks stay Pending). Updated 2026-11-05 v18 (step 3 tested: 3 full runs passed, 786 passed / 62 skipped / 0 failed each, and a 4th run was stopped by the owner after 718 passing tests with 0 failed; committed, pushed, live/ rebuilt and verified; B2, B4, B5, B6, B13, B16, B19, F13, F14, F15, F16, F17 Pending until you approve). Earlier v17 (step 3 testing; every failure found by the runs was fixed: the WebKit Save click, the homepage builder drag, the More sheet on touch, SQLite busy timeout; B2, B4, B5, B6, B13, B16, B19, F13, F14, F15, F16, F17 Pending until you approve). Earlier v16 (step 3, the admin, built and tested: B2, B4, B5, B6, B13, B16, B19, F13, F14, F15, F16, F17 Pending until you approve). Updated 2026-11-05 v16 (step 3, the admin, built and tested: B2, B4, B5, B6, B13, B16, B19, F13, F14, F15, F16, F17 Pending until you approve; B7, B8, F10 moved forward). Earlier v15 (owner approved step 2: F4 header, F6 phone menu, B9 query engine, F8 homepage sections, F9 category page, P16 sample stories are Done; B7, B8, F10, F11 stay Pending because parts come in later steps). Earlier v14 (admin wireframe F20 approved with the owner's changes; new task B19 authors). Earlier v13 (step 2 passed the full suite 4 times; admin wireframes F20 added for approval). Earlier v12 (step 2 built: stories database, query engine B9, homepage sections F8, category page F9, basic story page F10; header redesigned F4/F6; sample stories P16; all Pending until you approve). Earlier v11 (new rule: only the latest task list Excel is kept; old versions are deleted on every build). Earlier v10 (owner approved step 1: F18 logo, F4 header, F6 phone menu, B10 menu data, B14 migrations, P10 live build + verify, P14 site_link(), P8 test suite, P11 first push, P7 approval are Done). Earlier v9 (step 1 passed the full suite 4 times on Chromium, Firefox, WebKit; first commit pushed; live/ built and verified). Earlier v8 (step 1 built: logo F18, header F4, phone menu F6, menu data B10, migrations B14, live build + verify P10, site_link() P14, tests P8; all Pending until you approve, Firefox + WebKit not run yet). Earlier v7 (the 6 draft backend files were removed at the owner's request; B1-B6 are back to Not started and get written fresh in Phase 1). Earlier v6 (owner approved all wireframes: F1, F2, F3 and the new category page F19 are Done; header = centred logo + red menu, no date bar or social links; phones use one lead story + headline/date rows; no WordPress import, B18 is now scraping the current site later). Earlier v5 (new logo for header + footer added to step 1 as F18). Earlier v4 (hard rule 10: correct on all modern phones, tablets, desktops; test task P8 widened). Earlier v3 (hard rule 9: live/ mirrors git/ with proper addresses like globalarmspost.com/asia; new task P14). Earlier v2 (nothing is Done: the owner has not approved the wireframes or plan yet, so every started item is Pending). Earlier v1 (task list created; header builder + smart search added as Not started).",
+  "version": 25,
+  "update_note": "Updated 2026-11-11 v25 (the owner approved step 5: F5, B7, B8, F16, B15, B17, P9, B1 and B3 are Done; F12 stays Pending for the RSS feed and F17 for theme colours + fonts, both not built; P13 stays Pending for the last review before launch). Updated 2026-11-11 v24 (step 5 built and tested: F12, F5, F17, B7, B8, F16, B15, B17 and P9 Pending with the results; B1 and B3 Pending, their code exists since step 1; P13 notes the step 5 security review). Updated 2026-11-11 v23 (B18: the owner brings the old stories over himself; not a Claude task). Updated 2026-11-11 v22 (the owner approved step 3, step 4 and the security review: B2, B4, B5, B6, B11, B12, B16, B19, F7, F10, F11, F13, F14, F15, F21 and P15 are Done; F16, F17, B7, B8, B13 and P13 stay Pending for their parts that come in later steps). Updated 2026-11-10 v21 (security review of the sign-in and the public pages: per-account cap from all addresses, a honeypot against scripts, a password change signs out every other session, the page cache can no longer be poisoned with a made-up Host; new tests/security.spec.ts; full run on SQLite 690 passed, 31 skipped, 0 failed (test-results/1794324621175-report.json); B4, B16, B12 and P13 Pending until you approve). Updated 2026-11-05 v20 (step 4 tested: the final full run on MySQL passed, 1290 passed / 62 skipped / 0 failed on 18 projects; the owner asked for one final run instead of four; twelve bugs in the step 4 code were fixed while testing; F7, F10, F11, F21, B11, B12 and P15 stay Pending until you approve). Earlier v19 (step 4, the reader side, built and waiting for the tests). Earlier v18 (step 3 tested; still waiting for the owner's approval, so its tasks stay Pending). Updated 2026-11-05 v18 (step 3 tested: 3 full runs passed, 786 passed / 62 skipped / 0 failed each, and a 4th run was stopped by the owner after 718 passing tests with 0 failed; committed, pushed, live/ rebuilt and verified; B2, B4, B5, B6, B13, B16, B19, F13, F14, F15, F16, F17 Pending until you approve). Earlier v17 (step 3 testing; every failure found by the runs was fixed: the WebKit Save click, the homepage builder drag, the More sheet on touch, SQLite busy timeout; B2, B4, B5, B6, B13, B16, B19, F13, F14, F15, F16, F17 Pending until you approve). Earlier v16 (step 3, the admin, built and tested: B2, B4, B5, B6, B13, B16, B19, F13, F14, F15, F16, F17 Pending until you approve). Updated 2026-11-05 v16 (step 3, the admin, built and tested: B2, B4, B5, B6, B13, B16, B19, F13, F14, F15, F16, F17 Pending until you approve; B7, B8, F10 moved forward). Earlier v15 (owner approved step 2: F4 header, F6 phone menu, B9 query engine, F8 homepage sections, F9 category page, P16 sample stories are Done; B7, B8, F10, F11 stay Pending because parts come in later steps). Earlier v14 (admin wireframe F20 approved with the owner's changes; new task B19 authors). Earlier v13 (step 2 passed the full suite 4 times; admin wireframes F20 added for approval). Earlier v12 (step 2 built: stories database, query engine B9, homepage sections F8, category page F9, basic story page F10; header redesigned F4/F6; sample stories P16; all Pending until you approve). Earlier v11 (new rule: only the latest task list Excel is kept; old versions are deleted on every build). Earlier v10 (owner approved step 1: F18 logo, F4 header, F6 phone menu, B10 menu data, B14 migrations, P10 live build + verify, P14 site_link(), P8 test suite, P11 first push, P7 approval are Done). Earlier v9 (step 1 passed the full suite 4 times on Chromium, Firefox, WebKit; first commit pushed; live/ built and verified). Earlier v8 (step 1 built: logo F18, header F4, phone menu F6, menu data B10, migrations B14, live build + verify P10, site_link() P14, tests P8; all Pending until you approve, Firefox + WebKit not run yet). Earlier v7 (the 6 draft backend files were removed at the owner's request; B1-B6 are back to Not started and get written fresh in Phase 1). Earlier v6 (owner approved all wireframes: F1, F2, F3 and the new category page F19 are Done; header = centred logo + red menu, no date bar or social links; phones use one lead story + headline/date rows; no WordPress import, B18 is now scraping the current site later). Earlier v5 (new logo for header + footer added to step 1 as F18). Earlier v4 (hard rule 10: correct on all modern phones, tablets, desktops; test task P8 widened). Earlier v3 (hard rule 9: live/ mirrors git/ with proper addresses like globalarmspost.com/asia; new task P14). Earlier v2 (nothing is Done: the owner has not approved the wireframes or plan yet, so every started item is Pending). Earlier v1 (task list created; header builder + smart search added as Not started).",
   "tasks": [
     {
       "id": "P1",
@@ -134,10 +134,10 @@
       "id": "B1",
       "area": "Database",
       "side": "Backend",
-      "status": "Pending",
+      "status": "Done",
       "task": "Database layer for MySQL (Hostinger) and SQLite (public/app/lib/db.php)",
       "why": "The code exists since step 1 (2026-11-03): public/app/lib/db.php (MySQL + SQLite, prepared statements, db_atomic transactions). Tested by every run since. Waiting for your approval.",
-      "next": "Your approval"
+      "next": "Approved by the owner 2026-11-11 (step 5)"
     },
     {
       "id": "B2",
@@ -152,10 +152,10 @@
       "id": "B3",
       "area": "Core",
       "side": "Backend",
-      "status": "Pending",
+      "status": "Done",
       "task": "Helpers: config, URLs, time zones, slugs, settings, rendering (public/app/lib/helpers.php)",
       "why": "The code exists since step 1 (2026-11-03): helpers in public/app/lib/html.php, link.php, settings.php, dates.php, view.php (there is no helpers.php). Tested by every run since. Waiting for your approval.",
-      "next": "Your approval"
+      "next": "Approved by the owner 2026-11-11 (step 5)"
     },
     {
       "id": "B4",
@@ -197,10 +197,10 @@
       "id": "F5",
       "area": "Header",
       "side": "Frontend",
-      "status": "Pending",
+      "status": "Done",
       "task": "Header builder in admin: menu links to categories, tags, posts or any web address; logo; dark mode + search buttons on/off. Create submenus under any parent item, drag to reorder and nest",
       "why": "Built in step 5 (2026-11-11) and tested with the full suite on the live copy: full run 1794331000001 (phase 2: 815 passed, 31 skipped, 1 failed: a step 3 test's timing race on the WebKit phone, fixed and passed in 1794331600002) and publish phase 1794331600001 (77 passed, 3 skipped, 1 failed: a test race, fixed and passed in 1794331600003) = 894 passed, 34 skipped, 0 failed of 928; phone, tablet and desktop in Chromium, Firefox and WebKit, against the real PHP server and database. Waiting for your approval. Menu builder at /admin/menu (admins): links to the home page, a category, tag, story, page or any web address (only https, http, / or mailto:), drag (mouse, touch, pen; the list scrolls by itself near the screen edge) or up/down/in/out buttons, nest under any parent, own text, new tab, show/hide; saved in one transaction, the header changes at once. The logo and the dark mode / search buttons stay fixed (not switchable yet).",
-      "next": "Your approval"
+      "next": "Approved by the owner 2026-11-11 (step 5)"
     },
     {
       "id": "F6",
@@ -262,8 +262,8 @@
       "side": "Frontend",
       "status": "Pending",
       "task": "SEO: titles, descriptions, canonical links, Open Graph + X previews, NewsArticle structured data, sitemap.xml, RSS feed, robots.txt, old WordPress links redirect to new ones",
-      "why": "Built in step 5 (2026-11-11) and tested with the full suite on the live copy: full run 1794331000001 (phase 2: 815 passed, 31 skipped, 1 failed: a step 3 test's timing race on the WebKit phone, fixed and passed in 1794331600002) and publish phase 1794331600001 (77 passed, 3 skipped, 1 failed: a test race, fixed and passed in 1794331600003) = 894 passed, 34 skipped, 0 failed of 928; phone, tablet and desktop in Chromium, Firefox and WebKit, against the real PHP server and database. Waiting for your approval. Title + description per page (story: excerpt, else summary, else tagline), canonical address, Open Graph + X card tags, NewsArticle JSON-LD (escaped), /sitemap.xml (cached), /robots.txt, 301s from old WordPress addresses; full addresses use the Site address setting. NOT built: the RSS feed (say if you want it).",
-      "next": "Your approval"
+      "why": "Built in step 5 (2026-11-11) and tested with the full suite on the live copy: full run 1794331000001 (phase 2: 815 passed, 31 skipped, 1 failed: a step 3 test's timing race on the WebKit phone, fixed and passed in 1794331600002) and publish phase 1794331600001 (77 passed, 3 skipped, 1 failed: a test race, fixed and passed in 1794331600003) = 894 passed, 34 skipped, 0 failed of 928; phone, tablet and desktop in Chromium, Firefox and WebKit, against the real PHP server and database. Waiting for your approval. Title + description per page (story: excerpt, else summary, else tagline), canonical address, Open Graph + X card tags, NewsArticle JSON-LD (escaped), /sitemap.xml (cached), /robots.txt, 301s from old WordPress addresses; full addresses use the Site address setting. NOT built: the RSS feed (say if you want it). Approved 2026-11-11 except the RSS feed, which was not built: stays Pending for it.",
+      "next": "RSS feed, if the owner wants it"
     },
     {
       "id": "F13",
@@ -296,10 +296,10 @@
       "id": "F16",
       "area": "Admin",
       "side": "Frontend",
-      "status": "Pending",
+      "status": "Done",
       "task": "Homepage builder: add / remove / drag sections, layout, span, columns x rows, image size sliders, tabs, categories in/out as a checkbox list with All + a search box, tags, order by, asc/desc, skip count, sticky first, avoid duplicates; live preview desktop + phone",
       "why": "Built in step 5 (2026-11-11) and tested with the full suite on the live copy: full run 1794331000001 (phase 2: 815 passed, 31 skipped, 1 failed: a step 3 test's timing race on the WebKit phone, fixed and passed in 1794331600002) and publish phase 1794331600001 (77 passed, 3 skipped, 1 failed: a test race, fixed and passed in 1794331600003) = 894 passed, 34 skipped, 0 failed of 928; phone, tablet and desktop in Chromium, Firefox and WebKit, against the real PHP server and database. Waiting for your approval. Rest of the homepage builder: picture size sliders per section (photo height, small photo size), live preview drawn by the site itself (beside the builder from 1280 px, under it below; desktop / phone width switch), drag auto-scroll on long lists.",
-      "next": "Your approval"
+      "next": "Approved by the owner 2026-11-11 (step 5)"
     },
     {
       "id": "F17",
@@ -307,26 +307,26 @@
       "side": "Frontend",
       "status": "Pending",
       "task": "Admin pages: dashboard (counts, scheduled posts, server check), posts list (filters: all, published, scheduled, draft, trash), categories (drag order, parent, show in menu), tags, media library, settings (site name, time zone, theme colors + fonts), users",
-      "why": "Built in step 5 (2026-11-11) and tested with the full suite on the live copy: full run 1794331000001 (phase 2: 815 passed, 31 skipped, 1 failed: a step 3 test's timing race on the WebKit phone, fixed and passed in 1794331600002) and publish phase 1794331600001 (77 passed, 3 skipped, 1 failed: a test race, fixed and passed in 1794331600003) = 894 passed, 34 skipped, 0 failed of 928; phone, tablet and desktop in Chromium, Firefox and WebKit, against the real PHP server and database. Waiting for your approval. Settings (site name, tagline, about, site address, time zone, stories per category page), Categories page (add, rename, address with reserved names refused, parent, header menu for admins, drag order), Pictures page (alt / caption / credit, where used, delete when unused, admins). NOT built: theme colours + fonts in the admin (say if you want them).",
-      "next": "Your approval"
+      "why": "Built in step 5 (2026-11-11) and tested with the full suite on the live copy: full run 1794331000001 (phase 2: 815 passed, 31 skipped, 1 failed: a step 3 test's timing race on the WebKit phone, fixed and passed in 1794331600002) and publish phase 1794331600001 (77 passed, 3 skipped, 1 failed: a test race, fixed and passed in 1794331600003) = 894 passed, 34 skipped, 0 failed of 928; phone, tablet and desktop in Chromium, Firefox and WebKit, against the real PHP server and database. Waiting for your approval. Settings (site name, tagline, about, site address, time zone, stories per category page), Categories page (add, rename, address with reserved names refused, parent, header menu for admins, drag order), Pictures page (alt / caption / credit, where used, delete when unused, admins). NOT built: theme colours + fonts in the admin (say if you want them). Approved 2026-11-11 except theme colours + fonts in the admin, which were not built: stays Pending for them.",
+      "next": "Theme colours + fonts, if the owner wants them"
     },
     {
       "id": "B7",
       "area": "Posts",
       "side": "Backend",
-      "status": "Pending",
+      "status": "Done",
       "task": "Posts: save, draft, publish, schedule (shows at the exact time), trash, restore, delete for good; updated date; reading time",
       "why": "Built in step 5 (2026-11-11) and tested with the full suite on the live copy: full run 1794331000001 (phase 2: 815 passed, 31 skipped, 1 failed: a step 3 test's timing race on the WebKit phone, fixed and passed in 1794331600002) and publish phase 1794331600001 (77 passed, 3 skipped, 1 failed: a test race, fixed and passed in 1794331600003) = 894 passed, 34 skipped, 0 failed of 928; phone, tablet and desktop in Chromium, Firefox and WebKit, against the real PHP server and database. Waiting for your approval. Delete for good in the Trash tab (admins, with a confirm): the story, tag links, gallery rows, search index rows and menu links, in one transaction; audit log.",
-      "next": "Your approval"
+      "next": "Approved by the owner 2026-11-11 (step 5)"
     },
     {
       "id": "B8",
       "area": "Categories + tags",
       "side": "Backend",
-      "status": "Pending",
+      "status": "Done",
       "task": "Categories: create (also on the spot), parent, order, show in menu, auto page + auto homepage section; tags: create on the spot, rename, merge, counts",
       "why": "Built in step 5 (2026-11-11) and tested with the full suite on the live copy: full run 1794331000001 (phase 2: 815 passed, 31 skipped, 1 failed: a step 3 test's timing race on the WebKit phone, fixed and passed in 1794331600002) and publish phase 1794331600001 (77 passed, 3 skipped, 1 failed: a test race, fixed and passed in 1794331600003) = 894 passed, 34 skipped, 0 failed of 928; phone, tablet and desktop in Chromium, Firefox and WebKit, against the real PHP server and database. Waiting for your approval. Tags page: counts, rename (name + address, the stories are indexed again), merge two tags (stories moved, no duplicates). Categories: see F17.",
-      "next": "Your approval"
+      "next": "Approved by the owner 2026-11-11 (step 5)"
     },
     {
       "id": "B19",
@@ -395,10 +395,10 @@
       "id": "B15",
       "area": "API",
       "side": "Backend",
-      "status": "Pending",
+      "status": "Done",
       "task": "Read-only JSON API (/api/posts, /api/categories) for a future app or newsletter",
       "why": "Built in step 5 (2026-11-11) and tested with the full suite on the live copy: full run 1794331000001 (phase 2: 815 passed, 31 skipped, 1 failed: a step 3 test's timing race on the WebKit phone, fixed and passed in 1794331600002) and publish phase 1794331600001 (77 passed, 3 skipped, 1 failed: a test race, fixed and passed in 1794331600003) = 894 passed, 34 skipped, 0 failed of 928; phone, tablet and desktop in Chromium, Firefox and WebKit, against the real PHP server and database. Waiting for your approval. Read-only JSON API: /api/posts (category, tag, page, per up to 50), /api/posts/{slug}, /api/categories. Public stories only, no user data, no cookies, rate limited per address, cached.",
-      "next": "Your approval"
+      "next": "Approved by the owner 2026-11-11 (step 5)"
     },
     {
       "id": "B16",
@@ -413,10 +413,10 @@
       "id": "B17",
       "area": "Data",
       "side": "Backend",
-      "status": "Pending",
+      "status": "Done",
       "task": "Backup + export (database + pictures) from the admin",
       "why": "Built in step 5 (2026-11-11) and tested with the full suite on the live copy: full run 1794331000001 (phase 2: 815 passed, 31 skipped, 1 failed: a step 3 test's timing race on the WebKit phone, fixed and passed in 1794331600002) and publish phase 1794331600001 (77 passed, 3 skipped, 1 failed: a test race, fixed and passed in 1794331600003) = 894 passed, 34 skipped, 0 failed of 928; phone, tablet and desktop in Chromium, Firefox and WebKit, against the real PHP server and database. Waiting for your approval. Backup at /admin/backup (admins): ZIP with every table as JSON (MySQL or SQLite; sign-in tokens and the sign-in log left out) + uploads/, in storage/backups (never served), download through the admin, list of earlier backups. No restore yet.",
-      "next": "Your approval"
+      "next": "Approved by the owner 2026-11-11 (step 5)"
     },
     {
       "id": "B18",
@@ -458,10 +458,10 @@
       "id": "P9",
       "area": "Testing",
       "side": "Project",
-      "status": "Pending",
+      "status": "Done",
       "task": "GitHub Actions: PHPStan code check + full test suite on every push",
       "why": "Built in step 5 (2026-11-11) and tested with the full suite on the live copy: full run 1794331000001 (phase 2: 815 passed, 31 skipped, 1 failed: a step 3 test's timing race on the WebKit phone, fixed and passed in 1794331600002) and publish phase 1794331600001 (77 passed, 3 skipped, 1 failed: a test race, fixed and passed in 1794331600003) = 894 passed, 34 skipped, 0 failed of 928; phone, tablet and desktop in Chromium, Firefox and WebKit, against the real PHP server and database. Waiting for your approval. GitHub Actions .github/workflows/check.yml: PHPStan level 6 (phpstan.neon) on every push. The Playwright suite runs on your PC (it needs the Windows tools); see PROJECT_LOG.md. PHPStan was not run locally; see the Actions result.",
-      "next": "Your approval"
+      "next": "Approved by the owner 2026-11-11 (step 5)"
     },
     {
       "id": "P10",

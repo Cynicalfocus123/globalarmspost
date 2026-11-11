@@ -179,6 +179,13 @@ Every change must keep the code:
 
 ## Change log
 
+### 2026-11-11 — Step 5 approved
+
+The owner approved step 5 (commits `318bf43` and `873f915`). Task list v25:
+- **Done:** F5 (menu builder), B7 (delete for good), B8 (categories and tags), F16 (homepage builder), B15 (JSON API), B17 (backup), P9 (GitHub Actions PHPStan check), and B1 and B3 (their code exists since step 1).
+- **Still Pending** for parts that were not built: F12 (the RSS feed) and F17 (theme colours and fonts in the admin), if the owner wants them; P13 (the last security review before launch).
+- After step 5, what is left before launch: B13 (`/install`) and P12 (Hostinger guide) when the owner wants them, B18 (the owner brings the old stories over), P13, and setting the Site address to `https://globalarmspost.com` in Settings.
+
 ### 2026-11-11 — Step 5: admin, SEO, API, backup
 
 Built and tested by Claude on branch `step-5-admin-seo`. The database work is one migration, `007_step5` (a `hidden` column on `menu_items`, the `category_per_page` setting); every query runs on MySQL 8 (strict, ONLY_FULL_GROUP_BY) and SQLite. The owner also asked for a security check of the new code inside this step (below).
