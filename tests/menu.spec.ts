@@ -206,12 +206,14 @@ test('categories: add, rename, new address, parent, header menu and order; reser
       await page.goto('/');
       await expect(page.locator(`#main-menu a`, { hasText: newName })).toHaveCount(0);
 
-      // Order: it is the last region; ↑ puts it before the region above it; Save order.
+      // Order: it is among the last regions; ↑ puts it before the region above it; Save order.
       await page.goto('/admin/categories');
       await page.locator('.cat-list[data-ready]').waitFor();
       const li = page.locator(`.cat-list li[data-id="${cat.id}"]`);
       await expect(li).toHaveClass(/depth-1/);
-      await expect(li.locator('[data-move="1"]')).toBeDisabled();
+      // ↓ works only when another region follows (the publish test in another browser may add one after it).
+      const regionAfter = await li.evaluate((el) => !!el.nextElementSibling && el.nextElementSibling.classList.contains('depth-1'));
+      await expect(li.locator('[data-move="1"]')).toBeEnabled({ enabled: regionAfter });
       const above = Number(await li.evaluate((el) => (el.previousElementSibling as HTMLElement).dataset.id));
       expect(sql(info, 'SELECT parent_id FROM categories WHERE id = ?', above)[0].parent_id, 'the row above is a region too').toBe(regions);
       await li.locator('[data-move="-1"]').click();

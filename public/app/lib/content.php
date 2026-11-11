@@ -142,13 +142,14 @@ function story_save(array $in, int $userId): array
         }
     }
 
-    $db = db();
-    $db->beginTransaction();
-    try {
+    // One db_atomic() transaction: on MySQL two saves at the same moment can deadlock on the tag and gallery rows
+    // (MySQL then cancels one of them); db_atomic() runs it again instead of failing the save. Found by the step 5
+    // MySQL run: the plain transaction here answered with a PHP error page.
+    $id = db_atomic(static function () use ($old, $row, $now, $id, $tagIds, $gallery): int {
         if ($old === null) {
             $row['created_at'] = $now;
             q('INSERT INTO posts (' . implode(', ', array_keys($row)) . ') VALUES (' . implode(', ', array_fill(0, count($row), '?')) . ')', array_values($row));
-            $id = (int) $db->lastInsertId();
+            $id = (int) db()->lastInsertId();
         } else {
             q('UPDATE posts SET ' . implode(', ', array_map(fn ($k) => "$k = ?", array_keys($row))) . ' WHERE id = ?', [...array_values($row), $id]);
         }
@@ -162,11 +163,8 @@ function story_save(array $in, int $userId): array
         foreach ($gallery as $pos => [$mid, $cap, $cred]) {
             q('INSERT INTO post_gallery (post_id, media_id, position, caption, credit) VALUES (?, ?, ?, ?, ?)', [$id, $mid, $pos, $cap, $cred]);
         }
-        $db->commit();
-    } catch (Throwable $e) {
-        $db->rollBack();
-        throw $e;
-    }
+        return $id;
+    });
     audit($old === null ? 'story.create' : 'story.update', '#' . $id . ' ' . $title, $userId);
     // Reader side (tasks B11, B12): the story goes into the search index, and every cached page is stale now.
     search_index_post($id);

@@ -179,6 +179,28 @@ Every change must keep the code:
 
 ## Change log
 
+### 2026-11-12 — MySQL check before deploying: one real bug fixed
+
+Hostinger runs MySQL, and step 5 had been tested on SQLite only. So the whole suite ran on MySQL 8.4 (`GAP_DB=mysql`: a fresh MySQL server on this PC, strict mode; nothing of the local MySQL install is touched).
+
+**Bug found and fixed (the app):** saving a story (`story_save()`, step 3 code, `app/lib/content.php`) ran its own transaction. On MySQL two saves at the same moment can deadlock on the tag and gallery rows, and MySQL then cancels one of them: that save failed with a PHP error instead of being saved (two editors pressing Save at once on Hostinger). It now runs in `db_atomic()`, which runs the transaction again after a deadlock (the code rule for delete-then-insert writes).
+
+**Test fixes (the site was right):**
+- `backup.spec.ts`: a check counted every backup in the audit log around a refused POST, and another browser's backup landed in between. The backup tests of the 9 browsers now take turns (`inLine('backup')`).
+- `menu.spec.ts` (categories): the test expected the ↓ button of its new category to be off (the last region), but the publish test in another browser had just added a region after it. ↓ must now be on exactly when a region follows.
+
+**Runs on MySQL** (`test-results/<run>-report.json`):
+
+| Run | What | Result |
+|---|---|---|
+| `1794333000001` | full | 814 passed, 2 failed (the deadlock), 31 skipped, 81 not run |
+| `1794334000001` | full, after the fix | 814 passed, 2 failed (backup count race), 31 skipped, 81 not run |
+| `1794334600001` | backup.spec, 9 projects | 19 passed |
+| `1794334600002` | publish phase | 77 passed, 1 failed (categories race), 3 skipped |
+| `1794334600003` | the categories test, WebKit phone | passed |
+
+**Result on MySQL: 928 tests, 894 passed, 34 skipped, 0 failed** (the same 34 skips as in step 5). The last full SQLite run was before the deadlock fix; `db_atomic()` on SQLite takes the write lock first (`BEGIN IMMEDIATE`), as the search index already does.
+
 ### 2026-11-11 — Step 5 approved
 
 The owner approved step 5 (commits `318bf43` and `873f915`). Task list v25:
