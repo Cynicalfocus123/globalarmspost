@@ -248,6 +248,8 @@ Built and tested by Claude on branch `step-5-admin-seo`. The database work is on
 
 The other new step 5 tests skip nothing.
 
+**GitHub Actions:** the first PHPStan run (commit `318bf43`, run 43033941140) failed with 6 findings, none a bug a visitor could meet: two `?? $now` after `explode()` that can never be needed (`http.php`, `search.php`), an `array_values()` on a list (`search.php`), an always-true condition in `sanitize.php` (proved unchanged: the old and new cleaner give byte-identical output on test HTML), and a false alarm in migration `002` (which may never be edited, so `phpstan.neon` has a written exception for it). `actions/checkout` went to v5 (v4 ran on the old Node 20). Fixed in the next commit.
+
 Task list v24: F12, F5, F17, B7, B8, F16, B15, B17 and P9 Pending until the owner approves; B1 and B3 Pending (their code exists since step 1); P13 notes this review (the last review before launch is still to come). Not built in this step: the RSS feed (F12) and theme colours and fonts in the admin (F17), on the owner's word; B13 (`/install`) and P12 (Hostinger guide) are later, B18 is the owner's.
 
 ### 2026-11-11 — B18 is the owner's

@@ -635,7 +635,7 @@ function search_suggest(string $q, int $limit = 6): array
     $last = (string) end($parts);
     if ($last !== '' && strlen($last) >= 2) {
         $terms = array_column(q_all('SELECT term FROM search_terms WHERE term LIKE ? ORDER BY docs DESC, term LIMIT ' . max(1, min(20, $limit)), [$last . '%']), 'term');
-        $out['terms'] = array_values(array_map('strval', $terms));
+        $out['terms'] = array_map('strval', $terms);
     }
     $res = search_results($q, ['per' => $limit]);
     foreach ($res['rows'] as $row) {
@@ -668,7 +668,7 @@ function search_suggest_limited(string $q): array
     $raw = @file_get_contents($file);
     if (is_string($raw) && $raw !== '') {
         $bits = explode('|', $raw);
-        $start = (int) ($bits[0] ?? $now);
+        $start = (int) $bits[0]; // explode() always gives at least one part
         $count = (int) ($bits[1] ?? 0);
         if ($start + $window < $now) {
             $start = $now;

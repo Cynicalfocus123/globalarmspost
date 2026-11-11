@@ -117,7 +117,7 @@ function clean_node(DOMNode $node, int $depth, bool $top = false): array
             if (!$top && in_array($tag, ['p', 'h2', 'h3'], true)) {
                 return [$inner . '<br>', false]; // nested blocks become lines
             }
-            return ["<$tag>" . trim($inner) . "</$tag>", in_array($tag, $blocks, true) || $tag === 'li'];
+            return ["<$tag>" . trim($inner) . "</$tag>", true]; // p, h2, h3, blockquote and li are all blocks here
         default:
             return [$inner, false]; // unknown tag: keep its text
     }

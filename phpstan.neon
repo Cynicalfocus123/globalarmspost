@@ -15,5 +15,10 @@ parameters:
         # The code passes plain rows around as array<string, mixed>; spelling out every array's value type is
         # not worth it for database rows. Every other level-6 check stays on.
         - identifier: missingType.iterableValue
+        # Migrations 001-006 are never edited (hard rule). In 002 the 'regions' key is set earlier in the same
+        # loop (Regions comes before its children); PHPStan cannot follow that.
+        -
+            message: '#Offset .regions. does not exist on array<int>#'
+            path: public/app/migrations/002_starter_content.php
     # Views (public/app/views) are templates: their variables come from view()'s extract(), which PHPStan cannot
     # follow, so they are checked by the Playwright tests instead.

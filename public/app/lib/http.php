@@ -56,7 +56,7 @@ function rate_limit_ok(string $bucket, int $limit, int $window = 60): bool
     $raw = @file_get_contents($file);
     if (is_string($raw) && $raw !== '') {
         $bits = explode('|', $raw);
-        $start = (int) ($bits[0] ?? $now);
+        $start = (int) $bits[0]; // explode() always gives at least one part
         $count = (int) ($bits[1] ?? 0);
         if ($start + $window < $now) {
             $start = $now;
