@@ -239,6 +239,46 @@ body.sheet-open{overflow:hidden}
 details.hb-field summary{cursor:pointer;min-height:40px;display:flex;align-items:center}
 .hb-form .a-check{min-height:40px}
 
+/* Homepage builder: live preview (F16). Beside the builder from 1280 px, under it below that. */
+.hb-preview{grid-column:1/-1;min-width:0;margin:0}
+.hb-prev-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:space-between}
+.hb-prev-head .a-h{margin:0}
+.hb-prev-size{min-width:180px}
+.hb-frame-box{position:relative;height:min(70vh,720px);overflow:hidden;border:1px solid var(--line);border-radius:10px;background:#fff;margin-top:8px}
+.hb-frame{position:absolute;left:0;top:0;border:0;transform-origin:0 0;background:#fff}
+@media (min-width:1280px){
+  .hb:has(.hb-preview){grid-template-columns:minmax(0,1fr) 320px minmax(0,1.15fr)}
+  .hb-preview{grid-column:auto;position:sticky;top:12px}
+}
+
+/* Menu builder (F5): indented levels */
+.mb-item.mb-d-1{margin-left:28px}.mb-item.mb-d-2{margin-left:56px}.mb-item.mb-d-3{margin-left:84px}
+.mb-item.mb-d-4,.mb-item.mb-d-5,.mb-item.mb-d-6,.mb-item.mb-d-7,.mb-item.mb-d-8{margin-left:104px}
+.mb-label{overflow-wrap:anywhere}
+.mb-move{flex-wrap:wrap;justify-content:flex-end;max-width:176px}
+.mb-story-list{max-height:260px;overflow:auto;border:1px solid var(--line);border-radius:10px;margin-top:6px}
+.mb-story-list .a-opt{width:100%;background:#fff;border:0;border-bottom:1px solid var(--line);text-align:left;justify-content:space-between}
+
+/* Categories (F17): sortable rows */
+.a-sort{list-style:none;margin:0;padding:0}
+.a-sort .a-sec .t{font-weight:600;text-decoration:none}
+.a-sort .a-sec.depth-1{margin-left:28px;padding-left:8px}.a-sort .a-sec.depth-2{margin-left:56px;padding-left:8px}.a-sort .a-sec.depth-3{margin-left:84px;padding-left:8px}
+.a-sort .a-sec>.a-btn2{flex:none}
+
+/* Tags (B8): edit box under the row */
+.a-more{flex-basis:auto}
+.a-more>summary{list-style:none}
+.a-more>summary::-webkit-details-marker{display:none}
+.a-more[open]{flex-basis:100%}
+.a-more-box{margin-top:8px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px}
+.a-more-box .a-form label{margin-top:6px}
+
+/* Pictures (F17) */
+.pic-link{display:flex;flex-direction:column;gap:2px;text-decoration:none;min-height:44px}
+.pic-link:hover img{outline:2px solid var(--ink)}
+.pic-big{display:block;width:100%;height:auto;border-radius:10px;background:var(--soft)}
+.pic-delete{margin:4px 0 0}
+
 /* Tablet + phone: bottom tab bar, no side menu */
 @media (max-width:899px){
   .a-shell{grid-template-columns:1fr}
@@ -260,6 +300,8 @@ details.hb-field summary{cursor:pointer;min-height:40px;display:flex;align-items
   .ed-tool{top:57px}
   .ed-body{font-size:18px}
   .hb-panel:not(.open){display:none!important}
+  .mb-item.mb-d-1{margin-left:16px}.mb-item.mb-d-2{margin-left:32px}.mb-item.mb-d-3,.mb-item.mb-d-4,.mb-item.mb-d-5,.mb-item.mb-d-6,.mb-item.mb-d-7,.mb-item.mb-d-8{margin-left:44px}
+  .a-sort .a-sec.depth-1{margin-left:16px}.a-sort .a-sec.depth-2{margin-left:32px}.a-sort .a-sec.depth-3{margin-left:44px}
 }
 @media (max-width:767px){
   .a-stats{grid-template-columns:1fr 1fr}
@@ -280,6 +322,14 @@ details.hb-field summary{cursor:pointer;min-height:40px;display:flex;align-items
   .a-head .a-btn{padding:0 14px}
   .ed-bar .a-btn,.ed-bar .a-btn2{padding:0 12px}
   .a-sheet-nav{grid-template-columns:1fr}
+  .a-more-box{grid-template-columns:minmax(0,1fr)}
+  .mb-item,.a-sort .a-sec{flex-wrap:wrap}
+  .mb-item .hb-open{flex-basis:calc(100% - 60px)}
+  .mb-move{max-width:none;width:100%;justify-content:flex-start;padding-left:52px}
+  .mb-move .a-btn2,.hb-move .a-btn2{width:44px;min-height:44px}
+  .a-sort .a-sec .grow{flex-basis:calc(100% - 60px)}
+  .a-sort .a-sec .hb-move{padding-left:52px}
+  .hb-frame-box{height:60vh}
 }
 @media (max-width:360px){
   .a-filters{grid-template-columns:1fr}
@@ -289,3 +339,6 @@ details.hb-field summary{cursor:pointer;min-height:40px;display:flex;align-items
 
 /* Sign-in honeypot: off screen, never seen or filled by people (app/admin/router.php admin_login). */
 .a-hp{position:absolute;left:-10000px;top:auto;width:1px;height:1px;overflow:hidden}
+
+/* Touch screens: small buttons are still 44 px tall (step 5 pages: categories, tags, menu, backups). */
+@media (pointer:coarse){.a-btn.sm,.a-btn2.sm{min-height:44px}}

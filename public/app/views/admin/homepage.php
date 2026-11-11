@@ -24,4 +24,13 @@ $json = json_encode($data, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HE
       <div class="hb-form"></div>
     </div>
   </div>
+  <section class="hb-preview a-card" aria-labelledby="hb-prev-h">
+    <div class="hb-prev-head"><h2 class="a-h" id="hb-prev-h">Live preview</h2>
+      <span class="a-seg hb-prev-size" role="radiogroup" aria-label="Preview width">
+        <label><input type="radio" name="hb-prev-w" value="1280" checked><span>Desktop</span></label>
+        <label><input type="radio" name="hb-prev-w" value="390"><span>Phone</span></label>
+      </span></div>
+    <p class="a-small hb-prev-note" role="status" aria-live="polite">Shows your changes before you save. Drawn by the site itself.</p>
+    <div class="hb-frame-box"><iframe class="hb-frame" title="Homepage preview" src="about:blank"></iframe></div>
+  </section>
 </div>

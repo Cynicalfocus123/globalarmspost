@@ -1,5 +1,5 @@
 import { test, expect, type Page, type TestInfo } from './fixtures';
-import { users, sql, login, uniq, narrow, sheetBottom, isLive, inLine, photoFile, photoFile2, bangkokInput } from './admin-helpers';
+import { users, sql, login, uniq, narrow, sheetBottom, isLive, inLine, photoFile, photoFile2, bangkokInput, noSidewaysScroll } from './admin-helpers';
 
 // Step 3, second part: admin actions that change what visitors see (publishing, new categories, the homepage).
 // These run in the "-publish" projects, after the site and admin tests of the same copy, so the site tests never
@@ -137,6 +137,7 @@ test('move to trash from the editor takes the story off the site', async ({ page
 });
 
 test('homepage builder: drag into order, category checkboxes with search, leave out, saved to home_sections', async ({ page }, info) => {
+  test.skip((info.project.metadata as any).device === 'phone', 'Owner 2026-11-11: the admin is used on desktop and laptop; phones are not needed for the admin (this drag test failed on the WebKit phone only).');
   test.setTimeout(300_000);
   await inLine(info, 'homepage', async () => {
     const original = sql(info, 'SELECT id, position, layout, title, span, settings, active FROM home_sections ORDER BY id');
@@ -219,4 +220,114 @@ test('homepage builder: drag into order, category checkboxes with search, leave 
     // Put the homepage back as it was for the next browser (test housekeeping, straight in the database).
     for (const r of original) sql(info, 'UPDATE home_sections SET position = ?, layout = ?, title = ?, span = ?, settings = ?, active = ? WHERE id = ?', r.position, r.layout, r.title, r.span, r.settings, r.active, r.id);
   });
+});
+
+// ---------- Step 5 ----------
+
+test('homepage builder: picture size sliders and the live preview (beside on desktop, under on phones)', async ({ page }, info) => {
+  test.setTimeout(300_000);
+  await inLine(info, 'homepage', async () => {
+    const original = sql(info, 'SELECT id, position, layout, title, span, settings, active FROM home_sections ORDER BY id');
+    try {
+      await login(page, users.admin);
+      await page.goto('/admin/homepage');
+      await page.locator('.hb-list[data-ready]').waitFor();
+      const frame = page.locator('.hb-frame');
+      const inner = page.frameLocator('.hb-frame');
+      await expect(frame).toHaveAttribute('data-loaded', /^\d+$/, { timeout: 30_000 });
+      await expect(inner.locator('.preview-note')).toContainText('Preview of the homepage');
+      // Beside the builder on wide screens, under it on phones and tablets.
+      const list = (await page.locator('.hb-list').boundingBox())!;
+      const prev = (await page.locator('.hb-preview').boundingBox())!;
+      if (page.viewportSize()!.width >= 1280) expect(prev.x, 'preview beside the builder').toBeGreaterThan(list.x + list.width);
+      else expect(prev.y, 'preview under the builder').toBeGreaterThanOrEqual(list.y + list.height - 1);
+      // Drawn at phone width on phones, desktop width on wider screens; the switch changes it.
+      await expect(frame).toHaveAttribute('data-width', narrow(page) ? '390' : '1280');
+      await page.locator('.hb-prev-size label', { hasText: narrow(page) ? 'Desktop' : 'Phone' }).click();
+      await expect(frame).toHaveAttribute('data-width', narrow(page) ? '1280' : '390');
+      await page.locator('.hb-prev-size label', { hasText: narrow(page) ? 'Phone' : 'Desktop' }).click();
+      // The scaled frame never makes the page wider.
+      await noSidewaysScroll(page, 'homepage builder with preview');
+
+      const loaded = async () => Number(await frame.getAttribute('data-loaded'));
+      // Land (a grid): photo height 1 (low and wide).
+      const land = page.locator('.hb-list > li', { hasText: 'Land' });
+      await land.locator('.hb-open').click();
+      let seq = await loaded();
+      await page.locator('#hb-photo_height').fill('1');
+      await expect(page.locator('[data-out="photo_height"]')).toHaveText('1');
+      await expect.poll(loaded, { timeout: 30_000 }).toBeGreaterThan(seq);
+      await expect(inner.locator('section.hs-grid[aria-label="Land"]')).toHaveClass(/(^|\s)ph-1(\s|$)/);
+      if (narrow(page)) await page.locator('.hb-done').click();
+      // Not saved yet: the real homepage is unchanged.
+      const landId = original.find((r: any) => r.title === 'Land').id;
+      expect(JSON.parse(sql(info, 'SELECT settings FROM home_sections WHERE id = ?', landId)[0].settings).photo_height ?? 3).toBe(3);
+
+      // The "Top stories" list: small photos size 5.
+      const rows = page.locator('.hb-list > li').filter({ hasText: 'Photo + title rows' }).first();
+      await rows.locator('.hb-open').click();
+      seq = await loaded();
+      await page.locator('#hb-thumb_size').fill('5');
+      await expect.poll(loaded, { timeout: 30_000 }).toBeGreaterThan(seq);
+      await expect(inner.locator('section.hs-list')).toHaveClass(/(^|\s)th-5(\s|$)/);
+      if (narrow(page)) await page.locator('.hb-done').click();
+
+      await page.click('.hb-save');
+      await expect(page.locator('.hb-status')).toContainText('Saved', { timeout: 15_000 });
+      const listId = original.find((r: any) => r.layout === 'list').id;
+      expect(JSON.parse(sql(info, 'SELECT settings FROM home_sections WHERE id = ?', landId)[0].settings)).toMatchObject({ photo_height: 1, thumb_size: 3 });
+      expect(JSON.parse(sql(info, 'SELECT settings FROM home_sections WHERE id = ?', listId)[0].settings)).toMatchObject({ thumb_size: 5, photo_height: 3 });
+
+      // The homepage uses them (tablets and desktops; phones keep their one big photo + rows).
+      await page.goto('/');
+      const landSec = page.locator('section.hs-grid[aria-label="Land"]');
+      await expect(landSec).toHaveClass(/(^|\s)ph-1(\s|$)/);
+      await expect(page.locator('section.hs-list')).toHaveClass(/(^|\s)th-5(\s|$)/);
+      const media = (await landSec.locator('.card-media').nth(1).boundingBox())!;
+      if (page.viewportSize()!.width >= 768) {
+        expect(media.width / media.height, 'Land photos are 21:9').toBeGreaterThan(2.2);
+        expect(media.width / media.height).toBeLessThan(2.45);
+        const thumb = (await page.locator('section.hs-list .v-row .card-media').first().boundingBox())!;
+        expect(Math.round(thumb.width), 'small photos are 144 px').toBeGreaterThanOrEqual(142);
+      } else {
+        expect(media.width / media.height, 'phones keep their small row photos').toBeLessThan(1.6);
+      }
+    } finally {
+      // Put the homepage back as it was for the next browser (test housekeeping, straight in the database).
+      for (const r of original) sql(info, 'UPDATE home_sections SET position = ?, layout = ?, title = ?, span = ?, settings = ?, active = ? WHERE id = ?', r.position, r.layout, r.title, r.span, r.settings, r.active, r.id);
+    }
+  });
+});
+
+test('SEO: code typed into a headline stays text in the page, its tags and the JSON-LD', async ({ page }, info) => {
+  const slug = `seo-code-${Date.now().toString(36)}-${info.project.name}`;
+  const title = 'Test </script><script>window.__gapX=1</script> "quoted" & <b>bold</b>';
+  const cat = sql(info, "SELECT id FROM categories WHERE slug = 'business'")[0].id;
+  const media = sql(info, 'SELECT id FROM media ORDER BY id LIMIT 1')[0].id;
+  // Published long ago, so it never reaches the homepage or the top of a list while it exists.
+  sql(info, `INSERT INTO posts (title, slug, excerpt, summary, body, credits, author_name, category_id, media_id, status, sticky, live_label, views, published_at, updated_at, created_at)
+             VALUES (?, ?, ?, '', '<p>Body.</p>', '', ?, ?, ?, 'published', 0, 0, 0, '2001-01-01 00:00:00', '2001-01-01 00:00:00', '2001-01-01 00:00:00')`,
+    title, slug, 'Excerpt with </script> and <img src=x onerror=alert(1)>', 'Author </script>', cat, media);
+  try {
+    const res = await page.goto(isLive(info) ? `/business/${slug}` : `/news/${slug}`);
+    expect(res!.status()).toBe(200);
+    expect(await page.evaluate(() => (window as any).__gapX)).toBeUndefined();
+    const html = await res!.text();
+    expect(html).not.toContain('<script>window.__gapX');
+    expect(html).not.toContain('<img src=x');
+    // The tags hold the text exactly as typed (escaped in the HTML).
+    await expect(page.locator('meta[property="og:title"]')).toHaveAttribute('content', title);
+    await expect(page.locator('meta[name="description"]')).toHaveAttribute('content', 'Excerpt with and'); // the tags are removed, the spaces joined
+    await expect(page.locator('h1.article-title')).toHaveText(title);
+    // The JSON-LD has every <, > and & as \u escapes, so it can never end its script; read back, it is the same text.
+    await expect(page.locator('script[type="application/ld+json"]')).toHaveCount(1);
+    const raw = /<script type="application\/ld\+json">([\s\S]*?)<\/script>/.exec(html)![1];
+    expect(raw).not.toMatch(/[<>&]/);
+    expect(raw).toContain('\\u003C/script\\u003E');
+    const data = JSON.parse(raw);
+    expect(data.headline).toBe(title);
+    expect(data.author[0].name).toBe('Author </script>');
+  } finally {
+    sql(info, 'DELETE FROM posts WHERE slug = ?', slug); // the test's own row
+  }
 });

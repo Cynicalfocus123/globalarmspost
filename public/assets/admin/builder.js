@@ -1,6 +1,8 @@
 // Homepage builder (task F16): drag sections into order (mouse, touch or pen; ↑ ↓ buttons too), every section
 // setting from the layout registry, categories as a checkbox list (children indented) with "All categories" and
 // a search box, the same list for "Leave out". Saved to home_sections. On phones the settings are a bottom sheet.
+// Step 5 (rest of F16): picture size sliders per section, and a live preview drawn by the site itself (the same
+// section templates) from the unsaved settings: beside the builder on wide screens, under it on phones.
 import { $, $$, openSheet, closeSheet } from './ui.js';
 import { api, esc } from './api.js';
 
@@ -43,15 +45,33 @@ list.addEventListener('pointerdown', (e) => {
   e.preventDefault();
   const li = grip.closest('li');
   grip.setPointerCapture(e.pointerId);
-  drag = { li, key: li.dataset.key, id: e.pointerId };
+  drag = { li, key: li.dataset.key, id: e.pointerId, y: e.clientY };
   li.classList.add('dragging');
+  requestAnimationFrame(edgeScroll);
 });
-document.addEventListener('pointermove', (e) => {
-  if (!drag || e.pointerId !== drag.id) return;
+function placeAt(y) {
   const items = $$('li', list).filter((x) => x !== drag.li);
-  const after = items.find((x) => { const r = x.getBoundingClientRect(); return e.clientY < r.top + r.height / 2; });
+  const after = items.find((x) => { const r = x.getBoundingClientRect(); return y < r.top + r.height / 2; });
   if (after) list.insertBefore(drag.li, after);
   else list.append(drag.li);
+}
+// A long homepage (many sections) is taller than a laptop screen: held near the top or bottom edge, the page
+// scrolls by itself while dragging (step 5), so a section can go anywhere in the list.
+function edgeScroll() {
+  if (!drag) return;
+  const top = 80;
+  const bottom = innerHeight - (phone() ? 140 : 80);
+  const dy = drag.y < top ? -Math.ceil((top - drag.y) / 4) : drag.y > bottom ? Math.ceil((drag.y - bottom) / 4) : 0;
+  if (dy) {
+    scrollBy(0, dy);
+    placeAt(drag.y);
+  }
+  requestAnimationFrame(edgeScroll);
+}
+document.addEventListener('pointermove', (e) => {
+  if (!drag || e.pointerId !== drag.id) return;
+  drag.y = e.clientY;
+  placeAt(e.clientY);
 });
 const endDrag = (e) => {
   if (!drag || e.pointerId !== drag.id) return;
@@ -123,6 +143,8 @@ function renderForm() {
     ${range('span', 'Width (span 3–12)', s.span, 3, 12)}
     ${range('count', 'Stories', set.count, 1, 20)}
     ${'columns' in set ? range('columns', 'Columns', set.columns, 1, 6) : ''}
+    ${'photo_height' in set ? range('photo_height', 'Photo height (1 low and wide … 5 square)', set.photo_height, 1, 5) : ''}
+    ${'thumb_size' in set ? range('thumb_size', 'Small photo size in rows (1 small … 5 big)', set.thumb_size, 1, 5) : ''}
     ${'tabs' in set ? `<label class="a-check"><input type="checkbox" data-key="tabs"${set.tabs ? ' checked' : ''}> Top stories / Latest tabs</label>` : ''}
     ${catBox('categories', 'Show stories from', set.categories || [], true)}
     ${catBox('exclude_categories', 'Leave out', set.exclude_categories || [], (set.exclude_categories || []).length > 0)}
@@ -211,6 +233,53 @@ $('.hb-add').addEventListener('click', (e) => {
 
 function touched() {
   statusLine.textContent = 'Changes not saved yet.';
+  delete statusLine.dataset.saved;
+  schedulePreview();
+}
+
+/* ---------- live preview ---------- */
+// The unsaved sections go to /admin/api/homepage-draft (checked like a save, kept in this session only), then the
+// frame loads /admin/homepage/preview, which draws them with the site's own layout and section templates.
+// The frame is drawn at desktop (1280 px) or phone (390 px) width and scaled down to fit its box.
+const frame = $('.hb-frame');
+const prevNote = $('.hb-prev-note');
+let prevTimer = null;
+let prevSeq = 0;
+const payload = () => sections.map((s) => ({ id: s.id, layout: s.layout, title: s.title, span: s.span, active: s.active, settings: settingsOf(s) }));
+function schedulePreview() {
+  if (!frame) return;
+  clearTimeout(prevTimer);
+  prevTimer = setTimeout(drawPreview, 450);
+}
+async function drawPreview() {
+  const seq = ++prevSeq;
+  try {
+    await api('/admin/api/homepage-draft', { sections: payload() });
+    if (seq !== prevSeq) return; // a newer change is on its way
+    frame.dataset.seq = String(seq);
+    frame.src = `/admin/homepage/preview?v=${seq}`;
+    prevNote.textContent = 'Shows your changes before you save. Drawn by the site itself.';
+  } catch (err) {
+    prevNote.textContent = `Preview: ${err.message}`;
+  }
+}
+function fitPreview() {
+  if (!frame) return;
+  const box = frame.parentElement;
+  const w = Number($('input[name="hb-prev-w"]:checked')?.value || 1280);
+  const k = Math.min(1, box.clientWidth / w);
+  frame.style.width = `${w}px`;
+  frame.style.height = `${Math.round(box.clientHeight / k)}px`;
+  frame.style.transform = `scale(${k})`;
+  frame.dataset.width = String(w);
+}
+if (frame) {
+  frame.addEventListener('load', () => { if (frame.dataset.seq) frame.dataset.loaded = frame.dataset.seq; });
+  $('.hb-prev-size').addEventListener('change', fitPreview);
+  addEventListener('resize', fitPreview);
+  if (phone()) $('input[name="hb-prev-w"][value="390"]').checked = true;
+  fitPreview();
+  schedulePreview();
 }
 $('.hb-save').addEventListener('click', async () => {
   const btn = $('.hb-save');

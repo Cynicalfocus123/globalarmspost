@@ -46,12 +46,12 @@ const config = join(TMP, 'config.php');
 const db = join(TMP, 'site.sqlite').replaceAll('\\', '/');
 const sessions = join(TMP, 'sessions').replaceAll('\\', '/');
 mkdirSync(sessions, { recursive: true });
-// login_ip_limit, suggest_limit: every test browser comes from 127.0.0.1, so the per-address limits are raised.
+// login_ip_limit, suggest_limit, api_limit: every test browser comes from 127.0.0.1, so the per-address limits are raised.
 // The per-email limit (5 wrong tries in 15 minutes) stays as on the real site and is tested.
 let mysqld = null;
 let stopping = false;
 const dbConfig = USE_MYSQL ? await startMysql() : `['driver' => 'sqlite', 'path' => '${db}']`;
-writeFileSync(config, `<?php\nreturn ['db' => ${dbConfig}, 'debug' => true, 'session_path' => '${sessions}', 'login_ip_limit' => 100000, 'suggest_limit' => 100000];\n`);
+writeFileSync(config, `<?php\nreturn ['db' => ${dbConfig}, 'debug' => true, 'session_path' => '${sessions}', 'login_ip_limit' => 100000, 'suggest_limit' => 100000, 'api_limit' => 100000];\n`);
 // One note per server (copy + port), so the preview and the tests never read each other's database.
 writeFileSync(join(ROOT, 'test-data', `${copy}-${port}.json`), JSON.stringify({ config, docroot, ext }));
 

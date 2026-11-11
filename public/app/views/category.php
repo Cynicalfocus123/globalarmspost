@@ -4,7 +4,7 @@ declare(strict_types=1);
 /** @var int $page */
 // Category page (approved wireframe 4): newest first, grouped by day under a plain text date heading.
 $slug = (string) $category['slug'];
-$perPage = 20;
+$perPage = max(5, min(50, (int) setting('category_per_page', '20'))); // set in the admin (Settings)
 $opts = ['categories' => [$slug], 'count' => $perPage, 'page' => $page];
 $posts = posts_query($opts);
 $total = posts_count($opts);

@@ -691,6 +691,188 @@ h2.sec{font:600 20px/1.3 Georgia,serif;margin:40px 0 4px}
 </div>
 </div>
 
+<!-- 8. Admin, step 5 -->
+<h2 class="sec">8. Admin, step 5: menu, settings, categories, pictures, backup</h2>
+<p class="sub">The same admin as section 5: left menu from 900 px; under 900 px the bottom tab bar, and settings open as sheets from the bottom. Every button is at least 44 px tall on touch screens. Admins only: Menu, Settings, Backup (editors see Categories, Tags and Pictures).</p>
+
+<div class="row">
+<div><div class="lb">8a. Menu builder, /admin/menu (desktop)</div>
+<div class="pg flush"><div class="a-shell">
+  <div class="a-side"><img src="../public/assets/img/logo/logo-1x.webp" width="110" height="35" alt="Global Arms Post logo" style="display:block;height:auto;margin-bottom:10px"><div class="a-nav">Dashboard</div><div class="a-nav">Stories</div><div class="a-nav">Homepage</div><div class="a-nav">Categories</div><div class="a-nav">Tags</div><div class="a-nav">Authors</div><div class="a-nav">Pictures</div><div class="a-nav on">Menu</div><div class="a-nav">Users</div><div class="a-nav">Settings</div><div class="a-nav">Backup</div></div>
+  <div class="a-main">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><b style="font:600 17px Georgia,serif">Menu</b><span class="a-btn2" style="margin-left:auto">View site ↗</span><span class="a-btn2">+ Add item</span><span class="a-btn">Save</span></div>
+    <div class="a-ed" style="grid-template-columns:minmax(0,1fr) 200px">
+      <div>
+        <div class="a-sec"><span class="a-grip">⋮⋮</span><b>Home</b><span class="a-pill dr">Home page</span><span style="margin-left:auto;font-size:10px">↑ ↓ ← →</span></div>
+        <div class="a-sec"><span class="a-grip">⋮⋮</span><b>Land</b><span class="a-pill dr">Category</span></div>
+        <div class="a-sec on"><span class="a-grip">⋮⋮</span><b>Regions</b><span class="a-pill dr">Category</span></div>
+        <div class="a-sec" style="margin-left:22px"><span class="a-grip">⋮⋮</span><b>U.S.</b><span class="a-pill dr">level 2</span></div>
+        <div class="a-sec" style="margin-left:22px"><span class="a-grip">⋮⋮</span><b>Asia</b><span class="a-pill dr">level 2</span></div>
+        <div class="a-sec" style="margin-left:44px"><span class="a-grip">⋮⋮</span><b>Big story</b><span class="a-pill dr">Story · level 3</span></div>
+        <div class="a-sec" style="opacity:.6"><span class="a-grip">⋮⋮</span><b>Business</b><span class="a-pill" style="background:#fff3f5;color:var(--red)">Hidden</span></div>
+        <div class="a-sec"><span class="a-grip">⋮⋮</span><b>Shop</b><span class="a-pill dr">Web address · New tab</span></div>
+        <span class="note">Drag ⋮⋮ (mouse, touch, pen); drag right or left, or → ←, to nest. Children move with their parent. Save = one go, the header changes at once.</span>
+      </div>
+      <div class="a-panel"><div class="a-box"><div class="a-h">Menu item</div>
+        <div class="a-lbl">Links to</div><div class="a-in" style="font-size:10px;padding:0 6px;display:flex;align-items:center">Category ▾ (Home page, Category, Tag, Story, Page, Web address)</div>
+        <div class="a-lbl">Category</div><div class="a-in" style="font-size:10px;padding:0 6px;display:flex;align-items:center">Regions ▾</div>
+        <div class="a-lbl">Text in the menu</div><div class="a-in" style="font-size:10px;padding:0 6px;display:flex;align-items:center">Regions</div>
+        <div class="a-lbl">Inside</div><div class="a-in" style="font-size:10px;padding:0 6px;display:flex;align-items:center">— Top level — ▾</div>
+        <label class="a-chk"><span class="a-cb"></span>Open in a new tab</label>
+        <label class="a-chk"><span class="a-cb on"></span>Show in the header</label>
+        <span class="a-btn2" style="color:var(--red)">Remove (with 4 under it)</span>
+      </div></div>
+    </div>
+  </div>
+</div></div></div>
+<div><div class="lb">Phone</div>
+<div class="ph">
+  <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px"><b style="font:600 14px Georgia,serif">Menu</b><span class="a-btn2" style="margin-left:auto">+ Add</span><span class="a-btn" style="padding:3px 8px">Save</span></div>
+  <div class="a-sec"><span class="a-grip">⋮⋮</span><b>Home</b></div>
+  <div class="a-sec on"><span class="a-grip">⋮⋮</span><b>Regions</b></div>
+  <div class="a-sec" style="margin-left:14px"><span class="a-grip">⋮⋮</span><b>Asia</b></div>
+  <div style="font-size:10px;margin:0 0 8px 40px">↑ ↓ ← → (44 px each, under the name)</div>
+  <div class="a-sheet">
+    <div class="a-h">Menu item</div>
+    <div class="a-lbl">Links to</div><div class="a-in" style="font-size:10px;padding:0 6px;display:flex;align-items:center">Story ▾</div>
+    <div class="a-lbl">Story</div><div class="a-in" style="font-size:10px;padding:0 6px;display:flex;align-items:center">⌕ frigate</div>
+    <div style="font-size:10px;border:1px solid var(--line);border-radius:6px;padding:4px 6px;margin-top:4px">Shipyard lays keel for second frigate… <span class="a-pill pub">published</span></div>
+    <div class="a-lbl">Text in the menu</div><div class="a-in"></div>
+    <span class="a-btn" style="display:block;text-align:center;margin-top:6px">Done</span>
+  </div>
+  <div class="a-tabbar"><span>Home</span><span>Stories</span><span>+</span><span>Pictures</span><span class="on">More</span></div>
+</div>
+<p class="foot">A web address must start with https://, http://, / or mailto: (anything else is refused on Save). A link to a story that is not public yet stays out of the header until it is.</p>
+</div>
+</div>
+
+<div class="row" style="margin-top:18px">
+<div><div class="lb">8b. Settings, /admin/settings (desktop)</div>
+<div class="pg">
+  <b style="font:600 17px Georgia,serif">Settings</b>
+  <div class="a-box" style="margin-top:8px"><div class="a-h">Site</div>
+    <div class="a-lbl">Site name</div><div class="a-in" style="font-size:10px;padding:0 6px;display:flex;align-items:center">Global Arms Post</div>
+    <div class="a-lbl">Tagline (description for pages without their own)</div><div class="a-in" style="font-size:10px;padding:0 6px;display:flex;align-items:center">Defence and security news from around the world</div>
+    <div class="a-lbl">About text (footer)</div><div class="a-in" style="height:34px"></div>
+    <div class="a-lbl">Site address (share links, sitemap, search engines)</div><div class="a-in" style="font-size:10px;padding:0 6px;display:flex;align-items:center">https://globalarmspost.com</div>
+    <div class="a-cols" style="gap:8px"><div><div class="a-lbl">Time zone</div><div class="a-in" style="font-size:10px;padding:0 6px;display:flex;align-items:center">Asia/Bangkok ▾</div></div><div><div class="a-lbl">Stories per category page</div><div class="a-in" style="font-size:10px;padding:0 6px;display:flex;align-items:center;width:60px">20</div></div></div>
+    <span class="a-btn" style="margin-top:8px">Save site settings</span>
+  </div>
+  <div class="a-box" style="margin-top:8px"><div class="a-h">Trending tags · Page cache · Search index</div><div class="s" style="width:70%"></div><div class="s" style="width:50%"></div></div>
+  <span class="note">Every save clears the page cache; a wrong address or number is refused with a message and changes nothing</span>
+</div></div>
+<div><div class="lb">Phone</div>
+<div class="ph">
+  <b style="font:600 14px Georgia,serif">Settings</b>
+  <div class="a-lbl">Site name</div><div class="a-in"></div>
+  <div class="a-lbl">Tagline</div><div class="a-in"></div>
+  <div class="a-lbl">Site address</div><div class="a-in"></div>
+  <div class="a-lbl">Time zone</div><div class="a-in"></div>
+  <div class="a-lbl">Stories per category page</div><div class="a-in" style="width:60px"></div>
+  <span class="a-btn" style="display:block;text-align:center;margin-top:8px">Save site settings</span>
+  <div class="a-tabbar"><span>Home</span><span>Stories</span><span>+</span><span>Pictures</span><span class="on">More</span></div>
+</div></div>
+</div>
+
+<div class="row" style="margin-top:18px">
+<div><div class="lb">8c. Categories, /admin/categories and /admin/categories/{id} (desktop)</div>
+<div class="pg">
+  <div style="display:flex;align-items:center;gap:8px"><b style="font:600 17px Georgia,serif">Categories</b><span class="a-btn" style="margin-left:auto">Save order</span></div>
+  <div class="a-cols" style="margin-top:8px">
+    <div>
+      <div class="a-sec"><span class="a-grip">⋮⋮</span><b>Land</b><span style="font-size:9px;color:#777">/land · 4 stories</span><span class="a-pill pub">In menu</span><span style="margin-left:auto;font-size:10px">↑ ↓ Edit</span></div>
+      <div class="a-sec"><span class="a-grip">⋮⋮</span><b>Regions</b><span style="font-size:9px;color:#777">/regions</span><span class="a-pill pub">In menu</span></div>
+      <div class="a-sec" style="margin-left:22px"><span class="a-grip">⋮⋮</span><b>Asia</b><span style="font-size:9px;color:#777">/asia · 6 stories</span></div>
+      <div class="a-sec" style="margin-left:22px"><span class="a-grip">⋮⋮</span><b>Europe</b><span style="font-size:9px;color:#777">/europe</span></div>
+      <div class="a-sec"><span class="a-grip">⋮⋮</span><b>Business</b><span style="font-size:9px;color:#777">/business</span></div>
+      <div class="a-box"><div class="a-h">Add a category</div><div class="a-lbl">Name</div><div class="a-in"></div><div class="a-lbl">Inside</div><div class="a-in" style="font-size:10px;padding:0 6px;display:flex;align-items:center">— Top level — ▾</div><span class="a-btn" style="margin-top:6px">Add category</span></div>
+    </div>
+    <div class="a-box"><div class="a-h">Edit category</div>
+      <div class="a-lbl">Name</div><div class="a-in" style="font-size:10px;padding:0 6px;display:flex;align-items:center">Asia</div>
+      <div class="a-lbl">Address</div><div class="a-in" style="font-size:10px;padding:0 6px;display:flex;align-items:center">asia</div>
+      <div style="font-size:9px;color:#777">A new address also updates the menu and homepage sections. admin, search, tag, api … are kept free.</div>
+      <div class="a-lbl">Inside</div><div class="a-in" style="font-size:10px;padding:0 6px;display:flex;align-items:center">Regions ▾ (never itself or its own sub-categories)</div>
+      <label class="a-chk"><span class="a-cb on"></span>Show in the header menu</label>
+      <span class="a-btn" style="margin-top:6px">Save category</span>
+    </div>
+  </div>
+  <span class="note">A category moves with its sub-categories and stays inside its parent when dragged; Edit moves it into another one</span>
+</div></div>
+<div><div class="lb">Phone</div>
+<div class="ph">
+  <div style="display:flex;align-items:center;gap:6px"><b style="font:600 14px Georgia,serif">Categories</b><span class="a-btn" style="margin-left:auto;padding:3px 8px">Save order</span></div>
+  <div class="a-sec" style="margin-top:8px"><span class="a-grip">⋮⋮</span><b>Land</b></div>
+  <div style="font-size:10px;margin:-4px 0 6px 40px">↑ ↓ · Edit</div>
+  <div class="a-sec"><span class="a-grip">⋮⋮</span><b>Regions</b></div>
+  <div class="a-sec" style="margin-left:14px"><span class="a-grip">⋮⋮</span><b>Asia</b></div>
+  <div class="a-sec" style="margin-left:14px"><span class="a-grip">⋮⋮</span><b>Europe</b></div>
+  <div class="a-tabbar"><span>Home</span><span>Stories</span><span>+</span><span>Pictures</span><span class="on">More</span></div>
+</div></div>
+</div>
+
+<div class="row" style="margin-top:18px">
+<div><div class="lb">8d. Pictures, /admin/pictures and /admin/pictures/{id} (desktop)</div>
+<div class="pg">
+  <b style="font:600 17px Georgia,serif">Pictures</b>
+  <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:8px 0">
+    <div><div class="im" style="aspect-ratio:3/2"></div><div style="font-size:9px">Ship at sea · Used 2 times</div></div>
+    <div><div class="im" style="aspect-ratio:3/2"></div><div style="font-size:9px">Tank column · Used 1 time</div></div>
+    <div><div class="im" style="aspect-ratio:3/2"></div><div style="font-size:9px">No alt text · Not used</div></div>
+    <div><div class="im" style="aspect-ratio:3/2"></div><div style="font-size:9px">Jet · Used 3 times</div></div>
+    <div><div class="im" style="aspect-ratio:3/2"></div><div style="font-size:9px">Portrait · Used 1 time</div></div>
+  </div>
+  <div class="a-cols">
+    <div><div class="im" style="aspect-ratio:3/2"></div><div style="font-size:9px;color:#777">480, 960, 1600 px · AVIF + WebP</div></div>
+    <div class="a-box"><div class="a-lbl">Alt text</div><div class="a-in"></div><div class="a-lbl">Caption</div><div class="a-in"></div><div class="a-lbl">Credit</div><div class="a-in"></div><span class="a-btn" style="margin-top:6px">Save picture</span></div>
+  </div>
+  <div class="a-box" style="margin-top:8px"><div class="a-h">Where it is used</div><div class="a-li"><span class="a-pill dr">Main photo</span>Shipyard lays keel… (published)</div><div class="a-li"><span class="a-pill dr">Gallery</span>Navy orders… (draft)</div><div style="font-size:9px;color:#777">Nowhere → "Delete picture" (admins, with a confirm): the row and its own files go.</div></div>
+</div></div>
+<div><div class="lb">Phone</div>
+<div class="ph">
+  <b style="font:600 14px Georgia,serif">Pictures</b>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px"><div class="im" style="aspect-ratio:3/2"></div><div class="im" style="aspect-ratio:3/2"></div><div class="im" style="aspect-ratio:3/2"></div><div class="im" style="aspect-ratio:3/2"></div></div>
+  <div style="font-size:10px;margin-top:6px">Tap a picture: big photo, then the texts, "Where it is used" and Delete under each other.</div>
+  <div class="a-tabbar"><span>Home</span><span>Stories</span><span>+</span><span class="on">Pictures</span><span>More</span></div>
+</div></div>
+</div>
+
+<div class="row" style="margin-top:18px">
+<div><div class="lb">8e. Backup, /admin/backup (desktop)</div>
+<div class="pg">
+  <b style="font:600 17px Georgia,serif">Backup</b>
+  <div class="a-box" style="margin-top:8px"><div class="a-h">Make a backup</div><div style="font-size:10px;color:#555">One ZIP: every table as JSON (MySQL or SQLite) + every picture in uploads/. Kept in storage/backups, which visitors can never open. Restoring comes later.</div><span class="a-btn" style="margin-top:6px">Make a backup now</span></div>
+  <div class="a-box" style="margin-top:8px"><div class="a-h">Earlier backups</div>
+    <div class="a-li"><b style="font-size:10px">gap-backup-20261111-090212-4be1c0.zip</b><span style="font-size:9px;color:#777">11 Nov 2026, 4:02 PM · 38.2 MB</span><span class="a-btn2" style="margin-left:auto">Download</span></div>
+    <div class="a-li"><b style="font-size:10px">gap-backup-20261104-090010-91a3ff.zip</b><span style="font-size:9px;color:#777">4 Nov 2026 · 35.9 MB</span><span class="a-btn2" style="margin-left:auto">Download</span></div>
+  </div>
+</div></div>
+<div><div class="lb">Phone</div>
+<div class="ph">
+  <b style="font:600 14px Georgia,serif">Backup</b>
+  <span class="a-btn" style="display:block;text-align:center;margin-top:8px">Make a backup now</span>
+  <div class="a-li" style="flex-wrap:wrap"><b style="font-size:10px">gap-backup-20261111-….zip</b><span style="font-size:9px;color:#777">38.2 MB</span><span class="a-btn2">Download</span></div>
+  <div class="a-tabbar"><span>Home</span><span>Stories</span><span>+</span><span>Pictures</span><span class="on">More</span></div>
+</div></div>
+</div>
+
+<div class="row" style="margin-top:18px">
+<div><div class="lb">8f. Homepage builder: picture sizes and live preview (desktop, 1280 px and wider)</div>
+<div class="pg">
+  <div style="display:grid;grid-template-columns:1fr 150px 1.2fr;gap:10px">
+    <div><div class="a-sec on"><span class="a-grip">⋮⋮</span><b>Land</b></div><div class="a-sec"><span class="a-grip">⋮⋮</span><b>Top stories</b></div><div class="a-sec"><span class="a-grip">⋮⋮</span><b>Europe</b></div></div>
+    <div class="a-box"><div class="a-lbl">Photo height (1 low and wide … 5 square): 1</div><div class="a-range"><span style="width:10%"></span></div><div class="a-lbl">Small photo size in rows: 3</div><div class="a-range"><span style="width:50%"></span></div></div>
+    <div class="a-box"><div style="display:flex;justify-content:space-between"><b style="font-size:10px">Live preview</b><span style="font-size:9px">[Desktop | Phone]</span></div><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-top:6px"><div class="im" style="aspect-ratio:21/9"></div><div class="im" style="aspect-ratio:21/9"></div><div class="im" style="aspect-ratio:21/9"></div><div class="im" style="aspect-ratio:21/9"></div></div><div style="font-size:9px;color:#777;margin-top:4px">Drawn by the site itself, before Save</div></div>
+  </div>
+  <span class="note">Under 1280 px the preview sits under the builder; on phones it starts at phone width</span>
+</div></div>
+<div><div class="lb">Phone</div>
+<div class="ph">
+  <div class="a-sec on"><span class="a-grip">⋮⋮</span><b>Land</b></div>
+  <div class="a-sec"><span class="a-grip">⋮⋮</span><b>Top stories</b></div>
+  <div class="a-box"><b style="font-size:10px">Live preview</b><div class="im" style="aspect-ratio:16/10;margin-top:6px"></div><div class="t" style="width:80%"></div><div class="mr"><div><div class="t"></div></div><div class="im"></div></div></div>
+</div></div>
+</div>
+
 </main>
 </body>
 </html>

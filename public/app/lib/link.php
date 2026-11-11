@@ -13,11 +13,14 @@ declare(strict_types=1);
  *   page       /#contact                /contact
  *   admin      /admin                   /admin
  *
+ * $mode 'path' gives the proper address in both copies (canonical addresses, the sitemap, the JSON API): the
+ * server answers /asia and /{category}/{slug} in the git/ copy too; only its in-page links use '#'.
+ *
  * @param array<string, string> $p
  */
-function site_link(string $route, array $p = []): string
+function site_link(string $route, array $p = [], ?string $mode = null): string
 {
-    $hash = build_info()['link_mode'] === 'hash';
+    $hash = ($mode ?? build_info()['link_mode']) === 'hash';
     $slug = rawurlencode($p['slug'] ?? '');
     $query = isset($p['q']) && $p['q'] !== '' ? '?q=' . rawurlencode($p['q']) : '';
     $page = isset($p['page']) && (int) $p['page'] > 1 ? '?page=' . (int) $p['page'] : '';
@@ -70,6 +73,16 @@ function absolute_url(string $path = '/'): string
         $base = ($https ? 'https://' : 'http://') . $host;
     }
     return $base . '/' . ltrim($path, '/');
+}
+
+/**
+ * The full proper address of a page (canonical links, Open Graph, the sitemap, the API): site_url (or the request's
+ * host) + the path form of site_link(), the same in both copies.
+ * @param array<string, string> $p
+ */
+function public_url(string $route, array $p = []): string
+{
+    return absolute_url(site_link($route, $p, 'path'));
 }
 
 /**

@@ -229,6 +229,10 @@ test('stories list: tabs with counts, search and filters', async ({ page }, info
   await page.selectOption('#f-cat', asia);
   await page.click('.a-filters button');
   await expect(page).toHaveURL(/cat=/);
+  // The address changes as soon as the filter's page starts to load; read the rows only once it has loaded
+  // (WebKit read them in between: "Execution context was destroyed", step 5 run 2).
+  await page.waitForLoadState('load');
+  await expect(page.locator('#f-cat')).toHaveValue(asia);
   const cats = narrow(page) ? await page.locator('.story-row .c-phone').allTextContents() : await page.locator('.story-row .c-cat').allTextContents();
   expect(cats.length).toBeGreaterThan(5);
   for (const c of cats) expect(c).toContain('Asia');

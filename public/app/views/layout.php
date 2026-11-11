@@ -2,6 +2,7 @@
 declare(strict_types=1);
 /** @var string $title */
 /** @var string $body */
+/** @var array<string, mixed> $meta SEO tags from app/lib/seo.php (may be missing: admin previews) */
 $site = setting('site_name', 'Global Arms Post');
 $logo = logo_meta();
 $L = '/assets/img/logo/';
@@ -10,8 +11,7 @@ $L = '/assets/img/logo/';
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title><?= e($title === '' ? $site : $title . ' | ' . $site) ?></title>
-<meta name="description" content="<?= e(setting('tagline')) ?>">
+<?= seo_head($title, $meta ?? []) ?>
 <meta name="theme-color" content="#C8102E">
 <link rel="preload" as="image" type="image/avif" imagesrcset="<?= e($L) ?>logo-1x.avif 1x, <?= e($L) ?>logo-2x.avif 2x" fetchpriority="high">
 <link rel="preload" as="font" type="font/woff2" href="/assets/fonts/inter-latin-wght-normal.woff2" crossorigin>

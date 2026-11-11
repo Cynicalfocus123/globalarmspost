@@ -19,6 +19,16 @@ History, rules and design notes: [PROJECT_LOG.md](PROJECT_LOG.md). Wireframes: [
 - **Trending tags** row under the header, from the tags most used by recent stories.
 - `/admin/settings` holds the trending tags, the cache and the **Rebuild search index** button.
 
+## Step 5: the rest of the admin, SEO, the API and backups
+- **SEO**: every public page has its title, description, canonical address, Open Graph and X card tags; story pages add NewsArticle JSON-LD. `/sitemap.xml` (home, categories, public stories with lastmod, tags) and `/robots.txt`. Old WordPress addresses (`/category/europe/`, `/2026/07/slug/`) move with a 301. Full addresses use the Site address setting (`site_url`), else the visitor's own host.
+- **Menu builder** at `/admin/menu` (admins): header links to the home page, a category, tag, story, page or any web address; drag (mouse, touch, pen) or ↑ ↓ → ← to order and nest; new tab; show/hide; saved in one go and shown at once.
+- **Settings**: site name, tagline, about text, site address, time zone, stories per category page. **Categories**: add, rename, new address (reserved names refused), parent, header menu, drag order. **Pictures**: alt / caption / credit, where a picture is used, delete when unused (admins). **Tags**: rename (re-indexed for search), merge, counts.
+- **Trash**: "Delete for good" (admins, with a confirm).
+- **Homepage builder**: picture size sliders per section and a live preview drawn by the site itself (beside the builder from 1280 px, under it below that).
+- **JSON API** (read-only, public stories only, no cookies, rate limited, cached): `GET /api/posts?category=&tag=&page=&per=` (per: up to 50), `/api/posts/{slug}`, `/api/categories`.
+- **Backup** at `/admin/backup` (admins): a ZIP with every table as JSON and the pictures, kept in `storage/backups` (never served), downloaded through the admin. Restore comes later.
+- **GitHub Actions** (`.github/workflows/check.yml`): PHPStan level 6 (`phpstan.neon`) on every push. The Playwright suite runs on the owner's PC (it needs the Windows test tools).
+
 ## Run the tests
 ```bash
 PLAYWRIGHT_BROWSERS_PATH=D:/dev/playwright WORKERS=6 npm test
@@ -27,9 +37,9 @@ On MySQL 8.4 instead of SQLite (starts and stops its own MySQL server, ports 331
 ```bash
 GAP_DB=mysql PLAYWRIGHT_BROWSERS_PATH=D:/dev/playwright WORKERS=6 npm test
 ```
-721 tests on the live copy (Chromium/Firefox/WebKit × phone/tablet/desktop; `COPIES=git,live` for both copies) in three phases per copy: the setup step (`admin-setup`), the site/story/admin tests, then the publish tests (`*-publish`) after them.
+928 tests on the live copy (Chromium/Firefox/WebKit × phone/tablet/desktop; `COPIES=git,live` for both copies) in three phases per copy: the setup step (`admin-setup`), the site/story/admin/SEO/API/backup tests, then the publish tests (`*-publish`: `admin-publish.spec.ts` and `menu.spec.ts`) after them.
 Starts the real PHP server with a fresh SQLite database for both copies (git/ with `#` links, live/ with proper addresses), loads the sample stories (test database only) and stops it after the run. The first test makes the admin account through the setup step; the test accounts are in `tests/fixtures/test-users.json` (test databases only). Browsers: `PLAYWRIGHT_BROWSERS_PATH=D:/dev/playwright`.
-A passing run is **690 passed, 31 skipped, 0 failed**. The page cache is on in the tests, as on the real site. The 31 skips are by design (a database check or a scheduled-story test that runs once, tests for the phone menu or the desktop columns only) and every report lists them by name.
+A passing run is **894 passed, 34 skipped, 0 failed**. The page cache is on in the tests, as on the real site. The 34 skips are by design (a database check or a scheduled-story test that runs once, tests for the phone menu or the desktop columns only, and the homepage builder drag on phones: the admin is desktop-first) and every report lists them by name.
 
 ## Look at the site locally
 The Claude app's preview (`.claude/launch.json`, "live-copy") or `npm run preview` serves the live copy with sample stories at http://127.0.0.1:8091/. The admin is at http://127.0.0.1:8091/admin: sign in with the demo admin from `tests/fixtures/test-users.json` ("demo_admin"). It exists only in the preview's own test database (`tests/seed-admin.php`), never in `live/`.

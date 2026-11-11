@@ -113,3 +113,36 @@ export async function noSidewaysScroll(page: Page, what: string) {
 
 /** Local site time (Asia/Bangkok, GMT+7) as a datetime-local value. */
 export const bangkokInput = (ms: number) => new Date(ms + 7 * 3600_000).toISOString().slice(0, 16);
+
+/* ---------- Step 5 ---------- */
+
+/** "now" in the database's format (UTC, Y-m-d H:i:s). */
+export const nowSql = (msFromNow = 0) => new Date(Date.now() + msFromNow).toISOString().slice(0, 19).replace('T', ' ');
+
+/** POST JSON to the admin API as the signed-in user (with the session's CSRF token); returns status and JSON. */
+export async function adminApi(page: Page, path: string, body: unknown): Promise<{ status: number; json: any }> {
+  const token = await csrf(page);
+  const res = await page.request.post(path, { data: body, headers: { 'X-CSRF-Token': token, Accept: 'application/json' } });
+  let json: any = null;
+  try { json = await res.json(); } catch { /* not JSON */ }
+  return { status: res.status(), json };
+}
+
+/** Upload a picture through the admin API the way Safari does (the server makes the sizes with GD). */
+export async function uploadPicture(page: Page, file: string, alt = ''): Promise<any> {
+  const token = await csrf(page);
+  const res = await page.request.post('/admin/api/media', {
+    headers: { 'X-CSRF-Token': token, Accept: 'application/json' },
+    multipart: { kind: 'photo', name: 'step5-test', alt, source: { name: 'step5-test.webp', mimeType: 'image/webp', buffer: readFileSync(file) } },
+  });
+  expect(res.status(), 'picture uploaded').toBe(200);
+  return res.json();
+}
+
+/** A draft story saved through the admin API (drafts never show on the site, so other tests are not affected). */
+export async function draftStory(page: Page, info: TestInfo, fields: Record<string, unknown>): Promise<number> {
+  const cat = sql(info, "SELECT id FROM categories WHERE slug = 'business'")[0].id;
+  const res = await adminApi(page, '/admin/api/story', { status: 'draft', category_id: cat, body: '<p>Step 5 test story.</p>', ...fields });
+  expect(res.status, JSON.stringify(res.json)).toBe(200);
+  return res.json.id;
+}

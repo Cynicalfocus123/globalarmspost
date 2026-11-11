@@ -10,11 +10,16 @@ declare(strict_types=1);
  *   /admin/login, two-step    sign in             /admin/preview/{id}        story preview (any status)
  *   /admin/logout (POST)                          /admin/authors[/new|{id}]  authors
  *   /admin/homepage           homepage builder    /admin/categories, tags, pictures, users, account
- *   /admin/api/...            JSON: story, stories-status, media, tag, category, author, homepage
+ *   /admin/homepage/preview   live preview (F16)  /admin/categories/{id}, /admin/pictures/{id}   edit (F17)
+ *   /admin/menu               menu builder (F5)   /admin/settings            site settings (F17)
+ *   /admin/backup             backups (B17)       /admin/backup/download/{file}
+ *   /admin/api/...            JSON: story, stories-status, media, tag, category, author, homepage, homepage-draft,
+ *                             menu, stories-find, categories-order
  */
 
 require APP_DIR . '/lib/auth.php';
 require APP_DIR . '/lib/content.php';
+require APP_DIR . '/lib/manage.php';
 
 /** @param list<string> $parts the path after /admin */
 function admin_route(array $parts): void
@@ -70,14 +75,15 @@ function admin_route(array $parts): void
         },
         'preview' => admin_preview($id),
         'authors' => ($parts[1] ?? '') === 'new' || $id > 0 ? admin_author_edit($user, $id) : admin_authors($user),
-        'homepage' => admin_homepage(admin_need($user, 'admin')),
-        'categories' => admin_categories($user),
+        'homepage' => ($parts[1] ?? '') === 'preview' ? admin_homepage_preview(admin_need($user, 'admin')) : admin_homepage(admin_need($user, 'admin')),
+        'categories' => $id > 0 ? admin_category_edit($user, $id) : admin_categories($user),
         'tags' => admin_tags($user),
-        'pictures' => admin_pictures($user),
+        'pictures' => $id > 0 ? admin_picture($user, $id) : admin_pictures($user),
         'users' => admin_users(admin_need($user, 'admin')),
         'account' => admin_account($user, $parts[1] ?? ''),
-        'menu' => admin_later(admin_need($user, 'admin'), 'Menu', 'menu', 'The header builder (task F5) comes in a later step.'),
+        'menu' => admin_menu(admin_need($user, 'admin')),
         'settings' => admin_settings(admin_need($user, 'admin')),
+        'backup' => admin_backup(admin_need($user, 'admin'), $parts),
         'api' => admin_api($user, $parts[1] ?? ''),
         default => admin_fail(404, 'This admin page does not exist.', false),
     };
@@ -319,8 +325,13 @@ function admin_bulk(array $user): never
 {
     $ids = array_values(array_filter(array_map('intval', (array) ($_POST['ids'] ?? []))));
     $action = (string) ($_POST['action'] ?? '');
-    if ($_SERVER['REQUEST_METHOD'] !== 'POST' || $ids === [] || !in_array($action, ['publish', 'trash', 'restore'], true)) {
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST' || $ids === [] || !in_array($action, ['publish', 'trash', 'restore', 'delete'], true)) {
         flash('Tick at least one story and choose an action.', 'warn');
+    } elseif ($action === 'delete') {
+        // Delete for good (task B7): admins only, and only stories that are in the trash.
+        admin_need($user, 'admin');
+        $n = stories_delete_forever($ids, (int) $user['id']);
+        flash($n . ' ' . ($n === 1 ? 'story' : 'stories') . ' deleted for good.');
     } else {
         $n = stories_set_status($ids, $action, (int) $user['id']);
         $verb = ['publish' => 'published', 'trash' => 'moved to the trash', 'restore' => 'restored as drafts'][$action];
@@ -432,24 +443,112 @@ function admin_homepage(array $user): never
 
 function admin_categories(array $user): never
 {
+    $error = '';
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        try {
+            $c = category_create((string) ($_POST['name'] ?? ''), (int) ($_POST['parent_id'] ?? 0));
+            flash($c['created'] ? 'Category ' . $c['name'] . ' added.' : 'Category ' . $c['name'] . ' already exists.', $c['created'] ? 'ok' : 'warn');
+            admin_redirect('/admin/categories');
+        } catch (InputError $e) {
+            $error = $e->getMessage();
+        }
+    }
     $counts = [];
     foreach (q_all("SELECT category_id, COUNT(*) AS n FROM posts WHERE status <> 'trash' GROUP BY category_id") as $r) {
         $counts[(int) $r['category_id']] = (int) $r['n'];
     }
-    admin_page($user, 'Categories', 'categories', 'categories', ['rows' => category_tree(), 'counts' => $counts]);
+    admin_page($user, 'Categories', 'categories', 'categories', ['rows' => category_tree(), 'counts' => $counts, 'menu' => categories_in_menu(), 'error' => $error]);
 }
 
+/** Edit one category (F17): name, address, parent, shown in the header menu. */
+function admin_category_edit(array $user, int $id): never
+{
+    $cat = q_one('SELECT id, name, slug, parent_id FROM categories WHERE id = ?', [$id]);
+    if ($cat === null) {
+        admin_fail(404, 'This category does not exist.', false);
+    }
+    $error = '';
+    $inMenu = categories_in_menu()[(string) $cat['slug']] ?? false;
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        try {
+            $saved = category_update($id, $_POST, $user['role'] === 'admin');
+            flash('Category ' . $saved['name'] . ' saved.');
+            admin_redirect('/admin/categories/' . $id);
+        } catch (InputError $e) {
+            $error = $e->getMessage();
+            $cat = ['id' => $id, 'name' => clean_text($_POST['name'] ?? '', 120), 'slug' => clean_text($_POST['slug'] ?? '', 120),
+                    'parent_id' => (int) ($_POST['parent_id'] ?? 0) ?: null];
+            $inMenu = !empty($_POST['in_menu']);
+        }
+    }
+    $branch = category_branch($id);
+    $parents = array_values(array_filter(category_tree(), static fn (array $c): bool => !in_array($c['id'], $branch, true)));
+    $stories = (int) (q_one("SELECT COUNT(*) AS n FROM posts WHERE category_id = ? AND status <> 'trash'", [$id])['n'] ?? 0);
+    admin_page($user, 'Edit category', 'categories', 'category_edit', ['cat' => $cat, 'parents' => $parents, 'in_menu' => $inMenu,
+        'stories' => $stories, 'error' => $error]);
+}
+
+/** Tags (B8): counts, rename (name + address), merge two tags. */
 function admin_tags(array $user): never
 {
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $id = (int) ($_POST['id'] ?? 0);
+        try {
+            if (($_POST['action'] ?? '') === 'merge') {
+                $res = tag_merge($id, (int) ($_POST['into'] ?? 0));
+                flash('Tags merged into ' . $res['into'] . ' (' . $res['moved'] . ' ' . ($res['moved'] === 1 ? 'story' : 'stories') . ' moved).');
+            } else {
+                $res = tag_rename($id, (string) ($_POST['name'] ?? ''), (string) ($_POST['slug'] ?? ''));
+                flash('Tag renamed to ' . $res['name'] . '.');
+            }
+        } catch (InputError $e) {
+            flash($e->getMessage(), 'warn');
+        }
+        admin_redirect('/admin/tags');
+    }
     $rows = q_all("SELECT t.id, t.name, t.slug, (SELECT COUNT(*) FROM post_tags pt JOIN posts p ON p.id = pt.post_id WHERE pt.tag_id = t.id AND p.status <> 'trash') AS stories
                      FROM tags t ORDER BY t.name");
     admin_page($user, 'Tags', 'tags', 'tags', ['rows' => $rows]);
 }
 
+/** Pictures (F17): every stored picture, newest first, with how often it is used. */
 function admin_pictures(array $user): never
 {
-    $rows = q_all('SELECT id, path, widths, has_avif, width, height, alt, created_at FROM media ORDER BY id DESC LIMIT 120');
-    admin_page($user, 'Pictures', 'pictures', 'pictures', ['rows' => $rows]);
+    $per = 60;
+    $page = max(1, (int) ($_GET['page'] ?? 1));
+    $total = (int) (q_one('SELECT COUNT(*) AS n FROM media')['n'] ?? 0);
+    $rows = q_all('SELECT id, path, widths, has_avif, width, height, alt, created_at FROM media ORDER BY id DESC LIMIT ' . $per . ' OFFSET ' . (($page - 1) * $per));
+    $used = [];
+    foreach ($rows as $m) {
+        $used[(int) $m['id']] = count(media_usage((int) $m['id']));
+    }
+    admin_page($user, 'Pictures', 'pictures', 'pictures', ['rows' => $rows, 'used' => $used, 'page' => $page, 'pages' => max(1, (int) ceil($total / $per)), 'total' => $total]);
+}
+
+/** One picture: edit alt / caption / credit, see where it is used, delete it when nothing uses it (admins). */
+function admin_picture(array $user, int $id): never
+{
+    $m = q_one('SELECT id, path, widths, has_avif, width, height, alt, caption, credit, created_at FROM media WHERE id = ?', [$id]);
+    if ($m === null) {
+        admin_fail(404, 'This picture does not exist.', false);
+    }
+    $error = '';
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        try {
+            if (($_POST['action'] ?? '') === 'delete') {
+                admin_need($user, 'admin');
+                $n = media_delete($id);
+                flash('Picture deleted (' . $n . ' files removed).');
+                admin_redirect('/admin/pictures');
+            }
+            media_update($id, (string) ($_POST['alt'] ?? ''), (string) ($_POST['caption'] ?? ''), (string) ($_POST['credit'] ?? ''));
+            flash('Picture saved.');
+            admin_redirect('/admin/pictures/' . $id);
+        } catch (InputError $e) {
+            $error = $e->getMessage();
+        }
+    }
+    admin_page($user, 'Picture', 'pictures', 'picture', ['m' => $m, 'usage' => media_usage($id), 'error' => $error]);
 }
 
 function admin_users(array $user): never
@@ -532,6 +631,64 @@ function admin_account(array $user, string $action): never
     ]);
 }
 
+/** Menu builder (F5): the header menu, built in assets/admin/menu.js. */
+function admin_menu(array $user): never
+{
+    $storyIds = array_values(array_filter(array_map(static fn (array $i): int => $i['type'] === 'story' ? (int) $i['target'] : 0, menu_items_for_builder())));
+    $stories = $storyIds === [] ? [] : q_all('SELECT id, title FROM posts WHERE id IN (' . implode(',', $storyIds) . ')');
+    admin_page($user, 'Menu', 'menu', 'menu', ['data' => [
+        'items' => menu_items_for_builder(),
+        'categories' => array_map(static fn (array $c): array => ['slug' => $c['slug'], 'name' => $c['name'], 'depth' => $c['depth']], category_tree()),
+        'tags' => q_all('SELECT slug, name FROM tags ORDER BY name'),
+        'stories' => array_map(static fn (array $r): array => ['id' => (int) $r['id'], 'title' => (string) $r['title']], $stories),
+    ]]);
+}
+
+/** Backups (B17): make one, list the earlier ones, download one. No restore yet. @param list<string> $parts */
+function admin_backup(array $user, array $parts): never
+{
+    if (($parts[1] ?? '') === 'download') {
+        $file = backup_path((string) ($parts[2] ?? ''));
+        if ($file === null) {
+            admin_fail(404, 'This backup does not exist.', false);
+        }
+        audit('backup.download', basename($file));
+        header('Content-Type: application/zip');
+        header('Content-Disposition: attachment; filename="' . basename($file) . '"');
+        header('Content-Length: ' . (string) filesize($file));
+        readfile($file);
+        exit;
+    }
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        @set_time_limit(300);
+        try {
+            $b = backup_create();
+            flash('Backup made: ' . $b['name'] . ' (' . $b['tables'] . ' tables, ' . $b['rows'] . ' rows, ' . $b['files'] . ' picture files).');
+        } catch (InputError $e) {
+            flash($e->getMessage(), 'warn');
+        }
+        admin_redirect('/admin/backup');
+    }
+    admin_page($user, 'Backup', 'backup', 'backup', ['rows' => backup_list(), 'zip' => class_exists('ZipArchive')]);
+}
+
+/**
+ * The homepage builder's live preview (F16): the unsaved sections (sent to /admin/api/homepage-draft) drawn with
+ * the site's own layout and section templates, inside the builder's frame. Never cached, never indexed.
+ */
+function admin_homepage_preview(array $user): never
+{
+    $rows = $_SESSION['hb_draft'] ?? null;
+    // This page is shown in a frame of the builder (same site only); everything else keeps frame-ancestors 'none'.
+    header("Content-Security-Policy: default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; font-src 'self'; connect-src 'self'; frame-ancestors 'self'; base-uri 'self'; form-action 'self'; object-src 'none'");
+    header('X-Frame-Options: SAMEORIGIN');
+    $html = render_home_sections(is_array($rows) ? $rows : null);
+    $body = '<p class="preview-note">Preview of the homepage · not saved yet</p>'
+        . ($html === '' ? '<p class="empty" id="home">No stories in these sections.</p>' : '<div class="home-grid" id="home">' . $html . '</div>');
+    echo view('layout', ['title' => 'Homepage preview', 'body' => $body, 'meta' => ['robots' => 'noindex, nofollow']]);
+    exit;
+}
+
 function admin_later(array $user, string $title, string $nav, string $text): never
 {
     admin_page($user, $title, $nav, 'later', ['text' => $text, 'title' => $title]);
@@ -552,6 +709,15 @@ function admin_settings(array $user): never
             cache_clear();
             audit('search.rebuild', 'indexed ' . $res['posts'] . ', skipped ' . $res['skipped'] . ', terms ' . $res['terms']);
             flash('Search index rebuilt: ' . $res['posts'] . ' stories indexed, ' . $res['skipped'] . ' already up to date, ' . $res['terms'] . ' words in the vocabulary.');
+            admin_redirect('/admin/settings');
+        }
+        if ($action === 'site') {
+            try {
+                site_settings_save($_POST);
+                flash('Site settings saved. The page cache was cleared.');
+            } catch (InputError $e) {
+                flash($e->getMessage(), 'warn');
+            }
             admin_redirect('/admin/settings');
         }
         if ($action === 'cache') {
@@ -609,6 +775,18 @@ function admin_api(array $user, string $what): never
             case 'homepage':
                 admin_need($user, 'admin');
                 admin_json(homepage_save(json_input()));
+            case 'homepage-draft':
+                // The live preview's sections (F16): checked like a save, kept only in this session.
+                admin_need($user, 'admin');
+                $_SESSION['hb_draft'] = homepage_normalize(json_input());
+                admin_json(['ok' => true, 'sections' => count($_SESSION['hb_draft'])]);
+            case 'menu':
+                admin_need($user, 'admin');
+                admin_json(menu_save(json_input()));
+            case 'stories-find':
+                admin_json(['stories' => menu_find_stories((string) (json_input()['q'] ?? ''))]);
+            case 'categories-order':
+                admin_json(['saved' => categories_order(array_map('intval', (array) (json_input()['ids'] ?? [])))]);
         }
     } catch (InputError $e) {
         admin_json(['error' => $e->getMessage()], 422);
@@ -652,61 +830,27 @@ function admin_upload(): array
  */
 function homepage_save(array $in): array
 {
-    $layouts = section_layouts();
-    $slugs = array_column(category_tree(), 'slug');
-    $tagSlugs = array_column(q_all('SELECT slug FROM tags'), 'slug');
-    $existing = array_map('intval', array_column(q_all('SELECT id FROM home_sections'), 'id'));
-    $list = array_values(array_filter((array) ($in['sections'] ?? []), 'is_array'));
-    if (count($list) > 60) {
-        throw new InputError('Too many sections.');
-    }
-    $db = db();
-    $db->beginTransaction();
-    $ids = [];
-    try {
-        foreach ($list as $pos => $sec) {
-            $layout = (string) ($sec['layout'] ?? '');
-            if (!isset($layouts[$layout])) {
-                throw new InputError('Unknown layout: ' . $layout);
-            }
-            $defaults = $layouts[$layout]['settings'];
-            $raw = is_array($sec['settings'] ?? null) ? $sec['settings'] : [];
-            $s = [];
-            foreach ($defaults as $key => $default) {
-                $v = $raw[$key] ?? $default;
-                $s[$key] = match ($key) {
-                    'categories', 'exclude_categories' => array_values(array_intersect(array_map('strval', (array) $v), $slugs)),
-                    'tags' => array_values(array_intersect(array_map('strval', (array) $v), $tagSlugs)),
-                    'order_by' => in_array($v, ['date', 'updated', 'title', 'id', 'views', 'random'], true) ? $v : 'date',
-                    'dir' => $v === 'asc' ? 'asc' : 'desc',
-                    'count' => max(1, min(30, (int) $v)),
-                    'columns' => max(1, min(6, (int) $v)),
-                    'skip' => max(0, min(100, (int) $v)),
-                    default => is_bool($default) ? (bool) $v : $v,
-                };
-            }
-            $title = clean_text($sec['title'] ?? '', 120);
-            $span = max(3, min(12, (int) ($sec['span'] ?? 12)));
-            $active = !empty($sec['active']) ? 1 : 0;
-            $id = (int) ($sec['id'] ?? 0);
-            $json = json_encode($s, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+    $rows = homepage_normalize($in);
+    $ids = db_atomic(static function () use ($rows): array {
+        $existing = array_map('intval', array_column(q_all('SELECT id FROM home_sections'), 'id'));
+        $ids = [];
+        foreach ($rows as $pos => $r) {
+            $json = json_encode($r['settings'], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+            $id = $r['id'];
             if ($id > 0 && in_array($id, $existing, true)) {
-                q('UPDATE home_sections SET position = ?, layout = ?, title = ?, span = ?, settings = ?, active = ? WHERE id = ?', [$pos, $layout, $title, $span, $json, $active, $id]);
+                q('UPDATE home_sections SET position = ?, layout = ?, title = ?, span = ?, settings = ?, active = ? WHERE id = ?', [$pos, $r['layout'], $r['title'], $r['span'], $json, $r['active'], $id]);
             } else {
-                q('INSERT INTO home_sections (position, layout, title, span, settings, active) VALUES (?, ?, ?, ?, ?, ?)', [$pos, $layout, $title, $span, $json, $active]);
-                $id = (int) $db->lastInsertId();
+                q('INSERT INTO home_sections (position, layout, title, span, settings, active) VALUES (?, ?, ?, ?, ?, ?)', [$pos, $r['layout'], $r['title'], $r['span'], $json, $r['active']]);
+                $id = (int) db()->lastInsertId();
             }
             $ids[] = $id;
         }
         // Sections not in the list stay in the database, hidden, after the others (nothing is deleted).
-        foreach (array_diff($existing, $ids) as $n => $gone) {
+        foreach (array_values(array_diff($existing, $ids)) as $n => $gone) {
             q('UPDATE home_sections SET active = 0, position = ? WHERE id = ?', [count($ids) + $n, $gone]);
         }
-        $db->commit();
-    } catch (Throwable $e) {
-        $db->rollBack();
-        throw $e;
-    }
+        return $ids;
+    });
     audit('homepage.save', count($ids) . ' sections');
     cache_clear(); // the homepage just changed (task B12)
     return ['ids' => $ids, 'saved' => true];

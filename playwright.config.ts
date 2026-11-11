@@ -44,7 +44,8 @@ const engines = (process.env.ENGINES ?? 'chromium,firefox,webkit').split(',');
 //   setup-<copy>            makes the first admin through the real setup step (desktop Chromium, once)
 //   <copy>-<engine>-<device>             site, story and admin tests (18 projects)
 //   <copy>-<engine>-<device>-publish     admin actions visitors can see (publishing, new categories, homepage
-//                                        builder), after the phase above, so the site tests never see a half-changed homepage
+//                                        builder, menu builder, categories, site settings: admin-publish.spec.ts and
+//                                        menu.spec.ts), after the phase above, so the site tests never see a half-changed site
 const projects: any[] = [];
 for (const [copy, port] of Object.entries(copies)) {
   const baseURL = `http://127.0.0.1:${port}`;
@@ -56,7 +57,7 @@ for (const [copy, port] of Object.entries(copies)) {
       main.push(name);
       projects.push({
         name,
-        testIgnore: [/admin-setup\.spec\.ts/, /admin-publish\.spec\.ts/],
+        testIgnore: [/admin-setup\.spec\.ts/, /admin-publish\.spec\.ts/, /menu\.spec\.ts/],
         dependencies: [`setup-${copy}`],
         use: { ...use, baseURL },
         metadata: { copy, engine, device },
@@ -67,7 +68,8 @@ for (const [copy, port] of Object.entries(copies)) {
     const base = projects.find((p) => p.name === name);
     // PUBLISH_ONLY=1: the publish phase on its own (after the setup step only), for when a failure in phase 2
     // made Playwright skip it, so every test still gets a result in the same go.
-    projects.push({ ...base, name: `${name}-publish`, testIgnore: undefined, testMatch: /admin-publish\.spec\.ts/, dependencies: process.env.PUBLISH_ONLY ? [`setup-${copy}`] : main });
+    // menu.spec.ts (step 5: the menu builder, categories, site settings) changes every page too, so it is here.
+    projects.push({ ...base, name: `${name}-publish`, testIgnore: undefined, testMatch: /(admin-publish|menu)\.spec\.ts/, dependencies: process.env.PUBLISH_ONLY ? [`setup-${copy}`] : main });
   }
 }
 

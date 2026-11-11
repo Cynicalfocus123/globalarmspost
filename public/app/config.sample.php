@@ -25,4 +25,6 @@ return [
     // 'login_ip_limit' => 50,
     // Suggestions while typing: requests per address per minute (default 40).
     // 'suggest_limit' => 40,
+    // Read-only JSON API (/api/posts, /api/categories): requests per address per minute (default 120).
+    // 'api_limit' => 120,
 ];

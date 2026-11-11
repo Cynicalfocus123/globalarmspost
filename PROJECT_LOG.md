@@ -6,7 +6,7 @@ Newest entry first. Wireframes: [docs/wireframes.html](docs/wireframes.html)
 ## Links
 - Repository: https://github.com/Cynicalfocus123/globalarmspost
 - Commits: https://github.com/Cynicalfocus123/globalarmspost/commits/main
-- GitHub Actions: https://github.com/Cynicalfocus123/globalarmspost/actions (not set up yet)
+- GitHub Actions: https://github.com/Cynicalfocus123/globalarmspost/actions (since step 5: PHPStan level 6 on every push, `.github/workflows/check.yml`; the Playwright suite runs on the owner's PC)
 
 ## Hard rules
 1. **Never delete anything.** Sync only adds or overwrites. Stale files are listed so a person can decide. Any deletion needs the owner's yes to that exact deletion first. **One exception (owner's rule, 2026-11-03):** old task list Excel files with a version in the name are removed (rule 7; since 2026-11-05 there is only one file, updated in place).
@@ -31,6 +31,7 @@ Newest entry first. Wireframes: [docs/wireframes.html](docs/wireframes.html)
     - **Widths:** 320 px up to 1920 px. No sideways scroll, no cut-off or overlapping text, no squashed or stretched images.
     - **Menus:** usable by touch on phones and tablets.
     - **Tests:** every change is tested on phone, tablet and desktop, in Chromium, Firefox and WebKit (Safari's engine). A change that breaks on any of them is not done.
+    - **The admin is desktop-first** (owner's decision, 2026-11-11): admins work on desktops and laptops, so the admin on desktop and laptop must never fail. Phones and tablets are not needed for the admin: an admin test that fails only on a phone or tablet is skipped there with that written reason. The public site (readers) still has to work on phones, tablets and desktops.
 11. **Build first, then test** (owner's hard rule, 2026-11-05). No trial or partial test runs while building. Finish all the code of the step first; only then run the tests: one full run of the live copy, and if it is good, stop (owner, 2026-11-10/11: no repeat runs; only `live/` is tested because it is what goes to the real server).
 
 ## Folder layout
@@ -177,6 +178,77 @@ Every change must keep the code:
 ---
 
 ## Change log
+
+### 2026-11-11 — Step 5: admin, SEO, API, backup
+
+Built and tested by Claude on branch `step-5-admin-seo`. The database work is one migration, `007_step5` (a `hidden` column on `menu_items`, the `category_per_page` setting); every query runs on MySQL 8 (strict, ONLY_FULL_GROUP_BY) and SQLite. The owner also asked for a security check of the new code inside this step (below).
+
+**Owner's decision (2026-11-11): the admin is desktop-first.** Admins work on desktops and laptops, so the admin on desktop and laptop must never fail; phones and tablets are not needed for the admin. An admin test that fails only on a phone or tablet is skipped there with that written reason. The public site (readers) still has to work on phones, tablets and desktops. Hard rule 10 now says this.
+
+**What was built**
+- **SEO (task F12)** — `app/lib/seo.php`, `app/views/layout.php`, `index.php`:
+  - every public page: title, description (story: excerpt, else summary, else the tagline), `<link rel="canonical">`, Open Graph and X card tags (title, description, main photo with its size, site name, published and updated time, section, tags); search results and missing pages are `noindex`;
+  - story pages: NewsArticle JSON-LD; `<`, `>`, `&` and quotes are `\u` escapes, so text can never end the script;
+  - `/sitemap.xml` (home, every category, every public story with lastmod, tags with public stories; never drafts or scheduled stories; a lastmod is never in the future) and `/robots.txt` (keeps `/admin` out, names the sitemap);
+  - old WordPress addresses move with a 301: `/category/{a}/{b}/` → `/{b}`, `/2026/07/{slug}/` and `/2026/07/05/{slug}/` → `/{category}/{slug}`;
+  - full addresses use the new Site address setting (`site_url`), else the request's host; `site_link()` got a `'path'` mode and `public_url()` (proper addresses in both copies).
+- **Menu builder (task F5)** — `/admin/menu` (admins), `assets/admin/menu.js`, `app/lib/manage.php`, `app/lib/menu.php`:
+  - links to the home page, a category, a tag, a story (search by headline), a page or any web address (only `https://`, `http://`, `/` or `mailto:`; anything else is refused on Save);
+  - drag with mouse, touch or pen (the item's children move with it; drag right/left to nest), or ↑ ↓ → ← buttons, or choose the parent; own text, new tab, show/hide (hidden items keep their place), remove with a confirm;
+  - saved in one `db_atomic()` transaction; the page cache is cleared, so the header changes at once; a link to a story that is not public stays out of the header until it is.
+- **Rest of the admin (task F17)**:
+  - **Settings**: site name, tagline, about text, site address (checked: `https://host`, nothing after it), time zone (from PHP's list), stories per category page (5–50);
+  - **Categories**: add, rename, new address (reserved names such as `admin`, `search`, `tag`, `api` refused; menu items and homepage sections follow a new address), parent (never itself or its own sub-category), "Show in the header menu" (admins), drag or ↑ ↓ order with Save order (a category moves with its sub-categories and stays inside its parent);
+  - **Pictures**: list with "Used n times", one picture's page with alt / caption / credit, "Where it is used" (main photo, gallery, story text, profile picture; trash counts), "Delete picture" only when unused (admins, with a confirm): removes the row and its own files in `uploads/`.
+- **Delete for good (task B7)**: in the Trash tab (admins, with a confirm): the story, its tag links, gallery rows, search index rows and menu links, one transaction per story; stories not in the trash are never deleted; audit log.
+- **Tags (task B8)**: counts, rename (name and address; the stories are indexed again), merge into another tag (stories moved, no duplicate links, menu items and homepage sections follow).
+- **Homepage builder (task F16, the rest)**: two picture size sliders per section (photo height 1–5, small photo size 1–5; CSS classes, because the strict CSP allows no inline styles; step 3 = the old look exactly), and a **live preview** drawn by the site itself from the unsaved settings (`/admin/api/homepage-draft` + `/admin/homepage/preview`, framed only by the admin itself): beside the builder from 1280 px, under it below that, with a desktop / phone width switch.
+- **JSON API (task B15)** — `app/lib/api.php`: `GET /api/posts?category=&tag=&page=&per=` (per up to 50), `/api/posts/{slug}` (with the cleaned body and the gallery), `/api/categories`. Public stories only, never user data, no cookies, read-only (405), rate limited per address (`api_limit` in `config.php`, default 120 a minute), in the page cache.
+- **Backup (task B17)** — `/admin/backup` (admins): a ZIP with `backup.json`, every table as JSON (MySQL or SQLite) and `uploads/`, written to `storage/backups` (never served) under a temporary name first; list of earlier backups; download only through the admin (only names the site makes are accepted). No restore yet.
+- **GitHub Actions (task P9)** — `.github/workflows/check.yml`, `phpstan.neon` (level 6), `phpstan-bootstrap.php`: PHPStan on every push. The Playwright suite does not run there yet: it needs the Windows test tools (PHP with GD/AVIF, the three browsers in `D:/dev/playwright`, MySQL 8.4) and runs on the owner's PC. PHPStan was not run locally before the first push.
+- **Drag on long lists**: the menu builder, the categories page and the homepage builder scroll the page by themselves while an item is held near the top or bottom edge (a long list is taller than a laptop screen).
+- Admin side menu and More sheet: **Backup**. Editors see no Menu, Settings or Backup (403).
+
+**Security review of the step 5 code (owner's request), fixed:**
+- Editors could put a category into the header menu ("Show in the header menu") and so get around the admin-only menu builder. Only admins change the menu now; editors see a note.
+- Backups held the "keep me signed in" token hashes and the sign-in attempt log. Both are left out now (a restore does not need them); the Backup page says a backup holds the accounts.
+- `/sitemap.xml` was rebuilt on every request (it reads every story). It is in the page cache now.
+- The rate limiter's small per-address files were never tidied; counters of addresses quiet for 10 minutes are removed now and then (only those generated files).
+- Checked and safe: prepared statements everywhere (LIMIT/OFFSET as cast numbers), every value escaped (the JSON-LD too), CSRF on every form and API call, role checks, menu links through `safe_url()`, the backup download (no path can leave `storage/backups`; `../` is refused by the server itself), picture deletion only inside `uploads/`, the API never sends emails, accounts or statuses, the preview frame is allowed only inside the admin.
+
+**Failures and their causes** (`D:\gap-scratch\failures-step5.md`):
+1. `backup.spec.ts` "backups are never served directly …" (9 projects): the test expected 404 for a `../../app/config.php` download; the server answers 403 earlier (any `/.` in an address is refused). Test corrected; made-up names still expect 404.
+2. `seo.spec.ts` "sitemap.xml …" (9 projects): the first sample story's updated time is 25 minutes in the future (seed data); the sitemap correctly never shows a future lastmod. Test corrected to that rule.
+3. `menu.spec.ts` "menu builder …" (9 projects, desktops too): the menu list is taller than the screen (the item sat at y = 1116 on a 900 px desktop), and dragging could not reach the top. Cause in the app: no auto-scroll while dragging. Fixed (edge auto-scroll in `menu.js`, `cats.js`, `builder.js`); the test holds the item at the top edge until it is first. Checked on the three desktops first (run `1794330400001`: 10 passed).
+4. `admin-publish.spec.ts` "homepage builder: drag into order …" (step 3 test) on the WebKit phone only: skipped on phones by the owner's decision (admin is desktop-first); it passes on every desktop and tablet.
+5. `admin.spec.ts` "stories list: tabs with counts, search and filters" (step 3 test) on the WebKit phone: "Execution context was destroyed". The test read the rows while the filtered page was still loading (`toHaveURL` passes as soon as the address changes). The test now waits for the load.
+6. `menu.spec.ts` "categories …" on Firefox desktop: the publish test in another browser added a category between loading the page and the check. The test now compares the categories its page showed.
+
+**Runs** (`test-results/<run>-report.json`; live copy, 6 workers):
+
+| Run | What | Result | Note |
+|---|---|---|---|
+| `1794328588887` | full | 789 passed, 18 failed, 31 skipped, 81 not run | two test mistakes (backup 403, sitemap lastmod), fixed |
+| `1794329900001` | publish phase | 72 passed, 10 failed | menu builder drag on long lists (app fix: edge auto-scroll); WebKit phone builder drag |
+| `1794330400001` | menu.spec, 3 desktops | 10 passed | the desktop fix checked |
+| **`1794331000001`** | **full** | **815 passed, 1 failed, 31 skipped, 81 not run** | after the fixes and the security review; the failure: a timing race in a step 3 test on the WebKit phone (test fixed) |
+| **`1794331600001`** | **publish phase** | **77 passed, 1 failed, 3 skipped** | the failure: a race between two tests over the category list (test fixed) |
+| `1794331600002` | the stories list test, WebKit phone | passed | |
+| `1794331600003` | the categories test, Firefox desktop | passed | |
+
+**Result on the final code: 928 tests, 894 passed, 34 skipped, 0 failed.** Every desktop test (Chromium, Firefox, WebKit) passed.
+
+**The 34 skips, by name:**
+- "database: migrations ran and a saved setting shows on the page" (8): the server and database check runs once (desktop Chromium).
+- "a scheduled story appears at its time (saved in the database)" (8): it changes the database, so once.
+- "phone menu opens and closes" (3): desktop has no menu button.
+- "desktop: section layouts use their columns" (6): desktop only.
+- "phones: each section is one big story, then rows with the photo on the right" (6): phone only.
+- "homepage builder: drag into order, category checkboxes with search, leave out, saved to home_sections" (3, phones): the owner's decision 2026-11-11, the admin is used on desktop and laptop (it failed on the WebKit phone only).
+
+The other new step 5 tests skip nothing.
+
+Task list v24: F12, F5, F17, B7, B8, F16, B15, B17 and P9 Pending until the owner approves; B1 and B3 Pending (their code exists since step 1); P13 notes this review (the last review before launch is still to come). Not built in this step: the RSS feed (F12) and theme colours and fonts in the admin (F17), on the owner's word; B13 (`/install`) and P12 (Hostinger guide) are later, B18 is the owner's.
 
 ### 2026-11-11 — B18 is the owner's
 

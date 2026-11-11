@@ -3,12 +3,14 @@ declare(strict_types=1);
 
 /**
  * The menu for a location as a tree: each item has label, href, new_tab, children.
+ * Hidden items (menu builder, task F5) and everything under them are left out, and so is a link to a story that is
+ * not public (yet).
  * @return list<array{label: string, href: string, new_tab: bool, children: list<array<string, mixed>>}>
  */
 function menu_tree(string $location): array
 {
     $rows = q_all(
-        'SELECT i.id, i.parent_id, i.type, i.label, i.target, i.new_tab
+        'SELECT i.id, i.parent_id, i.type, i.label, i.target, i.new_tab, i.hidden
            FROM menu_items i JOIN menus m ON m.id = i.menu_id
           WHERE m.location = ? ORDER BY i.position, i.id',
         [$location]
@@ -17,17 +19,30 @@ function menu_tree(string $location): array
     foreach (q_all('SELECT c.slug, p.slug AS parent FROM categories c LEFT JOIN categories p ON p.id = c.parent_id') as $c) {
         $parents[(string) $c['slug']] = (string) ($c['parent'] ?? '');
     }
+    $stories = [];
+    $storyIds = array_values(array_filter(array_map(static fn (array $r): int => $r['type'] === 'story' ? (int) $r['target'] : 0, $rows)));
+    if ($storyIds !== []) {
+        foreach (q_all(posts_select() . " WHERE p.status = 'published' AND p.published_at <= ? AND p.id IN (" . implode(',', $storyIds) . ')', [now_utc()]) as $p) {
+            $stories[(int) $p['id']] = post_url($p);
+        }
+    }
     $items = [];
+    $hidden = [];
     foreach ($rows as $r) {
+        $id = (int) $r['id'];
         $target = (string) $r['target'];
         $href = match ((string) $r['type']) {
             'home' => site_link('home'),
             'category' => site_link('category', ['slug' => $target, 'parent' => $parents[$target] ?? '']),
             'tag' => site_link('tag', ['slug' => $target]),
             'page' => site_link('page', ['slug' => $target]),
+            'story' => $stories[(int) $target] ?? '',
             default => safe_url($target),
         };
-        $items[(int) $r['id']] = [
+        if ((int) $r['hidden'] === 1 || $href === '') {
+            $hidden[$id] = true;
+        }
+        $items[$id] = [
             'parent' => $r['parent_id'] === null ? 0 : (int) $r['parent_id'],
             'label' => (string) $r['label'],
             'href' => $href,
@@ -35,15 +50,19 @@ function menu_tree(string $location): array
             'children' => [],
         ];
     }
-    // Build the tree (any depth), keeping the order. Items whose parent is gone go to the top level.
+    // Build the tree (any depth), keeping the order. Items whose parent is gone go to the top level; items under a
+    // hidden item are hidden with it.
     $byParent = [];
     foreach ($items as $id => $item) {
         $parent = isset($items[$item['parent']]) ? $item['parent'] : 0;
         $byParent[$parent][] = $id;
     }
-    $build = function (int $parent, int $depth) use (&$build, $byParent, $items): array {
+    $build = function (int $parent, int $depth) use (&$build, $byParent, $items, $hidden): array {
         $out = [];
         foreach ($depth > 8 ? [] : ($byParent[$parent] ?? []) as $id) {
+            if (isset($hidden[$id])) {
+                continue;
+            }
             $item = $items[$id];
             unset($item['parent']);
             $item['children'] = $build($id, $depth + 1);

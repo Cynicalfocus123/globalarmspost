@@ -52,6 +52,7 @@ $back = (string) ($_SERVER['REQUEST_URI'] ?? '/admin/stories');
     <span class="a-bulk-n">0 chosen</span>
     <?php if ($tab === 'trash'): ?>
     <button class="a-btn2" name="action" value="restore" type="submit">Restore as drafts</button>
+    <?php if (($user['role'] ?? '') === 'admin'): ?><button class="a-btn2 danger" name="action" value="delete" type="submit">Delete for good</button><?php endif; ?>
     <?php else: ?>
     <button class="a-btn2" name="action" value="publish" type="submit">Publish</button>
     <button class="a-btn2 danger" name="action" value="trash" type="submit">Move to trash</button>

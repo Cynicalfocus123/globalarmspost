@@ -20,7 +20,8 @@ if ((int) ($p['author_id'] ?? 0) > 0) {
 $bodyText = search_plain((string) $p['body']);
 $words = str_word_count($bodyText) + str_word_count((string) $p['title']);
 $minutes = max(1, (int) ceil($words / 220));
-$canonical = absolute_url(post_url($p));
+// The proper address (also in the git/ copy, whose in-page links use '#'): share links and the canonical tag agree.
+$canonical = public_url('article', ['category' => (string) $p['cat_slug'], 'slug' => (string) $p['slug']]);
 $shareText = rawurlencode((string) $p['title']);
 $shareUrl = rawurlencode($canonical);
 

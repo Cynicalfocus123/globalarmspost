@@ -1,0 +1,19 @@
+# PHPStan (task P9): `phpstan analyse -c phpstan.neon`, run by .github/workflows/check.yml on every push.
+parameters:
+    level: 6
+    phpVersion: 80100
+    paths:
+        - public/index.php
+        - public/app/lib
+        - public/app/admin
+        - public/app/migrations
+        - public/app/cli
+        - public/app/bootstrap.php
+    bootstrapFiles:
+        - phpstan-bootstrap.php
+    ignoreErrors:
+        # The code passes plain rows around as array<string, mixed>; spelling out every array's value type is
+        # not worth it for database rows. Every other level-6 check stays on.
+        - identifier: missingType.iterableValue
+    # Views (public/app/views) are templates: their variables come from view()'s extract(), which PHPStan cannot
+    # follow, so they are checked by the Playwright tests instead.

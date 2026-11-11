@@ -23,6 +23,8 @@ if (bulkForm) {
   update(); // boxes ticked before this script ran (or kept by the browser) count too
   bulkForm.addEventListener('submit', (e) => {
     if (e.submitter?.value === 'trash' && !confirm('Move the chosen stories to the trash?')) e.preventDefault();
+    // Delete for good (task B7): the story, its tags, gallery and search entries are gone; it cannot be undone.
+    if (e.submitter?.value === 'delete' && !confirm('Delete the chosen stories for good? This cannot be undone.')) e.preventDefault();
   });
 }
 
@@ -77,5 +79,13 @@ if (authorForm) {
   if (file.files.length) upload(); // a picture chosen before this script ran
 }
 
+/* Forms that ask first: merge tags, delete a picture (data-confirm holds the question). */
+document.addEventListener('submit', (e) => {
+  const form = e.target.closest?.('form[data-confirm]');
+  if (form && !confirm(form.dataset.confirm)) e.preventDefault();
+});
+
 if ($('#editor')) import('./editor.js');
 if ($('#builder-data')) import('./builder.js');
+if ($('#menu-data')) import('./menu.js');
+if ($('.cat-list')) import('./cats.js');

@@ -261,3 +261,16 @@ main{min-height:50vh;padding-top:24px;padding-bottom:48px}
 .to-top[hidden]{display:none}
 .to-top:hover{background:var(--red-dark)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+
+/* Homepage builder picture sizes (task F16), set per section in the admin. Step 3 is the standard look and has no
+   class. Tablets and desktops only: phones keep their one calm pattern (big photo, then rows). */
+@media (min-width:768px){
+  .ph-1 :is(.v-card,.v-lead,.v-hero,.v-overlay) .card-media{aspect-ratio:21/9}
+  .ph-2 :is(.v-card,.v-lead,.v-hero,.v-overlay) .card-media{aspect-ratio:2/1}
+  .ph-4 :is(.v-card,.v-lead,.v-hero,.v-overlay) .card-media{aspect-ratio:4/3}
+  .ph-5 :is(.v-card,.v-lead,.v-hero,.v-overlay) .card-media{aspect-ratio:1/1}
+  .th-1 .v-row{grid-template-columns:64px minmax(0,1fr)}
+  .th-2 .v-row{grid-template-columns:80px minmax(0,1fr)}
+  .th-4 .v-row{grid-template-columns:120px minmax(0,1fr)}
+  .th-5 .v-row{grid-template-columns:144px minmax(0,1fr)}
+}

@@ -1,0 +1,25 @@
+# Static analysis on every push (task P9): PHPStan, level 6 (phpstan.neon), PHP 8.1 (the oldest PHP the site
+# supports). The Playwright suite does not run here yet: it needs the Windows test tools (PHP with GD/AVIF, the
+# three browsers in D:/dev/playwright, MySQL 8.4); it runs on the owner's PC before every push (PROJECT_LOG.md).
+name: check
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  phpstan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+          extensions: pdo, pdo_sqlite, pdo_mysql, gd, zip, intl, mbstring, dom
+          tools: phpstan:2
+          coverage: none
+      - name: PHPStan (level 6)
+        run: phpstan analyse --no-progress --error-format=github -c phpstan.neon
