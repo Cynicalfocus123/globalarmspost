@@ -4,7 +4,7 @@ News site for globalarmspost.com: PHP 8.1+ (no framework), MySQL or SQLite, plai
 History, rules and design notes: [PROJECT_LOG.md](PROJECT_LOG.md). Wireframes: [docs/wireframes.html](docs/wireframes.html).
 
 ## Folders
-- `public/` — the site (this becomes Hostinger `public_html` through `../live/`)
+- `public/` — the site. `npm run build:live` splits it into `../live/frontend/` (goes into Hostinger `public_html`) and `../live/backend/` (goes next to it: `app/` and `storage/`); see [docs/DEPLOY.md](docs/DEPLOY.md)
   - `app/lib/` code, `app/views/` templates, `app/migrations/` database changes, `app/cli/` command line tools
   - `app/admin/` the admin at `/admin`, with its views in `app/views/admin/`
   - `assets/` CSS, JS, fonts, logo; `assets/admin/` the admin's CSS + JS (and the jSquash AVIF encoder in `vendor/`)
@@ -40,7 +40,7 @@ GAP_DB=mysql PLAYWRIGHT_BROWSERS_PATH=D:/dev/playwright WORKERS=6 npm test
 ```
 946 tests on the live copy (928 until 2026-11-13; two new publish tests × 9 projects) (Chromium/Firefox/WebKit × phone/tablet/desktop; `COPIES=git,live` for both copies) in three phases per copy: the setup step (`admin-setup`), the site/story/admin/SEO/API/backup tests, then the publish tests (`*-publish`: `admin-publish.spec.ts` and `menu.spec.ts`) after them.
 Starts the real PHP server with a fresh SQLite database for both copies (git/ with `#` links, live/ with proper addresses), loads the sample stories (test database only) and stops it after the run. The first test makes the admin account through the setup step; the test accounts are in `tests/fixtures/test-users.json` (test databases only). Browsers: `PLAYWRIGHT_BROWSERS_PATH=D:/dev/playwright`.
-The last passing run (928 tests, before 2026-11-13) was **894 passed, 34 skipped, 0 failed**; the 18 new tests are not run yet. The page cache is on in the tests, as on the real site. The 34 skips are by design (a database check or a scheduled-story test that runs once, tests for the phone menu or the desktop columns only, and the homepage builder drag on phones: the admin is desktop-first) and every report lists them by name.
+A passing run is **912 passed, 34 skipped, 0 failed** (MySQL, 2026-11-13). The page cache is on in the tests, as on the real site. The 34 skips are by design (a database check or a scheduled-story test that runs once, tests for the phone menu or the desktop columns only, and the homepage builder drag on phones: the admin is desktop-first) and every report lists them by name.
 
 ## Look at the site locally
 The Claude app's preview (`.claude/launch.json`, "live-copy") or `npm run preview` serves the live copy with sample stories at http://127.0.0.1:8091/. The admin is at http://127.0.0.1:8091/admin: sign in with the demo admin from `tests/fixtures/test-users.json` ("demo_admin"). It exists only in the preview's own test database (`tests/seed-admin.php`), never in `live/`.
@@ -55,8 +55,9 @@ npm run verify:live
 Commit first: `live/` is built from the current commit only. Nothing in `live/` is ever deleted; `app/config.php`, `uploads/` and `storage/` are never overwritten.
 
 ## Install on a server
-1. Upload `live/` to `public_html`.
-2. Copy `app/config.sample.php` to `app/config.php` and fill in the database.
-3. Run `php app/cli/migrate.php` (an /install page comes later).
+Step by step in [docs/DEPLOY.md](docs/DEPLOY.md). In short:
+1. Upload `live/frontend/` into `public_html`, and `live/backend/` into a folder `backend` next to `public_html`.
+2. In `backend/app/`, copy `config.sample.php` to `config.php` and fill in the MySQL database.
+3. Run `php backend/app/cli/migrate.php` once (SSH, or a one-time cron job; an /install page comes later).
 4. Open `https://globalarmspost.com/admin`. With no account yet it shows the setup step: the first account you make is the admin. More users (admins or editors) are added under Users.
-5. Make sure `uploads/` and `storage/` are writable (pictures, sign-in sessions).
+5. In Settings, set the Site address; the dashboard's server check must be all green (uploads/ and storage/ writable, HTTPS).

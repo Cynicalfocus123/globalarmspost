@@ -15,6 +15,37 @@ function send_security_headers(): void
     }
 }
 
+/**
+ * Before a JSON answer: throw away anything printed so far (a PHP warning, stray whitespace) so the answer is always
+ * clean JSON, and write what was thrown away to the error log, so the cause can be found and fixed. The admin and
+ * the public API start an output buffer for this (ob_start()). Research, step 5: PHP's own bug reports and PHP
+ * guides on "headers already sent": buffer, discard stray output, never display errors in production.
+ *
+ * Some buffers can never be removed (zlib.output_compression, a host's own output handler): ob_get_clean() then
+ * returns false and the level stays the same, so a plain "while there is a buffer" loop would never end and the
+ * request would hang until PHP's time limit. The loop stops at the first buffer that cannot be removed (that
+ * buffer stays, and the JSON answer goes out through it as normal).
+ */
+function discard_stray_output(string $where): void
+{
+    $stray = '';
+    while (($level = ob_get_level()) > 0) {
+        $status = ob_get_status();
+        if ((((int) ($status['flags'] ?? 0)) & PHP_OUTPUT_HANDLER_REMOVABLE) === 0) {
+            break; // not removable: leave it and every buffer under it
+        }
+        $chunk = ob_get_clean();
+        if ($chunk === false || ob_get_level() >= $level) {
+            break; // could not be removed after all: never loop on the same buffer
+        }
+        $stray .= $chunk;
+    }
+    $text = trim(strip_tags($stray));
+    if ($text !== '') {
+        error_log('[' . $where . ' ' . request_path() . '] stray output removed before a JSON answer: ' . mb_substr((string) preg_replace('/\s+/', ' ', $text), 0, 1000));
+    }
+}
+
 /** The request path without query string, e.g. "/asia". */
 function request_path(): string
 {
@@ -45,7 +76,7 @@ function client_ip(): string
  */
 function rate_limit_ok(string $bucket, int $limit, int $window = 60): bool
 {
-    $dir = PUBLIC_DIR . '/storage/cache/ratelimit';
+    $dir = STORAGE_DIR . '/cache/ratelimit';
     if (!is_dir($dir)) {
         @mkdir($dir, 0775, true);
     }

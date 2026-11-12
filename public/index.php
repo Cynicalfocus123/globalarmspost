@@ -2,7 +2,10 @@
 declare(strict_types=1);
 
 // Front controller: every page request comes here (.htaccess on Hostinger, tests/php-router.php locally).
-require __DIR__ . '/app/bootstrap.php';
+// This folder is the web folder. The code is in app/ here (git/ copy) or in ../backend/app (live/: frontend/ goes
+// into public_html, backend/ next to it, so the code and the server's data are never inside public_html).
+define('PUBLIC_DIR', __DIR__);
+require is_file(__DIR__ . '/app/bootstrap.php') ? __DIR__ . '/app/bootstrap.php' : dirname(__DIR__) . '/backend/app/bootstrap.php';
 
 send_security_headers();
 header('Content-Type: text/html; charset=utf-8');

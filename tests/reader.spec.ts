@@ -1,7 +1,7 @@
 import { test, expect, type Page, type TestInfo } from './fixtures';
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
-import { users, sql, login, csrf, uniq, isLive, serverInfo, inLine } from './admin-helpers';
+import { users, sql, login, csrf, uniq, isLive, serverRoot, inLine } from './admin-helpers';
 
 // Step 4: the page cache (task B12) and the trending tags row (task F11).
 // Every test runs on phone, tablet and desktop in Chromium, Firefox and WebKit, on the git/ and live/ copies.
@@ -21,7 +21,7 @@ const ownPage = (info: TestInfo, word: string) => `/search?q=${encodeURIComponen
 
 /** Expiry written in the cache file that holds exactly this html (this copy's site folder). */
 function cacheExpiryOf(info: TestInfo, html: string): number {
-  const dir = join(serverInfo(info).docroot, 'storage', 'cache', 'pages');
+  const dir = join(serverRoot(info, 'storage/'), 'storage', 'cache', 'pages');
   for (const f of readdirSync(dir).filter((n) => n.endsWith('.cache'))) {
     let raw = '';
     try { raw = readFileSync(join(dir, f), 'utf8'); } catch { continue; } // removed by a clear meanwhile

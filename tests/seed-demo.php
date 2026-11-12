@@ -2,11 +2,12 @@
 declare(strict_types=1);
 
 // Sample stories for the TEST database only (never the real site). Run by tests/serve.mjs after the migrations.
-// Usage: GAP_CONFIG=... php tests/seed-demo.php <docroot>
+// Usage: GAP_CONFIG=... php tests/seed-demo.php <backend> [<web folder>]   (git copy: both are public/)
 // Times are relative to now, so "Today" / "Yesterday" headings always show. Adds one scheduled
 // (future) story and one draft that must NOT appear anywhere.
-$docroot = $argv[1] ?? '';
-require $docroot . '/app/bootstrap.php';
+$backend = $argv[1] ?? '';
+define('PUBLIC_DIR', $argv[2] ?? $backend); // the photos go to the web folder's uploads/
+require $backend . '/app/bootstrap.php';
 
 if ((int) (q_one('SELECT COUNT(*) AS n FROM posts')['n'] ?? 0) > 0) {
     echo "Sample stories already there.\n";
@@ -15,7 +16,7 @@ if ((int) (q_one('SELECT COUNT(*) AS n FROM posts')['n'] ?? 0) > 0) {
 
 // Pictures: copy the drawn sample photos into uploads/demo/.
 $src = __DIR__ . '/fixtures/demo';
-$dst = $docroot . '/uploads/demo';
+$dst = PUBLIC_DIR . '/uploads/demo';
 if (!is_dir($dst)) {
     mkdir($dst, 0775, true);
 }

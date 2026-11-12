@@ -29,7 +29,7 @@ function cache_enabled(): bool
 
 function cache_dir(): string
 {
-    return PUBLIC_DIR . '/storage/cache/pages';
+    return STORAGE_DIR . '/cache/pages';
 }
 
 /**

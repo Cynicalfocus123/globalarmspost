@@ -380,7 +380,8 @@ test('extra categories: main Land, also in Air; the story shows in both and the 
   await page.click('.ed-save');
   await expect(page.locator('#a-toast')).toContainText('Story saved and published', { timeout: 15_000 });
   expect(sql(info, 'SELECT category_id FROM post_categories WHERE post_id = ?', id)).toEqual([]);
-  // A save that fails shows the same box in red.
+  // A save that fails shows the same box in red. (Phones show one editor part at a time: the headline is in Write.)
+  await part(page, 'write');
   await page.fill('#ed-title', '');
   await page.click('.ed-save');
   await expect(page.locator('#a-toast')).toHaveAttribute('data-kind', 'error');

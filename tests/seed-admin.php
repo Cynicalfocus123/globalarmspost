@@ -3,9 +3,9 @@ declare(strict_types=1);
 
 // Demo admin for the LOCAL PREVIEW only (never the real site, never live/). Run by tests/serve.mjs with --demo-admin.
 // The email and password are in tests/fixtures/test-users.json ("demo_admin").
-// Usage: GAP_CONFIG=... php tests/seed-admin.php <docroot>
-$docroot = $argv[1] ?? '';
-require $docroot . '/app/bootstrap.php';
+// Usage: GAP_CONFIG=... php tests/seed-admin.php <backend>   (the folder with app/; git copy: public/)
+$backend = $argv[1] ?? '';
+require $backend . '/app/bootstrap.php';
 
 $users = json_decode((string) file_get_contents(__DIR__ . '/fixtures/test-users.json'), true);
 $a = $users['demo_admin'];

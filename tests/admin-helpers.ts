@@ -26,14 +26,19 @@ export const uniq = (info: TestInfo, word: string) => `${word} ${info.project.na
 /** Run SQL on the test copy's real database (through the site's own PHP code). */
 export function sql(info: TestInfo, query: string, ...params: (string | number)[]): any {
   const s = serverInfo(info);
-  const out = execFileSync(process.env.PHP_BIN || 'php', [...s.ext, join(HERE, 'db.php'), s.docroot, query, ...params.map(String)], {
+  const out = execFileSync(process.env.PHP_BIN || 'php', [...s.ext, join(HERE, 'db.php'), s.backend ?? s.docroot, query, ...params.map(String)], {
     env: { ...process.env, GAP_CONFIG: s.config },
   });
   return JSON.parse(out.toString());
 }
 
 /** Is this stored file (path inside the site folder) really there? */
-export const fileThere = (info: TestInfo, rel: string) => existsSync(join(serverInfo(info).docroot, rel));
+export const fileThere = (info: TestInfo, rel: string) => existsSync(join(serverRoot(info, rel), rel));
+/** Where a site file is: storage/... and app/... in the backend folder (live: backend/), the rest in the web folder. */
+export const serverRoot = (info: TestInfo, rel: string) => {
+  const s = serverInfo(info);
+  return rel.startsWith('storage/') || rel.startsWith('app/') ? s.backend ?? s.docroot : s.docroot;
+};
 
 /** Sign in through the real form (GET for the token, POST the form) with the page's cookies. */
 export async function login(page: Page, who: { email: string; password: string }, remember = false) {
@@ -124,7 +129,9 @@ export async function adminApi(page: Page, path: string, body: unknown): Promise
   const token = await csrf(page);
   const res = await page.request.post(path, { data: body, headers: { 'X-CSRF-Token': token, Accept: 'application/json' } });
   let json: any = null;
-  try { json = await res.json(); } catch { /* not JSON */ }
+  const text = await res.text();
+  try { json = JSON.parse(text); } catch { /* not JSON: the whole answer goes into the failure message */ }
+  if (json === null) throw new Error(`${path} answered ${res.status()} with something that is not JSON:\n${text.slice(0, 3000)}`);
   return { status: res.status(), json };
 }
 

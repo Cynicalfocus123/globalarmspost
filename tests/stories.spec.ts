@@ -16,7 +16,7 @@ const phone = (page: Page) => (page.viewportSize()?.width ?? 0) < 768;
 
 function sql(copy: string, query: string, ...params: string[]): any {
   const info = JSON.parse(readFileSync(join(HERE, '..', 'test-data', `${copy}.json`), 'utf8') /* copy = "<copy>-<port>" */);
-  const out = execFileSync(process.env.PHP_BIN || 'php', [...info.ext, join(HERE, 'db.php'), info.docroot, query, ...params], {
+  const out = execFileSync(process.env.PHP_BIN || 'php', [...info.ext, join(HERE, 'db.php'), info.backend ?? info.docroot, query, ...params], {
     env: { ...process.env, GAP_CONFIG: info.config },
   });
   return JSON.parse(out.toString());

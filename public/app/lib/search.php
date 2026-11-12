@@ -186,7 +186,19 @@ function search_refresh_term(string $term): void
     // "insert if no rows changed" would then hit the primary key.
     if (q_one('SELECT term FROM search_terms WHERE term = ?', [$term]) === null) {
         if ($n > 0) {
-            q('INSERT INTO search_terms (term, docs) VALUES (?, ?)', [$term, $n]);
+            try {
+                q('INSERT INTO search_terms (term, docs) VALUES (?, ?)', [$term, $n]);
+            } catch (PDOException $e) {
+                // MySQL: another save running at the same moment added this new word between our look and our
+                // insert (the look does not lock a row that is not there yet), so the primary key refuses it.
+                // Then it is there: update the count instead. (Found in step 5: under parallel saves on MySQL
+                // the duplicate key ended the request with a PHP error page instead of saving. SQLite lets
+                // only one writer in at a time, so it never happens there.) Any other error is not ours to hide.
+                if ((string) ($e->errorInfo[0] ?? $e->getCode()) !== '23000') {
+                    throw $e;
+                }
+                q('UPDATE search_terms SET docs = ? WHERE term = ?', [$n, $term]);
+            }
         }
         return;
     }
@@ -656,7 +668,7 @@ function search_suggest_limited(string $q): array
     if (mb_strlen($q, 'UTF-8') < 2) {
         return ['terms' => [], 'stories' => []];
     }
-    $dir = PUBLIC_DIR . '/storage/cache/ratelimit';
+    $dir = STORAGE_DIR . '/cache/ratelimit';
     if (!is_dir($dir)) {
         @mkdir($dir, 0775, true);
     }

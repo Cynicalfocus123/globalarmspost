@@ -16,6 +16,7 @@ declare(strict_types=1);
 /** @param list<string> $parts the path after /api */
 function api_handle(array $parts): never
 {
+    ob_start(); // see discard_stray_output()
     header('Content-Type: application/json; charset=utf-8');
     header('Access-Control-Allow-Origin: *'); // public data only, and no cookies are ever used here
     $method = (string) ($_SERVER['REQUEST_METHOD'] ?? 'GET');
@@ -52,6 +53,7 @@ function api_handle(array $parts): never
             http_response_code($hit['status']);
             header('X-Cache: HIT');
             header('Cache-Control: public, max-age=60');
+            discard_stray_output('api');
             echo $hit['html'];
             exit;
         }
@@ -69,12 +71,14 @@ function api_handle(array $parts): never
     }
     header('Cache-Control: ' . ($status === 200 ? 'public, max-age=60' : 'no-store'));
     http_response_code($status);
+    discard_stray_output('api');
     echo $json;
     exit;
 }
 
 function api_send(mixed $data, int $status): never
 {
+    discard_stray_output('api');
     header('Cache-Control: no-store');
     http_response_code($status);
     echo json_encode($data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);

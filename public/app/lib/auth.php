@@ -22,7 +22,7 @@ function admin_session_start(): void
     if (session_status() === PHP_SESSION_ACTIVE) {
         return;
     }
-    $path = (string) (config()['session_path'] ?? PUBLIC_DIR . '/storage/sessions');
+    $path = (string) (config()['session_path'] ?? STORAGE_DIR . '/sessions');
     if (!is_dir($path)) {
         @mkdir($path, 0700, true);
     }

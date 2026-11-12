@@ -1,7 +1,7 @@
 import { test, expect } from './fixtures';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { users, sql, login, logout, serverInfo, fileThere, noSidewaysScroll, inLine } from './admin-helpers';
+import { users, sql, login, logout, serverRoot, fileThere, noSidewaysScroll, inLine } from './admin-helpers';
 
 // Step 5, task B17: backups. An admin makes a ZIP (every table as JSON, MySQL or SQLite, plus uploads/) in
 // storage/backups, which is never served; it is downloaded only through the admin. No restore yet.
@@ -28,7 +28,7 @@ test('an admin makes a backup: every table and the pictures in one ZIP, listed a
     expect(sql(info, "SELECT COUNT(*) AS n FROM audit_log WHERE action = 'backup.create' AND detail LIKE ?", `${name}%`)[0].n).toBe(1);
 
     // The ZIP holds backup.json, one JSON file per table and the pictures.
-    const zip = readFileSync(join(serverInfo(info).docroot, 'storage', 'backups', name));
+    const zip = readFileSync(join(serverRoot(info, 'storage/'), 'storage', 'backups', name));
     expect(zip.subarray(0, 2).toString()).toBe('PK');
     const names = zip.toString('latin1');
     // Every table the migrations make (the same list on MySQL and SQLite).

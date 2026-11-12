@@ -575,7 +575,7 @@ function homepage_normalize(array $in): array
 
 function backup_dir(): string
 {
-    return PUBLIC_DIR . '/storage/backups';
+    return STORAGE_DIR . '/backups';
 }
 
 /** Full path of a backup by its file name, or null (only names this code makes are accepted). */

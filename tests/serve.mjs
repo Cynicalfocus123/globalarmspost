@@ -32,14 +32,20 @@ ext.push('-d', 'upload_max_filesize=20M', '-d', 'post_max_size=64M');
 
 mkdirSync(TMP, { recursive: true });
 
+// docroot = the web folder; backend = the folder that holds app/ and storage/.
+// git copy: both are public/. live copy: the same two folders as live/ (scripts/live-lib.mjs): frontend/ is the
+// web folder (public_html), backend/ sits next to it with app/ and storage/ (owner, 2026-11-12).
 let docroot = join(ROOT, 'public');
+let backend = docroot;
 if (copy === 'live') {
-  docroot = join(TMP, 'site');
-  cpSync(join(ROOT, 'public'), docroot, {
-    recursive: true,
-    filter: (src) => !/[\\/]public[\\/](storage|uploads)[\\/](?!\.htaccess$)[^\\/]+$/.test(src) && !src.endsWith('config.php'),
-  });
-  writeFileSync(join(docroot, 'app', 'build.php'), "<?php\ndeclare(strict_types=1);\n\nreturn ['link_mode' => 'path', 'commit' => 'test'];\n");
+  const site = join(TMP, 'site');
+  docroot = join(site, 'frontend');
+  backend = join(site, 'backend');
+  const pub = join(ROOT, 'public');
+  const serverData = (src) => /[\\/]public[\\/](storage|uploads)[\\/](?!\.htaccess$)[^\\/]+$/.test(src) || src.endsWith('config.php');
+  cpSync(pub, docroot, { recursive: true, filter: (src) => !serverData(src) && !/[\\/]public[\\/](app|storage)([\\/]|$)/.test(src) });
+  for (const dir of ['app', 'storage']) cpSync(join(pub, dir), join(backend, dir), { recursive: true, filter: (src) => !serverData(src) });
+  writeFileSync(join(backend, 'app', 'build.php'), "<?php\ndeclare(strict_types=1);\n\nreturn ['link_mode' => 'path', 'commit' => 'test'];\n");
 }
 
 const config = join(TMP, 'config.php');
@@ -53,15 +59,15 @@ let stopping = false;
 const dbConfig = USE_MYSQL ? await startMysql() : `['driver' => 'sqlite', 'path' => '${db}']`;
 writeFileSync(config, `<?php\nreturn ['db' => ${dbConfig}, 'debug' => true, 'session_path' => '${sessions}', 'login_ip_limit' => 100000, 'suggest_limit' => 100000, 'api_limit' => 100000];\n`);
 // One note per server (copy + port), so the preview and the tests never read each other's database.
-writeFileSync(join(ROOT, 'test-data', `${copy}-${port}.json`), JSON.stringify({ config, docroot, ext }));
+writeFileSync(join(ROOT, 'test-data', `${copy}-${port}.json`), JSON.stringify({ config, docroot, backend, ext }));
 
 const env = { ...process.env, GAP_CONFIG: config };
-execFileSync(PHP, [...ext, join(docroot, 'app', 'cli', 'migrate.php')], { env, stdio: 'inherit' });
+execFileSync(PHP, [...ext, join(backend, 'app', 'cli', 'migrate.php')], { env, stdio: 'inherit' });
 // Sample stories and photos (test database only; photos go to <docroot>/uploads/demo, which git ignores).
-execFileSync(PHP, [...ext, join(ROOT, 'tests', 'seed-demo.php'), docroot], { env, stdio: 'inherit' });
+execFileSync(PHP, [...ext, join(ROOT, 'tests', 'seed-demo.php'), backend, docroot], { env, stdio: 'inherit' });
 // Local preview only (.claude/launch.json passes --demo-admin): a demo admin to sign in with at /admin.
 // The test runs never pass it, because their first test makes the first admin through the real setup step.
-if (process.argv.includes('--demo-admin')) execFileSync(PHP, [...ext, join(ROOT, 'tests', 'seed-admin.php'), docroot], { env, stdio: 'inherit' });
+if (process.argv.includes('--demo-admin')) execFileSync(PHP, [...ext, join(ROOT, 'tests', 'seed-admin.php'), backend], { env, stdio: 'inherit' });
 
 if (!existsSync(docroot)) process.exit(1);
 
@@ -72,7 +78,7 @@ if (!existsSync(docroot)) process.exit(1);
 // With this connection open the files are never deleted during the run.
 let keeper = null;
 if (!USE_MYSQL) {
-  keeper = spawn(PHP, [...ext, '-r', 'require $argv[1] . "/app/bootstrap.php"; db()->query("SELECT 1"); fwrite(STDOUT, "open\n"); while (true) { sleep(3600); }', docroot], { env, stdio: ['ignore', 'pipe', 'inherit'] });
+  keeper = spawn(PHP, [...ext, '-r', 'require $argv[1] . "/app/bootstrap.php"; db()->query("SELECT 1"); fwrite(STDOUT, "open\n"); while (true) { sleep(3600); }', backend], { env, stdio: ['ignore', 'pipe', 'inherit'] });
   await new Promise((res, rej) => { keeper.stdout.once('data', res); keeper.once('exit', () => rej(new Error('the SQLite keeper stopped'))); });
 }
 

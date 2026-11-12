@@ -512,7 +512,14 @@ test('authors page: list with story counts; add and edit an author', async ({ pa
   expect(a.email).toBe('casey@example.test');
   expect(a.media_id).toBeGreaterThan(0);
   await page.fill('#a-name', `${name} Jr`);
-  await page.click('.author-form button[type="submit"]');
+  // The first save's "Author saved." is still on the page: wait for this save's own answer and the page it loads
+  // (WebKit went on to the next page while this one was still loading: "navigation interrupted", step 5).
+  await Promise.all([
+    page.waitForResponse((r) => r.request().method() === 'POST' && /\/admin\/authors\/\d+$/.test(r.url())),
+    page.click('.author-form button[type="submit"]'),
+  ]);
+  await page.waitForLoadState('load');
+  await expect(page.locator('#a-name')).toHaveValue(`${name} Jr`);
   await expect(page.locator('.a-flash')).toHaveText('Author saved.');
   expect(sql(info, 'SELECT name FROM authors WHERE id = ?', a.id)[0].name).toBe(`${name} Jr`);
   await page.goto('/admin/authors');

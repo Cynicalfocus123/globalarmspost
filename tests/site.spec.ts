@@ -18,7 +18,7 @@ const wide = (page: Page) => (page.viewportSize()?.width ?? 0) >= 1100; // full 
 /** Run SQL on the test copy's real database (through the site's own PHP code). */
 function sql(copy: string, query: string, ...params: string[]): any {
   const info = JSON.parse(readFileSync(join(HERE, '..', 'test-data', `${copy}.json`), 'utf8') /* copy = "<copy>-<port>" */);
-  const out = execFileSync(process.env.PHP_BIN || 'php', [...info.ext, join(HERE, 'db.php'), info.docroot, query, ...params], {
+  const out = execFileSync(process.env.PHP_BIN || 'php', [...info.ext, join(HERE, 'db.php'), info.backend ?? info.docroot, query, ...params], {
     env: { ...process.env, GAP_CONFIG: info.config },
   });
   return JSON.parse(out.toString());
@@ -247,7 +247,7 @@ test('database: migrations ran and a saved setting shows on the page', async ({ 
   test.skip(meta(info).device !== 'desktop' || meta(info).engine !== 'chromium', 'Server and database check: the same on every browser and device, so it runs once per copy (desktop Chromium). The other tests read this same database on every browser and device.');
   const copy = dbKey(info);
   const migrations = sql(copy, 'SELECT id FROM migrations ORDER BY id').map((r: any) => r.id);
-  expect(migrations).toEqual(['001_core', '002_starter_content', '003_content', '004_home_sections', '005_admin', '006_search', '007_step5']);
+  expect(migrations).toEqual(['001_core', '002_starter_content', '003_content', '004_home_sections', '005_admin', '006_search', '007_step5', '008_post_categories']);
   expect(sql(copy, 'SELECT COUNT(*) AS n FROM categories')[0].n).toBe(11);
   const regions = sql(copy, "SELECT c.slug FROM categories c JOIN categories p ON p.id = c.parent_id WHERE p.slug = 'regions' ORDER BY c.position").map((r: any) => r.slug);
   expect(regions).toEqual(['us', 'asia', 'europe', 'middle-east-africa']);

@@ -28,6 +28,10 @@ function admin_route(array $parts): void
     header("Content-Security-Policy: default-src 'self'; img-src 'self' data: blob:; style-src 'self'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'");
     header('Cache-Control: no-store');
     header('X-Robots-Tag: noindex, nofollow');
+    // The JSON API's answers are buffered: admin_json() removes anything printed before them (discard_stray_output()).
+    if (($parts[0] ?? '') === 'api') {
+        ob_start();
+    }
     admin_session_start();
 
     $first = $parts[0] ?? '';
@@ -99,6 +103,7 @@ function admin_redirect(string $to): never
 
 function admin_json(mixed $data, int $status = 200): never
 {
+    discard_stray_output('admin');
     http_response_code($status);
     header('Content-Type: application/json; charset=utf-8');
     echo json_encode($data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
@@ -266,6 +271,7 @@ function server_checks(): array
         ['label' => 'PHP ' . PHP_MAJOR_VERSION . '.' . PHP_MINOR_VERSION, 'ok' => PHP_VERSION_ID >= 80100, 'note' => 'needs 8.1 or newer'],
         ['label' => 'Database (' . (db_driver() === 'mysql' ? 'MySQL' : 'SQLite') . ')', 'ok' => true, 'note' => ''],
         ['label' => 'Uploads folder', 'ok' => is_dir($uploads) && is_writable($uploads), 'note' => 'uploads/ must be writable'],
+        ['label' => 'Storage folder', 'ok' => is_dir(STORAGE_DIR) && is_writable(STORAGE_DIR), 'note' => 'storage/ (next to app/) must be writable: cache, sign-in sessions, backups'],
         ['label' => 'GD WebP (server fallback)', 'ok' => function_exists('imagewebp'), 'note' => 'used when a browser cannot make WebP'],
         ['label' => 'GD AVIF (server fallback)', 'ok' => function_exists('imageavif'), 'note' => 'without it, the server fallback makes WebP only'],
         ['label' => 'HTTPS', 'ok' => is_https(), 'note' => 'the live site must use HTTPS'],
@@ -790,6 +796,11 @@ function admin_api(array $user, string $what): never
         }
     } catch (InputError $e) {
         admin_json(['error' => $e->getMessage()], 422);
+    } catch (Throwable $e) {
+        // Anything unexpected (a database error): a clear JSON answer for the editor, the details in the error log,
+        // never a raw PHP error page in place of the answer (step 5).
+        error_log('[admin api ' . $what . '] ' . get_class($e) . ': ' . $e->getMessage() . ' at ' . $e->getFile() . ':' . $e->getLine());
+        admin_json(['error' => 'The server could not do this. Please try again.'], 500);
     }
     admin_json(['error' => 'Unknown action.'], 404);
 }

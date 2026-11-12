@@ -12,7 +12,7 @@ Newest entry first. Wireframes: [docs/wireframes.html](docs/wireframes.html)
 1. **Never delete anything.** Sync only adds or overwrites. Stale files are listed so a person can decide. Any deletion needs the owner's yes to that exact deletion first. **One exception (owner's rule, 2026-11-03):** old task list Excel files with a version in the name are removed (rule 7; since 2026-11-05 there is only one file, updated in place).
 2. **Two separate folders**, both updated on every change:
    - `git/`: source code. This is the repo pushed to GitHub.
-   - `live/`: the Hostinger mirror for `public_html`. It is the contents of `git/public/`. Sync never overwrites the server's own data: `app/config.php`, `uploads/`, `storage/`.
+   - `live/`: what goes to Hostinger, built from `git/public/` in two folders (owner, 2026-11-12): `live/frontend/` is uploaded **into** `public_html` (index.php, .htaccess, assets, uploads, icons) and `live/backend/` **next to** it (`app/` = all code + `config.php`, `storage/` = cache, sessions, backups). No picture or asset is in `backend/`, no code in `frontend/`. Sync never overwrites the server's own data: `backend/app/config.php`, `frontend/uploads/`, `backend/storage/`. How to upload: [docs/DEPLOY.md](docs/DEPLOY.md).
 3. **A change is done only when** it is committed and pushed, `live/` is rebuilt from that commit, and `npm run verify:live` says they match. **`git/` and `live/` are always updated at the same time** with every change or addition. If only one of them is updated, the task is not done. (Owner's rule, 2026-11-03.)
 4. Every update shows a wireframe, the GitHub link, the changes, and the Actions run.
 5. **Every time a task is updated or finished, update all `.md` files** (`PROJECT_LOG.md`, `CLAUDE.md`, `README.md` and any other `.md` in the project) in the same change, so they always match the code. (Owner's rule, 2026-11-03.)
@@ -39,8 +39,9 @@ Newest entry first. Wireframes: [docs/wireframes.html](docs/wireframes.html)
 global arm post new site/
 ├─ git/    ← source + this log (GitHub repo); links use # (/#asia)
 │  └─ public/   ← the site itself (PHP)
-└─ live/   ← NOT on GitHub; mirrors git/ exactly, with proper addresses (/asia, /home);
-             upload its contents to Hostinger public_html (npm run build:live)
+└─ live/   ← NOT on GitHub; the same code as git/, with proper addresses (/asia, /home) (npm run build:live)
+   ├─ frontend/   → upload INTO public_html (index.php, .htaccess, assets/, uploads/, icons)
+   └─ backend/    → upload NEXT TO public_html (app/ = code + config.php, storage/ = server data)
 ```
 
 ## URL map (git → live)
@@ -179,9 +180,9 @@ Every change must keep the code:
 
 ## Change log
 
-### 2026-11-13 — Owner's admin requests: extra categories, big Saved message, section names (built, not tested yet)
+### 2026-11-13 — Owner's admin requests: extra categories, big Saved message, section names (tested on MySQL, approved by the owner 2026-11-13)
 
-Built in this session's worktree (branch `claude/gap-deployment-zips-9e3169`), on top of `b5a79d3`. The frontend/backend split and the other uncommitted changes in `git/` are not in it yet; the two are joined before the test run.
+Built in this session's worktree (branch `claude/gap-deployment-zips-9e3169`), on top of `b5a79d3`, then joined with the other uncommitted changes in `git/` (the frontend/backend split, the search-word fix, error logging, the `discard_stray_output()` fix); the full MySQL test run covers both.
 
 - **Extra categories (B20).** A story keeps one **main** category (`posts.category_id`): it gives the address `/land/{story}`, the breadcrumb and "More in Land". New table `post_categories` (migration `008_post_categories.php`) holds the **extra** categories the story also shows in. `category_match_sql()` (`app/lib/posts.php`) is used by every category filter: category pages, homepage sections, the search filter, the admin's stories filter; `category_story_counts()` counts main + extra (admin Categories page, category edit page, `/api/categories`); the sitemap's category dates include extra stories. The editor's Category box: "Main category" (round buttons, as before) and "Also show in" (checkboxes; the main one is ticked and locked there). Delete for good removes the rows. Stories saved straight into `posts` (old stories, test seeds) work as before: no extra categories.
 - **Big save message (F22).** `notify()` in `assets/admin/ui.js`: a big box at the top of the screen, green with a tick and what was saved ("Story saved and published", "Homepage saved", "Menu saved", "Order saved", new tag / category / author), red with a cross when it was not saved (with the reason). It never takes a click (`pointer-events: none`), so it never covers a button; green goes after 5 s, red after 12 s or the next press. Page forms (authors, categories, tags, pictures, settings, users, account, backup, bulk story actions) show `.a-flash` as the same big green / red box. Error boxes (`.a-error`) are bolder too.
@@ -190,6 +191,27 @@ Built in this session's worktree (branch `claude/gap-deployment-zips-9e3169`), o
 - **Found (B21, not built):** the old site's story links are `globalarmspost.com/{story}/`; only `/category/...` and `/yyyy/mm/{story}/` redirect today.
 - Tests: `admin-publish.spec.ts` "extra categories …" (main Land + Air, shown in both, DB rows, untick, red box on a failed save, big green page-form box) and "homepage builder: … Featured and Latest and top stories …" (names, Name in the admin saved, never on the site).
 - Task list v26: B20, F22, F23 Pending; B18 Pending (Claude); B21 Not started.
+- **Approved by the owner 2026-11-13** (task list v27: B20, F22, F23 Done). Committed and pushed together with the other session's changes (the `live/frontend` + `live/backend` split, `docs/DEPLOY.md`, the hang fix); `live/` rebuilt and verified from that commit; two deploy ZIPs made in `Claude outputs/` (frontend → into `public_html`, backend → next to it; no `config.php`, no server data).
+
+**Full MySQL run of the live copy** (this work + the other uncommitted changes, `GAP_DB=mysql`, 6 workers; `test-results/<run>-report.json`):
+
+| Run | What | Result |
+|---|---|---|
+| `1794510000001` | full | 813 passed, 3 failed, 31 skipped, 99 not run (publish phase skipped after the failures) |
+| `1794510000002` | publish phase (`PUBLISH_ONLY=1`) | 91 passed, 6 failed, 3 skipped |
+| `1794510000003` | the new extra-categories test, 9 publish projects | 10 passed (with setup) |
+| `1794510000004` | the 3 phase-2 failures | 5 passed, 2 skipped (with setup) |
+
+Failures and fixes (none was a site bug):
+- `site.spec.ts` "database: migrations ran …": the list of migrations lacked the new `008_post_categories` (test updated).
+- `admin.spec.ts` "sign in …" on Firefox phone and Firefox desktop: timed out at 45 s while all browsers were busy (the second one after signing in, in the sideways-scroll check); passed on their own, unchanged.
+- The new "extra categories …" test on the 6 phone and tablet projects: phones and tablets show one editor part at a time and the test cleared the headline while Details was open (test now opens Write first).
+
+**Result: 946 tests, 912 passed, 34 skipped, 0 failed** (the same 34 skips as in step 5: 8 × database check once per copy, 8 × scheduled story once per copy, 3 × phone menu on desktop, 6 × desktop columns on phones/tablets, 6 × phone layout on tablets/desktops, 3 × homepage builder drag on phones).
+
+### 2026-11-12 — Hang fix in `discard_stray_output()` (not yet in a full test run)
+
+`discard_stray_output()` (`app/lib/http.php`, used before every admin and `/api` JSON answer) emptied output buffers with `while (ob_get_level() > 0)`. A buffer that can't be removed (`zlib.output_compression` on in hPanel, or a host's own handler) made that loop endless, so every admin save and API call would hang until PHP's time limit. The loop now stops at the first buffer that can't be removed. Checked with `php -l` and a PHP script (a buffer that can't be removed + a normal one: returns at once, the stray text goes to the error log). Since covered by the full MySQL run of the live copy in the 2026-11-13 entry above (912 passed, 34 skipped, 0 failed).
 
 ### 2026-11-12 — MySQL check before deploying: one real bug fixed
 
