@@ -188,7 +188,12 @@ function sitemap_xml(): string
     $out = '<?xml version="1.0" encoding="UTF-8"?>' . "\n" . '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
     $out .= $url(absolute_url('/'), (string) ($newest['at'] ?? ''));
     $catLast = [];
-    foreach (q_all("SELECT category_id, MAX(published_at) AS at FROM posts WHERE status = 'published' AND published_at <= ? GROUP BY category_id", [$now]) as $r) {
+    // Newest story per category, main or extra category.
+    foreach (q_all("SELECT x.category_id, MAX(x.published_at) AS at FROM (
+                        SELECT p.category_id, p.published_at FROM posts p WHERE p.status = 'published' AND p.published_at <= ?
+                        UNION ALL
+                        SELECT pc.category_id, p.published_at FROM post_categories pc JOIN posts p ON p.id = pc.post_id WHERE p.status = 'published' AND p.published_at <= ?
+                    ) x GROUP BY x.category_id", [$now, $now]) as $r) {
         $catLast[(int) $r['category_id']] = (string) $r['at'];
     }
     foreach (q_all('SELECT id, slug FROM categories ORDER BY position, id') as $c) {

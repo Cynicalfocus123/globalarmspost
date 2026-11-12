@@ -5,7 +5,7 @@
 :root{
   --red:#C8102E; --red-dark:#a00d25; --red-soft:#fff3f5;
   --bg:#fff; --ink:#151515; --mute:#5f6368; --line:#e3e3e3; --soft:#f6f6f6; --side:#fafafa;
-  --pub:#1e7b34; --pub-bg:#e6f4ea; --sch:#1a56c4; --sch-bg:#e8effd;
+  --pub:#1e7b34; --pub-bg:#e6f4ea; --ok:#15803d; --sch:#1a56c4; --sch-bg:#e8effd;
   --sans:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
   --serif:"Newsreader",Georgia,"Times New Roman",serif;
   --tabbar:64px; --radius:10px;
@@ -56,9 +56,23 @@ input[type=range]{width:100%;accent-color:var(--red);min-height:32px}
 .a-pill.tr{background:var(--red-soft);color:var(--red)}
 .chip{display:inline-flex;align-items:center;gap:2px;border:1px solid #bbb;border-radius:999px;padding:2px 4px 2px 11px;font-size:14px;margin:0 4px 6px 0}
 .chip button{border:0;background:none;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:17px}
-.a-flash{border-radius:var(--radius);padding:10px 14px;margin:0 0 14px;background:var(--pub-bg);color:var(--pub);font-weight:500}
-.a-flash.warn{background:var(--red-soft);color:var(--red)}
-.a-error{background:var(--red-soft);color:var(--red);border-radius:8px;padding:9px 12px;margin:10px 0;font-weight:500}
+/* Big save messages (owner, 2026-11-13): green = saved, red = not saved. .a-flash = after a page form was sent,
+   .a-toast = after a save on the same page (assets/admin/ui.js notify()). */
+.a-flash{display:flex;align-items:center;gap:12px;border-radius:12px;padding:16px 20px;margin:0 0 18px;background:var(--ok);color:#fff;font-size:18px;font-weight:600;line-height:1.35;box-shadow:0 6px 20px rgba(21,128,61,.25)}
+.a-flash::before{content:"✓";flex:none;display:grid;place-items:center;width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.22);font-size:20px}
+.a-flash.warn{background:var(--red);box-shadow:0 6px 20px rgba(200,16,46,.25)}
+.a-flash.warn::before{content:"✕"}
+.a-toast{position:fixed;z-index:300;top:18px;left:50%;transform:translate(-50%,-12px);opacity:0;width:max-content;max-width:calc(100vw - 32px);
+  display:flex;align-items:center;gap:14px;padding:18px 24px;border-radius:14px;background:var(--ok);color:#fff;box-shadow:0 12px 32px rgba(0,0,0,.25);
+  pointer-events:none;transition:opacity .18s ease,transform .18s ease}
+.a-toast.show{opacity:1;transform:translate(-50%,0)}
+.a-toast[data-kind="error"]{background:var(--red)}
+.a-toast-icon{flex:none;display:grid;place-items:center;width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.22);font-size:24px;font-weight:700}
+.a-toast-text{display:flex;flex-direction:column;min-width:0}
+.a-toast-text b{font-size:22px;line-height:1.2}
+.a-toast-text span{font-size:15px;opacity:.95}
+@media (prefers-reduced-motion:reduce){.a-toast{transition:none}}
+.a-error{background:var(--red-soft);color:var(--red);border:2px solid var(--red);border-radius:10px;padding:12px 16px;margin:10px 0;font-size:16px;font-weight:600}
 
 /* Shell */
 .a-shell{display:grid;grid-template-columns:220px minmax(0,1fr);min-height:100vh}
@@ -203,7 +217,8 @@ body.sheet-open{overflow:hidden}
 .a-seg span{display:flex;align-items:center;justify-content:center;min-height:40px;font-size:14px;font-weight:500}
 .a-seg input:checked+span{background:var(--ink);color:#fff}
 .a-seg input:focus-visible+span{outline:2px solid var(--red);outline-offset:-3px}
-.ed-cat-list{max-height:260px;overflow:auto;margin:6px 0}
+.ed-cat-list,.ed-cat-extra{max-height:260px;overflow:auto;margin:6px 0}
+.ed-cat-extra{max-height:200px}
 .depth-1{padding-left:24px}.depth-2{padding-left:46px}.depth-3{padding-left:68px}
 .ed-chips{min-height:4px}
 .ed-main-photo img{display:block;width:100%;border-radius:8px}

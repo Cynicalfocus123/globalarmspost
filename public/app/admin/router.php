@@ -295,8 +295,10 @@ function admin_stories(array $user): never
         $params[] = '%' . mb_strtolower(str_replace(['%', '_'], ' ', $search)) . '%';
     }
     if ($cat > 0) {
-        $where .= ' AND p.category_id = ?';
-        $params[] = $cat;
+        // Main or extra category (owner, 2026-11-13).
+        [$catSql, $catParams] = category_match_sql([$cat]);
+        $where .= ' AND ' . $catSql;
+        array_push($params, ...$catParams);
     }
     if ($author > 0) {
         $where .= ' AND p.author_id = ?';
@@ -354,6 +356,7 @@ function admin_editor(array $user, int $id): never
             'status' => $story['status'], 'state' => story_state((string) $story['status'], $story['published_at']),
             'published_local' => utc_to_local_input($story['published_at']), 'sticky' => (int) $story['sticky'] === 1,
             'live_label' => (int) $story['live_label'] === 1, 'category_id' => (int) $story['category_id'],
+            'extra_category_ids' => array_map(fn ($c) => $c['id'], $story['extra_categories']),
             'author_id' => (int) ($story['author_id'] ?? 0), 'tag_ids' => array_map(fn ($t) => (int) $t['id'], $story['tags']),
             'media_id' => (int) ($story['media_id'] ?? 0), 'media_src' => media_thumb($story['m_path'], $story['m_widths']),
             'featured_caption' => (string) ($story['featured_caption'] ?? '') !== '' ? (string) $story['featured_caption'] : (string) ($story['m_caption'] ?? ''),
@@ -453,10 +456,7 @@ function admin_categories(array $user): never
             $error = $e->getMessage();
         }
     }
-    $counts = [];
-    foreach (q_all("SELECT category_id, COUNT(*) AS n FROM posts WHERE status <> 'trash' GROUP BY category_id") as $r) {
-        $counts[(int) $r['category_id']] = (int) $r['n'];
-    }
+    $counts = category_story_counts("p.status <> 'trash'"); // main and extra categories
     admin_page($user, 'Categories', 'categories', 'categories', ['rows' => category_tree(), 'counts' => $counts, 'menu' => categories_in_menu(), 'error' => $error]);
 }
 
@@ -483,7 +483,7 @@ function admin_category_edit(array $user, int $id): never
     }
     $branch = category_branch($id);
     $parents = array_values(array_filter(category_tree(), static fn (array $c): bool => !in_array($c['id'], $branch, true)));
-    $stories = (int) (q_one("SELECT COUNT(*) AS n FROM posts WHERE category_id = ? AND status <> 'trash'", [$id])['n'] ?? 0);
+    $stories = category_story_counts("p.status <> 'trash'")[$id] ?? 0; // main and extra categories
     admin_page($user, 'Edit category', 'categories', 'category_edit', ['cat' => $cat, 'parents' => $parents, 'in_menu' => $inMenu,
         'stories' => $stories, 'error' => $error]);
 }

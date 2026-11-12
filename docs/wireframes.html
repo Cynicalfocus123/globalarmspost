@@ -873,6 +873,50 @@ h2.sec{font:600 20px/1.3 Georgia,serif;margin:40px 0 4px}
 </div></div>
 </div>
 
+<h2 class="sec">9. Admin, 2026-11-13: extra categories, the big Saved message, section names</h2>
+<p class="sub">Owner's requests of 2026-11-13. Admin is desktop-first; the same parts work on phones (the Category box is in the Details tab, the Saved box sits at the top of the screen).</p>
+
+<div class="row">
+<div><div class="lb">9a. Story editor: Category box (Details)</div>
+<div class="pg">
+  <div class="a-box" style="max-width:340px"><div class="a-h">Category</div>
+    <div class="a-in" style="font-size:10px;padding:0 6px;display:flex;align-items:center;color:#888">Search categories…</div>
+    <div class="a-lbl">Main category <span style="color:#888">(gives the story's address)</span></div>
+    <label class="a-chk">◉ Land</label><label class="a-chk">○ Air</label><label class="a-chk">○ Naval</label><label class="a-chk" style="padding-left:16px">○ Asia <span style="color:#888">(Regions)</span></label>
+    <div class="a-lbl">Also show in <span style="color:#888">(tick as many as you like)</span></div>
+    <label class="a-chk" style="opacity:.6"><span class="a-cb on"></span>Land · main</label><label class="a-chk"><span class="a-cb on"></span>Air</label><label class="a-chk"><span class="a-cb"></span>Naval</label><label class="a-chk" style="padding-left:16px"><span class="a-cb on"></span>Europe <span style="color:#888">(Regions)</span></label>
+    <span style="color:var(--red);font-size:11px">+ Add new category</span>
+  </div>
+  <span class="note">Address stays /land/{story}. The story is also listed on /air and /europe, in their homepage sections, the search filter and the admin's Category filter.</span>
+</div></div>
+<div><div class="lb">9b. The big save message (top of the screen, every admin save)</div>
+<div class="pg">
+  <div style="display:flex;align-items:center;gap:10px;background:#15803d;color:#fff;border-radius:12px;padding:12px 16px;box-shadow:0 8px 20px rgba(0,0,0,.2)"><span style="display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.22);font-size:18px">✓</span><span><b style="font-size:17px;display:block">Story saved and published</b><span style="font-size:11px">Readers see it on the site now.</span></span></div>
+  <div style="display:flex;align-items:center;gap:10px;background:var(--red);color:#fff;border-radius:12px;padding:12px 16px;margin-top:10px"><span style="display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.22);font-size:18px">✕</span><span><b style="font-size:17px;display:block">Not saved</b><span style="font-size:11px">Please write a headline.</span></span></div>
+  <span class="note">Green: gone after 5 s. Red: stays 12 s or until the next press. It never covers a button (clicks go through it). Page forms (authors, tags, settings…) show the same big box at the top of the page.</span>
+</div></div>
+</div>
+
+<div class="row" style="margin-top:18px">
+<div><div class="lb">9c. Homepage builder: section names</div>
+<div class="pg">
+  <div class="a-ed" style="grid-template-columns:minmax(0,1fr) 220px">
+    <div>
+      <div class="a-sec on"><span class="a-grip">⋮⋮</span><b>Featured</b><span class="a-pill dr">Hero, then cards under it</span></div>
+      <div class="a-sec"><span class="a-grip">⋮⋮</span><b>Latest and top stories</b><span class="a-pill dr">Photo + title rows, tabs</span></div>
+      <div class="a-sec"><span class="a-grip">⋮⋮</span><b>Asia</b><span class="a-pill dr">Photo with title on it</span></div>
+    </div>
+    <div class="a-panel"><div class="a-box"><div class="a-h">Section settings</div>
+      <div class="a-lbl">Layout</div><div class="a-in" style="font-size:10px;padding:0 6px;display:flex;align-items:center">Hero, then cards under it ▾</div>
+      <div class="a-lbl">Name in the admin (only you see it)</div><div class="a-in" style="font-size:10px;padding:0 6px;display:flex;align-items:center;color:#888">Featured</div>
+      <div class="a-lbl">Title on the site (empty = no section header)</div><div class="a-in"></div>
+    </div></div>
+  </div>
+  <span class="note">No name typed: hero layouts are "Featured", the tabbed list is "Latest and top stories", else the title or the categories.</span>
+</div></div>
+<div></div>
+</div>
+
 </main>
 </body>
 </html>

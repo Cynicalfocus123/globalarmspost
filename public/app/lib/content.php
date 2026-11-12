@@ -65,6 +65,7 @@ function story_for_editor(int $id): ?array
         return null;
     }
     $p['tags'] = q_all('SELECT t.id, t.name FROM post_tags pt JOIN tags t ON t.id = pt.tag_id WHERE pt.post_id = ? ORDER BY t.name', [$id]);
+    $p['extra_categories'] = post_extra_categories($id);
     $p['gallery'] = q_all('SELECT g.media_id, g.caption, g.credit, m.path, m.widths FROM post_gallery g JOIN media m ON m.id = g.media_id
                             WHERE g.post_id = ? ORDER BY g.position, g.id', [$id]);
     // Old plain-text bodies open as paragraphs.
@@ -134,6 +135,12 @@ function story_save(array $in, int $userId): array
         'updated_at' => $now,
     ];
     $tagIds = array_values(array_unique(array_filter(array_map('intval', (array) ($in['tag_ids'] ?? [])))));
+    // Extra categories (owner, 2026-11-13): the story also shows there. Only categories that exist, never the main one.
+    $extraIds = array_values(array_diff(array_unique(array_filter(array_map('intval', array_slice((array) ($in['extra_category_ids'] ?? []), 0, 50)))), [$categoryId]));
+    if ($extraIds !== []) {
+        $known = array_map('intval', array_column(q_all('SELECT id FROM categories WHERE id IN (' . implode(',', $extraIds) . ')'), 'id'));
+        $extraIds = array_values(array_intersect($extraIds, $known));
+    }
     $gallery = [];
     foreach (array_slice((array) ($in['gallery'] ?? []), 0, 40) as $g) {
         $mid = (int) (is_array($g) ? ($g['media_id'] ?? 0) : 0);
@@ -145,7 +152,7 @@ function story_save(array $in, int $userId): array
     // One db_atomic() transaction: on MySQL two saves at the same moment can deadlock on the tag and gallery rows
     // (MySQL then cancels one of them); db_atomic() runs it again instead of failing the save. Found by the step 5
     // MySQL run: the plain transaction here answered with a PHP error page.
-    $id = db_atomic(static function () use ($old, $row, $now, $id, $tagIds, $gallery): int {
+    $id = db_atomic(static function () use ($old, $row, $now, $id, $tagIds, $extraIds, $gallery): int {
         if ($old === null) {
             $row['created_at'] = $now;
             q('INSERT INTO posts (' . implode(', ', array_keys($row)) . ') VALUES (' . implode(', ', array_fill(0, count($row), '?')) . ')', array_values($row));
@@ -158,6 +165,10 @@ function story_save(array $in, int $userId): array
             if (q_one('SELECT id FROM tags WHERE id = ?', [$tid]) !== null) {
                 q('INSERT INTO post_tags (post_id, tag_id) VALUES (?, ?)', [$id, $tid]);
             }
+        }
+        q('DELETE FROM post_categories WHERE post_id = ?', [$id]); // the extra categories are written fresh
+        foreach ($extraIds as $cid) {
+            q('INSERT INTO post_categories (post_id, category_id) VALUES (?, ?)', [$id, $cid]);
         }
         q('DELETE FROM post_gallery WHERE post_id = ?', [$id]); // gallery order is written fresh
         foreach ($gallery as $pos => [$mid, $cap, $cred]) {

@@ -466,6 +466,7 @@ function stories_delete_forever(array $ids, int $userId): int
                 return null;
             }
             q('DELETE FROM post_tags WHERE post_id = ?', [$id]);
+            q('DELETE FROM post_categories WHERE post_id = ?', [$id]);
             q('DELETE FROM post_gallery WHERE post_id = ?', [$id]);
             search_forget_post_now($id);
             q("DELETE FROM menu_items WHERE type = 'story' AND target = ?", [(string) $id]);
@@ -560,6 +561,7 @@ function homepage_normalize(array $in): array
                 'columns' => max(1, min(6, (int) $v)),
                 'skip' => max(0, min(100, (int) $v)),
                 'photo_height', 'thumb_size' => max(1, min(5, (int) $v)),
+                'name' => clean_text(is_string($v) ? $v : '', 80),
                 default => is_bool($default) ? (bool) $v : $v,
             };
         }

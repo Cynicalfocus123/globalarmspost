@@ -331,3 +331,96 @@ test('SEO: code typed into a headline stays text in the page, its tags and the J
     sql(info, 'DELETE FROM posts WHERE slug = ?', slug); // the test's own row
   }
 });
+
+// ---------- Owner, 2026-11-13: extra categories, the big Saved message, homepage section names ----------
+
+test('extra categories: main Land, also in Air; the story shows in both and the big green Saved message appears', async ({ page }, info) => {
+  test.setTimeout(150_000);
+  await login(page, users.admin);
+  const title = uniq(info, 'Two category story');
+  await newStory(page, title);
+  await part(page, 'details');
+  const landId = sql(info, "SELECT id FROM categories WHERE slug = 'land'")[0].id;
+  const airId = sql(info, "SELECT id FROM categories WHERE slug = 'air'")[0].id;
+  await page.locator(`.ed-cat-list input[value="${landId}"]`).check();
+  // The main category is ticked and locked in "Also show in"; Air is ticked as an extra one.
+  await expect(page.locator(`.ed-cat-extra input[value="${landId}"]`)).toBeChecked();
+  await expect(page.locator(`.ed-cat-extra input[value="${landId}"]`)).toBeDisabled();
+  await page.locator(`.ed-cat-extra input[value="${airId}"]`).check();
+  await page.check('input[name="status"][value="published"]');
+  await page.fill('#ed-date', '2026-01-14T09:00');
+  await page.click('.ed-save');
+  const toast = page.locator('#a-toast');
+  await expect(toast).toBeVisible({ timeout: 15_000 });
+  await expect(toast).toHaveAttribute('data-kind', 'ok');
+  await expect(toast).toContainText('Story saved and published');
+  const look = await toast.evaluate((el) => ({ bg: getComputedStyle(el).backgroundColor, size: parseFloat(getComputedStyle(el.querySelector('b')!).fontSize), w: el.getBoundingClientRect().width }));
+  expect(look.bg, 'green').toBe('rgb(21, 128, 61)');
+  expect(look.size, 'big text').toBeGreaterThanOrEqual(20);
+  const id = page.url().split('/').pop()!;
+  const row = sql(info, 'SELECT slug, category_id FROM posts WHERE id = ?', id)[0];
+  expect(row.category_id).toBe(landId);
+  expect(sql(info, 'SELECT category_id FROM post_categories WHERE post_id = ?', id)).toEqual([{ category_id: airId }]);
+  // The address keeps the main category; the story is listed under both categories.
+  expect((await page.request.get(publicUrl(info, 'land', row.slug))).status()).toBe(200);
+  await page.goto(`/admin/stories?cat=${airId}`);
+  await expect(page.locator('main')).toContainText(title);
+  if (isLive(info)) {
+    await page.goto('/air');
+    await expect(page.locator('main')).toContainText(title);
+    await page.goto('/land');
+    await expect(page.locator('main')).toContainText(title);
+  }
+  // Opened again, the editor shows Air ticked; unticked and saved, the story leaves Air.
+  await page.goto(`/admin/stories/${id}`);
+  await page.locator('#editor[data-ready]').waitFor();
+  await part(page, 'details');
+  await expect(page.locator(`.ed-cat-extra input[value="${airId}"]`)).toBeChecked();
+  await page.locator(`.ed-cat-extra input[value="${airId}"]`).uncheck();
+  await page.click('.ed-save');
+  await expect(page.locator('#a-toast')).toContainText('Story saved and published', { timeout: 15_000 });
+  expect(sql(info, 'SELECT category_id FROM post_categories WHERE post_id = ?', id)).toEqual([]);
+  // A save that fails shows the same box in red.
+  await page.fill('#ed-title', '');
+  await page.click('.ed-save');
+  await expect(page.locator('#a-toast')).toHaveAttribute('data-kind', 'error');
+  await expect(page.locator('#a-toast')).toContainText('Story not saved');
+  // A page form (author) shows the big green message after it is sent.
+  const author = sql(info, "SELECT id FROM authors WHERE name = 'Mei Lin'")[0].id;
+  await page.goto(`/admin/authors/${author}`);
+  await page.click('button[type="submit"]:has-text("Save author")');
+  const flash = page.locator('.a-flash');
+  await expect(flash).toHaveText('Author saved.');
+  const flashLook = await flash.evaluate((el) => ({ bg: getComputedStyle(el).backgroundColor, size: parseFloat(getComputedStyle(el).fontSize) }));
+  expect(flashLook.bg).toBe('rgb(21, 128, 61)');
+  expect(flashLook.size).toBeGreaterThanOrEqual(18);
+});
+
+test('homepage builder: the two top sections are called Featured and Latest and top stories; an admin name is saved', async ({ page }, info) => {
+  test.setTimeout(150_000);
+  await inLine(info, 'homepage', async () => {
+    const original = sql(info, 'SELECT id, position, layout, title, span, settings, active FROM home_sections ORDER BY id');
+    try {
+      await login(page, users.admin);
+      await page.goto('/admin/homepage');
+      await page.locator('.hb-list[data-ready]').waitFor();
+      const names = await page.locator('.hb-list > li .hb-open b').allTextContents();
+      expect(names.slice(0, 2)).toEqual(['Featured', 'Latest and top stories']);
+      expect(names.filter((n) => n === 'Latest stories'), 'no two sections with the same made-up name').toHaveLength(0);
+      // A name of its own: shown in the list at once, saved in the section's settings, never on the site.
+      await page.locator('.hb-list > li').first().locator('.hb-open').click();
+      await page.locator('#hb-name').fill('Top of the page');
+      await expect(page.locator('.hb-list > li').first().locator('.hb-open b')).toHaveText('Top of the page');
+      if (narrow(page)) await page.locator('.hb-done').click();
+      await page.click('.hb-save');
+      await expect(page.locator('#a-toast')).toContainText('Homepage saved', { timeout: 15_000 });
+      const first = sql(info, 'SELECT settings FROM home_sections WHERE active = 1 ORDER BY position, id')[0];
+      expect(JSON.parse(first.settings).name).toBe('Top of the page');
+      await page.goto('/');
+      await expect(page.locator('main')).not.toContainText('Top of the page');
+    } finally {
+      // Put the homepage back as it was for the next browser (test housekeeping, straight in the database).
+      for (const r of original) sql(info, 'UPDATE home_sections SET position = ?, layout = ?, title = ?, span = ?, settings = ?, active = ? WHERE id = ?', r.position, r.layout, r.title, r.span, r.settings, r.active, r.id);
+    }
+  });
+});

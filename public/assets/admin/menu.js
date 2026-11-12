@@ -2,7 +2,7 @@
 // to nest or un-nest) or use ↑ ↓ → ←; an item's children always move with it. Each item links to the home page, a
 // category, a tag, a story, a page or any web address, with its own text, "new tab" and show/hide. Saved in one
 // request (one transaction on the server); the header shows the new menu at once (the page cache is cleared).
-import { $, $$, openSheet, closeSheet } from './ui.js';
+import { $, $$, openSheet, closeSheet, notify } from './ui.js';
 import { api, esc } from './api.js';
 
 const data = JSON.parse($('#menu-data').textContent);
@@ -347,8 +347,10 @@ $('.mb-save').addEventListener('click', async () => {
     for (const it of items) if (res.ids[it.key]) it.id = res.ids[it.key];
     statusLine.textContent = `Saved ${new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}. The header shows the new menu now.`;
     statusLine.dataset.saved = '1';
+    notify(true, 'Menu saved', 'The header shows the new menu now.');
   } catch (err) {
     statusLine.textContent = err.message;
+    notify(false, 'Not saved', err.message);
   } finally {
     btn.disabled = false;
   }

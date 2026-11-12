@@ -83,8 +83,9 @@ function posts_where(array $o): array
             $where[] = $op === 'IN' ? '1 = 0' : '1 = 1';
             continue;
         }
-        $where[] = 'p.category_id ' . $op . ' (' . implode(',', array_fill(0, count($ids), '?')) . ')';
-        array_push($params, ...$ids);
+        [$sql, $more] = category_match_sql($ids, $op === 'IN');
+        $where[] = $sql;
+        array_push($params, ...$more);
     }
     $tags = array_values(array_filter((array) ($o['tags'] ?? []), 'is_string'));
     if ($tags !== []) {
@@ -97,6 +98,52 @@ function posts_where(array $o): array
         $where[] = 'p.id NOT IN (' . implode(',', $exclude) . ')';
     }
     return [implode(' AND ', $where), $params];
+}
+
+/**
+ * SQL for "story p is in one of these categories": its main category (posts.category_id) or one of its extra
+ * categories (post_categories). $in = false gives the opposite: in none of them, main or extra.
+ * @param list<int> $ids
+ * @return array{0: string, 1: list<int>}
+ */
+function category_match_sql(array $ids, bool $in = true): array
+{
+    $ph = implode(',', array_fill(0, count($ids), '?'));
+    $sql = $in
+        ? "(p.category_id IN ($ph) OR p.id IN (SELECT pcx.post_id FROM post_categories pcx WHERE pcx.category_id IN ($ph)))"
+        : "(p.category_id NOT IN ($ph) AND p.id NOT IN (SELECT pcx.post_id FROM post_categories pcx WHERE pcx.category_id IN ($ph)))";
+    return [$sql, [...$ids, ...$ids]];
+}
+
+/**
+ * Stories per category, main and extra categories both counted (a story counts once per category).
+ * $where filters the stories (alias p), e.g. "p.status <> 'trash'".
+ * @param list<mixed> $params
+ * @return array<int, int> category id => stories
+ */
+function category_story_counts(string $where, array $params = []): array
+{
+    $counts = [];
+    $rows = q_all("SELECT x.category_id, COUNT(*) AS n FROM (
+                       SELECT p.id AS post_id, p.category_id FROM posts p WHERE $where
+                       UNION
+                       SELECT p.id AS post_id, pc.category_id FROM post_categories pc JOIN posts p ON p.id = pc.post_id WHERE $where
+                   ) x GROUP BY x.category_id", [...$params, ...$params]);
+    foreach ($rows as $r) {
+        $counts[(int) $r['category_id']] = (int) $r['n'];
+    }
+    return $counts;
+}
+
+/**
+ * The extra categories of a story (not its main one), in menu order.
+ * @return list<array{id: int, name: string, slug: string}>
+ */
+function post_extra_categories(int $postId): array
+{
+    return array_map(static fn (array $c): array => ['id' => (int) $c['id'], 'name' => (string) $c['name'], 'slug' => (string) $c['slug']],
+        q_all('SELECT c.id, c.name, c.slug FROM post_categories pc JOIN categories c ON c.id = pc.category_id
+                WHERE pc.post_id = ? ORDER BY c.position, c.id', [$postId]));
 }
 
 /**

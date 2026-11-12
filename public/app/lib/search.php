@@ -487,8 +487,9 @@ function search_results(string $q, array $o = []): array
             $out['took'] = (int) round((microtime(true) - $t0) * 1000);
             return $out;
         }
-        $where .= ' AND p.category_id IN (' . implode(',', array_fill(0, count($ids), '?')) . ')';
-        array_push($params, ...$ids);
+        [$catSql, $catParams] = category_match_sql($ids); // main or extra category
+        $where .= ' AND ' . $catSql;
+        array_push($params, ...$catParams);
     }
     foreach (['from' => '>=', 'to' => '<='] as $key => $op) {
         $raw = trim((string) ($o[$key] ?? ''));

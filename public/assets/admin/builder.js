@@ -3,7 +3,7 @@
 // a search box, the same list for "Leave out". Saved to home_sections. On phones the settings are a bottom sheet.
 // Step 5 (rest of F16): picture size sliders per section, and a live preview drawn by the site itself (the same
 // section templates) from the unsaved settings: beside the builder on wide screens, under it on phones.
-import { $, $$, openSheet, closeSheet } from './ui.js';
+import { $, $$, openSheet, closeSheet, notify } from './ui.js';
 import { api, esc } from './api.js';
 
 const data = JSON.parse($('#builder-data').textContent);
@@ -17,15 +17,27 @@ let newKeys = 0;
 const phone = () => matchMedia('(max-width: 899px)').matches;
 const layoutLabel = (l) => data.layouts[l]?.label || l;
 const settingsOf = (s) => ({ ...data.layouts[s.layout].settings, ...s.settings });
+// What the list calls a section (owner, 2026-11-13: two sections were both "Latest stories"): its own name, else
+// its title, else its categories, else a name from its layout. Only the admin sees it.
+function sectionName(s) {
+  const set = settingsOf(s);
+  if ((set.name || '').trim()) return set.name.trim();
+  if ((s.title || '').trim()) return s.title.trim();
+  const cats = (set.categories || []).map((slug) => data.categories.find((c) => c.slug === slug)?.name).filter(Boolean);
+  if (cats.length) return cats.join(', ');
+  if (['hero', 'hero_grid', 'lead_grid', 'lead_list', 'overlay_list'].includes(s.layout)) return 'Featured';
+  if (s.layout === 'list') return set.tabs ? 'Latest and top stories' : 'Latest stories';
+  if (s.layout === 'headlines') return 'Headlines';
+  return 'Latest stories';
+}
 
 function renderList() {
   list.innerHTML = sections.map((s, i) => {
     const set = settingsOf(s);
-    const cats = (set.categories || []).map((slug) => data.categories.find((c) => c.slug === slug)?.name).filter(Boolean);
     return `<li class="a-sec${s.key === selected ? ' on' : ''}${s.active ? '' : ' off'}" data-key="${s.key}">
-      <button type="button" class="a-grip" aria-label="Drag to move ${esc(s.title || layoutLabel(s.layout))}">⋮⋮</button>
+      <button type="button" class="a-grip" aria-label="Drag to move ${esc(sectionName(s))}">⋮⋮</button>
       <button type="button" class="hb-open" aria-expanded="${s.key === selected}">
-        <b>${esc(s.title || (cats.length ? cats.join(', ') : 'Latest stories'))}</b>
+        <b>${esc(sectionName(s))}</b>
         <span class="a-small">${esc(layoutLabel(s.layout))}</span>
         <span class="hb-pills"><span class="a-pill dr">span ${s.span}</span><span class="a-pill dr">${set.count} stories</span>${s.active ? '' : '<span class="a-pill tr">Hidden</span>'}</span>
       </button>
@@ -139,7 +151,8 @@ function renderForm() {
   const order = { date: 'Newest first (date)', updated: 'Last updated', title: 'Title A–Z', id: 'Story number', views: 'Most read', random: 'Random' };
   formBox.innerHTML = `
     <label class="a-lbl" for="hb-layout">Layout</label><select id="hb-layout" data-top="layout">${layouts}</select>
-    <label class="a-lbl" for="hb-title">Title (empty = no section header)</label><input id="hb-title" data-top="title" maxlength="120" value="${esc(s.title)}">
+    <label class="a-lbl" for="hb-name">Name in the admin <span class="a-mute">(only you see it)</span></label><input id="hb-name" data-key="name" maxlength="80" value="${esc(set.name || '')}" placeholder="${esc(sectionName({ ...s, settings: { ...s.settings, name: '' } }))}">
+    <label class="a-lbl" for="hb-title">Title on the site (empty = no section header)</label><input id="hb-title" data-top="title" maxlength="120" value="${esc(s.title)}">
     ${range('span', 'Width (span 3–12)', s.span, 3, 12)}
     ${range('count', 'Stories', set.count, 1, 20)}
     ${'columns' in set ? range('columns', 'Columns', set.columns, 1, 6) : ''}
@@ -292,8 +305,10 @@ $('.hb-save').addEventListener('click', async () => {
     res.ids.forEach((id, i) => { if (!sections[i].id) { sections[i].id = id; } });
     statusLine.textContent = `Saved ${new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}. The homepage shows the new order now.`;
     statusLine.dataset.saved = '1';
+    notify(true, 'Homepage saved', 'The homepage shows it now.');
   } catch (err) {
     statusLine.textContent = err.message;
+    notify(false, 'Not saved', err.message);
   } finally {
     btn.disabled = false;
   }

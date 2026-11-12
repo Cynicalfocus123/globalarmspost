@@ -26,6 +26,7 @@ History, rules and design notes: [PROJECT_LOG.md](PROJECT_LOG.md). Wireframes: [
 - **Trash**: "Delete for good" (admins, with a confirm).
 - **Homepage builder**: picture size sliders per section and a live preview drawn by the site itself (beside the builder from 1280 px, under it below that).
 - **JSON API** (read-only, public stories only, no cookies, rate limited, cached): `GET /api/posts?category=&tag=&page=&per=` (per: up to 50), `/api/posts/{slug}`, `/api/categories`.
+- **2026-11-13 (owner's requests):** a story can show in **extra categories** besides its main one (editor: "Also show in"); every admin save shows a **big green "Saved" box** (red when it was not saved); homepage builder sections have a **Name in the admin** (the two top ones are "Featured" and "Latest and top stories").
 - **Backup** at `/admin/backup` (admins): a ZIP with every table as JSON and the pictures, kept in `storage/backups` (never served), downloaded through the admin. Restore comes later.
 - **GitHub Actions** (`.github/workflows/check.yml`): PHPStan level 6 (`phpstan.neon`) on every push. The Playwright suite runs on the owner's PC (it needs the Windows test tools).
 
@@ -37,9 +38,9 @@ On MySQL 8.4 instead of SQLite (starts and stops its own MySQL server, ports 331
 ```bash
 GAP_DB=mysql PLAYWRIGHT_BROWSERS_PATH=D:/dev/playwright WORKERS=6 npm test
 ```
-928 tests on the live copy (Chromium/Firefox/WebKit × phone/tablet/desktop; `COPIES=git,live` for both copies) in three phases per copy: the setup step (`admin-setup`), the site/story/admin/SEO/API/backup tests, then the publish tests (`*-publish`: `admin-publish.spec.ts` and `menu.spec.ts`) after them.
+946 tests on the live copy (928 until 2026-11-13; two new publish tests × 9 projects) (Chromium/Firefox/WebKit × phone/tablet/desktop; `COPIES=git,live` for both copies) in three phases per copy: the setup step (`admin-setup`), the site/story/admin/SEO/API/backup tests, then the publish tests (`*-publish`: `admin-publish.spec.ts` and `menu.spec.ts`) after them.
 Starts the real PHP server with a fresh SQLite database for both copies (git/ with `#` links, live/ with proper addresses), loads the sample stories (test database only) and stops it after the run. The first test makes the admin account through the setup step; the test accounts are in `tests/fixtures/test-users.json` (test databases only). Browsers: `PLAYWRIGHT_BROWSERS_PATH=D:/dev/playwright`.
-A passing run is **894 passed, 34 skipped, 0 failed**. The page cache is on in the tests, as on the real site. The 34 skips are by design (a database check or a scheduled-story test that runs once, tests for the phone menu or the desktop columns only, and the homepage builder drag on phones: the admin is desktop-first) and every report lists them by name.
+The last passing run (928 tests, before 2026-11-13) was **894 passed, 34 skipped, 0 failed**; the 18 new tests are not run yet. The page cache is on in the tests, as on the real site. The 34 skips are by design (a database check or a scheduled-story test that runs once, tests for the phone menu or the desktop columns only, and the homepage builder drag on phones: the admin is desktop-first) and every report lists them by name.
 
 ## Look at the site locally
 The Claude app's preview (`.claude/launch.json`, "live-copy") or `npm run preview` serves the live copy with sample stories at http://127.0.0.1:8091/. The admin is at http://127.0.0.1:8091/admin: sign in with the demo admin from `tests/fixtures/test-users.json` ("demo_admin"). It exists only in the preview's own test database (`tests/seed-admin.php`), never in `live/`.

@@ -59,6 +59,54 @@ document.addEventListener('keydown', (e) => {
     if (wrap) closeSheet(wrap);
   }
 });
+/*
+ * The big "Saved" message (owner, 2026-11-13: the small grey status line was easy to miss). One box at the top of
+ * the screen: green with a tick when a save worked, red with a cross when it did not. Every admin save calls it.
+ * It never takes a click (pointer-events: none), so it can never cover a button; a green one goes after 5 s, a red
+ * one after 12 s or at the next press or Escape. Screen readers hear it (role status / alert).
+ */
+let toastTimer;
+export function notify(ok, title, detail = '') {
+  let box = document.getElementById('a-toast');
+  if (!box) {
+    box = document.createElement('div');
+    box.id = 'a-toast';
+    box.className = 'a-toast';
+    document.body.append(box);
+  }
+  box.hidden = false;
+  box.dataset.kind = ok ? 'ok' : 'error';
+  box.setAttribute('role', ok ? 'status' : 'alert');
+  box.innerHTML = '';
+  const icon = document.createElement('span');
+  icon.className = 'a-toast-icon';
+  icon.setAttribute('aria-hidden', 'true');
+  icon.textContent = ok ? '✓' : '✕';
+  const text = document.createElement('span');
+  text.className = 'a-toast-text';
+  const b = document.createElement('b');
+  b.textContent = title;
+  text.append(b);
+  if (detail) {
+    const d = document.createElement('span');
+    d.textContent = detail;
+    text.append(d);
+  }
+  box.append(icon, text);
+  box.classList.remove('show');
+  void box.offsetWidth; // restart the fade-in when a second save follows quickly
+  box.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(hideToast, ok ? 5000 : 12000);
+}
+export function hideToast() {
+  const box = document.getElementById('a-toast');
+  if (box) { box.classList.remove('show'); box.hidden = true; }
+}
+// A red message stays until the admin does something next; a green one only goes by itself.
+document.addEventListener('pointerdown', () => { if (document.getElementById('a-toast')?.dataset.kind === 'error') hideToast(); }, true);
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') hideToast(); });
+
 // Module scripts run after the page is shown: this marks when the buttons above work (tests wait for it).
 document.documentElement.dataset.ui = 'ready';
 

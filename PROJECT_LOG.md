@@ -179,6 +179,18 @@ Every change must keep the code:
 
 ## Change log
 
+### 2026-11-13 — Owner's admin requests: extra categories, big Saved message, section names (built, not tested yet)
+
+Built in this session's worktree (branch `claude/gap-deployment-zips-9e3169`), on top of `b5a79d3`. The frontend/backend split and the other uncommitted changes in `git/` are not in it yet; the two are joined before the test run.
+
+- **Extra categories (B20).** A story keeps one **main** category (`posts.category_id`): it gives the address `/land/{story}`, the breadcrumb and "More in Land". New table `post_categories` (migration `008_post_categories.php`) holds the **extra** categories the story also shows in. `category_match_sql()` (`app/lib/posts.php`) is used by every category filter: category pages, homepage sections, the search filter, the admin's stories filter; `category_story_counts()` counts main + extra (admin Categories page, category edit page, `/api/categories`); the sitemap's category dates include extra stories. The editor's Category box: "Main category" (round buttons, as before) and "Also show in" (checkboxes; the main one is ticked and locked there). Delete for good removes the rows. Stories saved straight into `posts` (old stories, test seeds) work as before: no extra categories.
+- **Big save message (F22).** `notify()` in `assets/admin/ui.js`: a big box at the top of the screen, green with a tick and what was saved ("Story saved and published", "Homepage saved", "Menu saved", "Order saved", new tag / category / author), red with a cross when it was not saved (with the reason). It never takes a click (`pointer-events: none`), so it never covers a button; green goes after 5 s, red after 12 s or the next press. Page forms (authors, categories, tags, pictures, settings, users, account, backup, bulk story actions) show `.a-flash` as the same big green / red box. Error boxes (`.a-error`) are bolder too.
+- **Homepage section names (F23).** The two top sections both showed "Latest stories" (no title, no category). The builder now names a section by its own **Name in the admin** (new field; settings key `name`, never shown on the site), else its title, else its categories, else its layout: hero layouts = **Featured**, the tabbed list = **Latest and top stories**.
+- **Old stories (B18).** Claude brings the old site's stories over per category: `Claude outputs/old-site-export/tools/export-category.php` (reads the old site's WordPress API) and `import-category.php` (adds a saved category through the site's own `story_save()` and `media_store_source()`; original UTC dates, authors, tags; the old site's other categories become extra categories; a story already there gets the category as an extra one). Land 50, Air 49, Naval 50 saved and shown in the local preview.
+- **Found (B21, not built):** the old site's story links are `globalarmspost.com/{story}/`; only `/category/...` and `/yyyy/mm/{story}/` redirect today.
+- Tests: `admin-publish.spec.ts` "extra categories …" (main Land + Air, shown in both, DB rows, untick, red box on a failed save, big green page-form box) and "homepage builder: … Featured and Latest and top stories …" (names, Name in the admin saved, never on the site).
+- Task list v26: B20, F22, F23 Pending; B18 Pending (Claude); B21 Not started.
+
 ### 2026-11-12 — MySQL check before deploying: one real bug fixed
 
 Hostinger runs MySQL, and step 5 had been tested on SQLite only. So the whole suite ran on MySQL 8.4 (`GAP_DB=mysql`: a fresh MySQL server on this PC, strict mode; nothing of the local MySQL install is touched).

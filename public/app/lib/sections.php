@@ -9,7 +9,9 @@ declare(strict_types=1);
  */
 function section_layouts(): array
 {
-    $common = ['categories' => [], 'exclude_categories' => [], 'tags' => [], 'order_by' => 'date', 'dir' => 'desc',
+    // name: what the admin's homepage builder calls the section (never shown on the site); empty = a name from
+    // the layout and categories (assets/admin/builder.js sectionName()).
+    $common = ['name' => '', 'categories' => [], 'exclude_categories' => [], 'tags' => [], 'order_by' => 'date', 'dir' => 'desc',
                'skip' => 0, 'sticky_first' => false, 'avoid_duplicates' => true,
                // Picture sizes (task F16), steps 1-5 (3 = the standard look): photo_height = the shape of the big
                // photos (1 wide and low ... 5 square), thumb_size = the small photo in title rows (1 small ... 5 big).

@@ -1,7 +1,7 @@
 // Story editor (tasks F13, F14, B19): headline, text toolbar, pictures anywhere in the body (toolbar, paste,
 // drag and drop) each with caption + credit, publish box, category / tag / author pickers that add new ones
 // on the spot (saved at once, no reload), main photo + gallery, search preview.
-import { $, $$, openSheet, closeSheet } from './ui.js';
+import { $, $$, openSheet, closeSheet, notify } from './ui.js';
 import { api, esc } from './api.js';
 import { uploadPicture, imageFiles } from './images.js';
 
@@ -13,6 +13,7 @@ const state = {
   id: st.id || 0,
   state: st.state || 'draft',
   categoryId: st.category_id || 0,
+  extraIds: new Set(st.extra_category_ids || []), // extra categories: the story also shows there (owner, 2026-11-13)
   authorId: st.author_id || 0,
   tagIds: new Set(st.tag_ids || []),
   mediaId: st.media_id || 0,
@@ -359,18 +360,34 @@ $('.ed-trash', form).addEventListener('click', async () => {
 
 /* ---------- category: search, choose, add on the spot ---------- */
 const catList = $('.ed-cat-list', form);
+const extraList = $('.ed-cat-extra', form);
 const catSearch = $('.ed-cat-search', form);
 function renderCategories() {
   const q = catSearch.value.trim().toLowerCase();
-  catList.innerHTML = data.categories.map((c) => {
+  const row = (c, type) => {
     const parent = data.categories.find((p) => p.id === c.parent_id);
     const show = !q || c.name.toLowerCase().includes(q) || (parent && parent.name.toLowerCase().includes(q));
-    return `<label class="a-check depth-${Math.min(3, c.depth)}"${show ? '' : ' hidden'}><input type="radio" name="category" value="${c.id}"${c.id === state.categoryId ? ' checked' : ''}> ${esc(c.name)}${parent ? ` <span class="a-mute">(${esc(parent.name)})</span>` : ''}</label>`;
-  }).join('');
+    const main = c.id === state.categoryId;
+    const on = type === 'radio' ? main : main || state.extraIds.has(c.id);
+    // The main category is always in: its box in "Also show in" is ticked and cannot be changed there.
+    const attrs = type === 'radio' ? `type="radio" name="category"` : `type="checkbox" name="extra_category"${main ? ' disabled' : ''}`;
+    return `<label class="a-check depth-${Math.min(3, c.depth)}"${show ? '' : ' hidden'}><input ${attrs} value="${c.id}"${on ? ' checked' : ''}> ${esc(c.name)}${parent ? ` <span class="a-mute">(${esc(parent.name)})</span>` : ''}${type !== 'radio' && main ? ' <span class="a-mute">· main</span>' : ''}</label>`;
+  };
+  catList.innerHTML = data.categories.map((c) => row(c, 'radio')).join('');
+  extraList.innerHTML = data.categories.map((c) => row(c, 'checkbox')).join('');
   $('#ed-cat-parent').innerHTML = '<option value="0">Top level</option>' + data.categories.map((c) => `<option value="${c.id}">${'— '.repeat(c.depth)}${esc(c.name)}</option>`).join('');
 }
 catSearch.addEventListener('input', renderCategories);
-catList.addEventListener('change', (e) => { state.categoryId = Number(e.target.value); seo(); });
+catList.addEventListener('change', (e) => {
+  state.categoryId = Number(e.target.value);
+  state.extraIds.delete(state.categoryId); // the main category is never an extra one too
+  renderCategories();
+  seo();
+});
+extraList.addEventListener('change', (e) => {
+  const id = Number(e.target.value);
+  if (e.target.checked) state.extraIds.add(id); else state.extraIds.delete(id);
+});
 const catAdd = $('.ed-cat-add', form);
 $('.ed-cat-add-open', form).addEventListener('click', () => {
   catAdd.hidden = false;
@@ -392,7 +409,9 @@ async function addCategory() {
       data.categories.splice(at, 0, { ...c, depth });
     }
     state.categoryId = c.id;
+    state.extraIds.delete(c.id);
     catSearch.value = '';
+    notify(true, `Category "${c.name}" ${c.created ? 'saved' : 'chosen'}`, 'Save the story to keep it on this story.');
     catAdd.hidden = true;
     renderCategories();
     seo();
@@ -496,6 +515,7 @@ const tagCombo = combo(tagInput, $('#ed-tag-list'), {
       renderChips();
       changed();
       flashNote(`Tag "${t.name}" ${t.created ? 'saved' : 'added'}.`);
+      notify(true, t.created ? `Tag "${t.name}" saved` : `Tag "${t.name}" added`, 'Save the story to keep it on this story.');
     } catch (err) {
       showError(err.message);
     }
@@ -561,6 +581,7 @@ $('.ed-author-save', form).addEventListener('click', async () => {
     closeSheet(authorSheet);
     changed();
     flashNote(`Author "${a.name}" saved and chosen.`);
+    notify(true, `Author "${a.name}" saved`, 'Chosen for this story. Save the story to keep it.');
   } catch (err) {
     authorError(err.message);
   }
@@ -680,17 +701,19 @@ function flashNote(text) {
 }
 
 async function save() {
-  if (state.busy) return showError('Wait until the pictures are ready.');
+  const stop = (text) => { showError(text); notify(false, 'Story not saved', text); };
+  if (state.busy) return stop('Wait until the pictures are ready.');
   showError('');
-  if (!els.title.value.trim()) { form.dataset.active = 'write'; els.title.focus(); return showError('Please write a headline.'); }
-  if (!state.categoryId) return showError('Please choose a category (Details).');
+  if (!els.title.value.trim()) { form.dataset.active = 'write'; els.title.focus(); return stop('Please write a headline.'); }
+  if (!state.categoryId) return stop('Please choose a category (Details).');
   els.save.disabled = true;
   els.saved.textContent = 'Saving…';
   try {
     const res = await api('/admin/api/story', {
       id: state.id, title: els.title.value, body: bodyHtml(), excerpt: els.excerpt.value, summary: els.summary.value,
       credits: els.credits.value, status: status(), published_local: els.date.value, sticky: els.sticky.checked,
-      live_label: els.live.checked, category_id: state.categoryId, author_id: state.authorId, tag_ids: [...state.tagIds],
+      live_label: els.live.checked, category_id: state.categoryId,
+      extra_category_ids: [...state.extraIds].filter((id) => id !== state.categoryId), author_id: state.authorId, tag_ids: [...state.tagIds],
       media_id: state.mediaId, featured_caption: photoCaption.value, featured_credit: photoCredit.value,
       gallery: state.gallery.map(({ media_id, caption, credit }) => ({ media_id, caption, credit })), slug: els.slug.value,
     });
@@ -703,6 +726,8 @@ async function save() {
     const t = new Date();
     els.saved.textContent = `Saved ${t.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })} · ${{ draft: 'Draft', scheduled: 'Scheduled', published: 'Published' }[res.state] || res.state}`;
     els.saved.dataset.state = res.state;
+    notify(true, { draft: 'Draft saved', scheduled: 'Story saved and scheduled', published: 'Story saved and published' }[res.state] || 'Story saved',
+      res.state === 'published' ? 'Readers see it on the site now.' : res.state === 'scheduled' ? `It goes live at ${res.published_local.replace('T', ' ')}.` : 'Only the newsroom can see it.');
     form.dataset.storyId = String(res.id);
     const preview = $('.ed-preview', form);
     preview.href = `/admin/preview/${res.id}`;
@@ -714,6 +739,7 @@ async function save() {
   } catch (err) {
     els.saved.textContent = 'Not saved';
     showError(err.message);
+    notify(false, 'Story not saved', err.message);
   } finally {
     els.save.disabled = state.busy > 0;
   }

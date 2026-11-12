@@ -129,10 +129,7 @@ function api_post(string $slug): array
 /** @return list<array<string, mixed>> */
 function api_categories(): array
 {
-    $counts = [];
-    foreach (q_all("SELECT category_id, COUNT(*) AS n FROM posts WHERE status = 'published' AND published_at <= ? GROUP BY category_id", [now_utc()]) as $r) {
-        $counts[(int) $r['category_id']] = (int) $r['n'];
-    }
+    $counts = category_story_counts("p.status = 'published' AND p.published_at <= ?", [now_utc()]); // main and extra categories
     $out = [];
     foreach (q_all('SELECT c.id, c.name, c.slug, p.slug AS parent FROM categories c LEFT JOIN categories p ON p.id = c.parent_id ORDER BY c.position, c.id') as $c) {
         $out[] = ['id' => (int) $c['id'], 'name' => (string) $c['name'], 'slug' => (string) $c['slug'],

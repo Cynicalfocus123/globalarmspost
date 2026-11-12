@@ -1,6 +1,6 @@
 // Categories page (task F17): drag ⋮⋮ (mouse, touch or pen) or ↑ ↓ to change the order. A category moves with its
 // sub-categories and stays inside its own parent (Edit moves it into another one). "Save order" stores it.
-import { $, $$ } from './ui.js';
+import { $, $$, notify } from './ui.js';
 import { api } from './api.js';
 
 const list = $('.cat-list');
@@ -130,8 +130,10 @@ saveBtn.addEventListener('click', async () => {
     await api('/admin/api/categories-order', { ids: rows().map((li) => Number(li.dataset.id)) });
     statusLine.textContent = 'Order saved. The menu, footer and lists use it now.';
     statusLine.dataset.saved = '1';
+    notify(true, 'Order saved', 'The menu, footer and lists use it now.');
   } catch (err) {
     statusLine.textContent = err.message;
+    notify(false, 'Not saved', err.message);
     saveBtn.disabled = false;
   }
 });
