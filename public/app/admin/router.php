@@ -6,7 +6,7 @@ declare(strict_types=1);
  * Every POST needs the CSRF token. Editors write stories; admins also run the homepage, users and settings.
  *
  *   /admin                    dashboard           /admin/stories             stories list (tabs, search, filters, bulk)
- *   /admin/setup              first admin         /admin/stories/new|{id}    story editor
+ *   (no setup page: accounts are made on the server, app/cli/create-admin.php, B22) /admin/stories/new|{id}    story editor
  *   /admin/login, two-step    sign in             /admin/preview/{id}        story preview (any status)
  *   /admin/logout (POST)                          /admin/authors[/new|{id}]  authors
  *   /admin/homepage           homepage builder    /admin/categories, tags, pictures, users, account
@@ -39,14 +39,9 @@ function admin_route(array $parts): void
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && !csrf_ok()) {
         admin_fail(403, 'This form has expired. Please reload the page and try again.', $api);
     }
-    $hasUsers = (int) (q_one('SELECT COUNT(*) AS n FROM users')['n'] ?? 0) > 0;
-    if (!$hasUsers) {
-        $first === 'setup' ? admin_setup() : admin_redirect('/admin/setup');
-        return;
-    }
+    // There is no setup page on the web (owner, 2026-11-14, task B22): admin accounts are made on the server with
+    // app/cli/create-admin.php. With no account yet the admin is just the sign-in page, which tells nothing.
     switch ($first) {
-        case 'setup':
-            admin_fail(404, 'The first admin account already exists. Sign in instead.', false);
         case 'login':
             admin_login();
             return;
@@ -86,6 +81,7 @@ function admin_route(array $parts): void
         'users' => admin_users(admin_need($user, 'admin')),
         'account' => admin_account($user, $parts[1] ?? ''),
         'menu' => admin_menu(admin_need($user, 'admin')),
+        'pages' => ($parts[1] ?? '') === 'new' || $id > 0 ? admin_page_edit(admin_need($user, 'admin'), $id) : admin_pages(admin_need($user, 'admin')),
         'settings' => admin_settings(admin_need($user, 'admin')),
         'backup' => admin_backup(admin_need($user, 'admin'), $parts),
         'api' => admin_api($user, $parts[1] ?? ''),
@@ -152,36 +148,6 @@ function json_input(): array
 }
 
 /* ---------- sign in ---------- */
-
-function admin_setup(): void
-{
-    $error = '';
-    $old = ['name' => '', 'email' => ''];
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        $old = ['name' => clean_text($_POST['name'] ?? '', 120), 'email' => strtolower(clean_text($_POST['email'] ?? '', 190))];
-        $password = (string) ($_POST['password'] ?? '');
-        $error = match (true) {
-            $old['name'] === '' => 'Please type your name.',
-            filter_var($old['email'], FILTER_VALIDATE_EMAIL) === false => 'Please type a valid email address.',
-            password_problem($password) !== '' => password_problem($password),
-            $password !== (string) ($_POST['password2'] ?? '') => 'The two passwords are not the same.',
-            default => '',
-        };
-        if ($error === '') {
-            // Only while there is no user at all (checked again inside the same request).
-            if ((int) (q_one('SELECT COUNT(*) AS n FROM users')['n'] ?? 0) === 0) {
-                q("INSERT INTO users (email, name, password_hash, role, created_at) VALUES (?, ?, ?, 'admin', ?)",
-                    [$old['email'], $old['name'], password_hash($password, PASSWORD_DEFAULT), now_utc()]);
-                $id = (int) db()->lastInsertId();
-                audit('setup.first_admin', $old['email'], $id);
-                finish_login($id, false);
-                flash('Welcome! Your admin account is ready.');
-            }
-            admin_redirect('/admin');
-        }
-    }
-    echo view('admin/auth', ['mode' => 'setup', 'title' => 'Create the first admin', 'error' => $error, 'old' => $old]);
-}
 
 function admin_login(): void
 {
@@ -637,17 +603,55 @@ function admin_account(array $user, string $action): never
     ]);
 }
 
-/** Menu builder (F5): the header menu, built in assets/admin/menu.js. */
+/** Menu builder (F5): the header menu or the footer menu (?m=footer, F24), built in assets/admin/menu.js. */
 function admin_menu(array $user): never
 {
-    $storyIds = array_values(array_filter(array_map(static fn (array $i): int => $i['type'] === 'story' ? (int) $i['target'] : 0, menu_items_for_builder())));
+    $location = (string) ($_GET['m'] ?? 'header');
+    $location = isset(menu_locations()[$location]) ? $location : 'header';
+    $items = menu_items_for_builder($location);
+    $storyIds = array_values(array_filter(array_map(static fn (array $i): int => $i['type'] === 'story' ? (int) $i['target'] : 0, $items)));
     $stories = $storyIds === [] ? [] : q_all('SELECT id, title FROM posts WHERE id IN (' . implode(',', $storyIds) . ')');
-    admin_page($user, 'Menu', 'menu', 'menu', ['data' => [
-        'items' => menu_items_for_builder(),
+    admin_page($user, 'Menu', 'menu', 'menu', ['location' => $location, 'data' => [
+        'location' => $location,
+        'pages' => array_map(static fn (array $p): array => ['slug' => (string) $p['slug'], 'title' => (string) $p['title']], pages_all()),
+        'items' => $items,
         'categories' => array_map(static fn (array $c): array => ['slug' => $c['slug'], 'name' => $c['name'], 'depth' => $c['depth']], category_tree()),
         'tags' => q_all('SELECT slug, name FROM tags ORDER BY name'),
         'stories' => array_map(static fn (array $r): array => ['id' => (int) $r['id'], 'title' => (string) $r['title']], $stories),
     ]]);
+}
+
+/** Pages (F24): About Us, Terms of Service, Privacy Policy, Advertise, Contact Us and any page the admin adds. */
+function admin_pages(array $user): never
+{
+    admin_page($user, 'Pages', 'pages', 'pages', ['rows' => pages_all()]);
+}
+
+/** Add or change a page (title, address, text), or delete it. */
+function admin_page_edit(array $user, int $id): never
+{
+    $pg = $id > 0 ? q_one('SELECT id, title, slug, body, updated_at FROM pages WHERE id = ?', [$id]) : null;
+    if ($id > 0 && $pg === null) {
+        admin_fail(404, 'This page does not exist.', false);
+    }
+    $error = '';
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        try {
+            if (($_POST['action'] ?? '') === 'delete') {
+                $title = page_delete($id);
+                flash('Page ' . $title . ' deleted.');
+                admin_redirect('/admin/pages');
+            }
+            $saved = page_save($_POST, $id);
+            flash('Page saved. The site shows it now.');
+            admin_redirect('/admin/pages/' . (int) $saved['id']);
+        } catch (InputError $e) {
+            $error = $e->getMessage();
+            $pg = ['id' => $id, 'title' => (string) ($_POST['title'] ?? ''), 'slug' => (string) ($_POST['slug'] ?? ''),
+                   'body' => clean_html((string) ($_POST['body'] ?? '')), 'updated_at' => (string) ($pg['updated_at'] ?? '')];
+        }
+    }
+    admin_page($user, $id > 0 ? 'Edit page' : 'New page', 'pages', 'page_edit', ['pg' => $pg, 'error' => $error]);
 }
 
 /** Backups (B17): make one, list the earlier ones, download one. No restore yet. @param list<string> $parts */

@@ -1,5 +1,5 @@
 import { test, expect, type Page, type TestInfo } from './fixtures';
-import { users, sql, login, narrow, inLine, isLive, nowSql } from './admin-helpers';
+import { users, sql, login, narrow, inLine, isLive, nowSql, noSidewaysScroll } from './admin-helpers';
 
 // Step 5, publish phase (after the site and admin tests, like admin-publish.spec.ts): admin changes every visitor
 // sees on every page.
@@ -195,7 +195,6 @@ test('categories: add, rename, new address, parent, header menu and order; reser
       }
       await page.goto('/');
       await expect(page.locator(`#main-menu a`, { hasText: newName })).toHaveCount(1);
-      await expect(page.locator('.footer-cats a', { hasText: newName })).toHaveCount(1);
 
       // Out of the header menu again: the item is hidden, not removed.
       await page.goto(`/admin/categories/${cat.id}`);
@@ -227,11 +226,10 @@ test('categories: add, rename, new address, parent, header menu and order; reser
       // The saved order is the page's order. (Another browser's publish test may add a category meanwhile: only
       // the categories this page showed are compared.)
       expect(sql(info, 'SELECT id FROM categories ORDER BY position, id').map((r: any) => String(r.id)).filter((id: string) => ids.includes(id))).toEqual(ids);
-      // The footer lists the categories in the saved order.
-      await page.goto('/');
-      const footer = await page.locator('.footer-cats a').allTextContents();
+      // The site lists the categories in the saved order (the categories API, as the footer did before task F24).
+      const listed = ((await (await page.request.get('/api/categories')).json()) as any[]).map((c: any) => c.name);
       const aboveName = sql(info, 'SELECT name FROM categories WHERE id = ?', above)[0].name;
-      expect(footer.indexOf(newName)).toBe(footer.indexOf(aboveName) - 1);
+      expect(listed.indexOf(newName)).toBe(listed.indexOf(aboveName) - 1);
     } finally {
       for (const r of positions) sql(info, 'UPDATE categories SET position = ? WHERE id = ?', r.position, r.id);
       restoreMenu(info, originalMenu);
@@ -294,6 +292,161 @@ test('site settings: name, tagline, site address, time zone and stories per page
         if (original[k] === null) sql(info, 'DELETE FROM settings WHERE name = ?', k);
         else sql(info, 'UPDATE settings SET value = ? WHERE name = ?', original[k]!, k);
       }
+    }
+  });
+});
+
+/* ---------- Task F24 (owner, 2026-11-14): pages, the footer menu, social links ---------- */
+
+const footerItems = (info: TestInfo): Row[] => sql(info, `SELECT i.id, i.parent_id, i.type, i.label, i.target, i.hidden
+  FROM menu_items i JOIN menus m ON m.id = i.menu_id WHERE m.location = 'footer' ORDER BY i.position, i.id`);
+const pageHref = (info: TestInfo, slug: string) => (isLive(info) ? `/${slug}` : `/#${slug}`);
+
+test('pages: add a page with the text toolbar, it opens at its address; scripts removed; taken addresses refused; a new address moves its menu links; delete', async ({ page }, info) => {
+  test.setTimeout(180_000);
+  page.on('dialog', (d) => d.accept());
+  await inLine(info, 'menu', async () => {
+    const slug = `tp-${letters()}`;
+    const title = `Test page ${letters()}`;
+    const footerBefore = footerItems(info);
+    try {
+      await login(page, users.admin);
+      await page.goto('/admin/pages');
+      for (const t of ['About Us', 'Terms of Service', 'Privacy Policy', 'Advertise With Us', 'Contact Us']) await expect(page.locator('.page-row .t', { hasText: t })).toHaveCount(1);
+      await page.click('a[href="/admin/pages/new"]');
+      await page.locator('#page-form[data-ready]').waitFor();
+      await page.fill('#pg-title', title);
+      await page.fill('#pg-slug', slug);
+      // The toolbar: type, select the words, Bold.
+      await page.locator('#pg-body').click();
+      await page.keyboard.type('Toolbar words');
+      await page.locator('#pg-body').evaluate((el) => { const r = document.createRange(); r.selectNodeContents(el); const s = getSelection()!; s.removeAllRanges(); s.addRange(r); });
+      await page.locator('.ed-tool [data-cmd="bold"]').click();
+      await expect(page.locator('#pg-body b, #pg-body strong')).toHaveText('Toolbar words');
+      // A subhead, a list, and code that must never reach the page.
+      await page.locator('#pg-body').evaluate((el) => el.insertAdjacentHTML('beforeend', '<h2>Our team</h2><ul><li>Point one</li></ul><script>window.bad=1</script><p onclick="window.bad=2">Click text</p><img src=x onerror="window.bad=3">'));
+      await page.locator('#page-form button[type="submit"]').click();
+      await expect(page.locator('.a-flash')).toHaveText('Page saved. The site shows it now.');
+      const row = sql(info, 'SELECT id, title, body FROM pages WHERE slug = ?', slug)[0];
+      expect(row.title).toBe(title);
+      expect(row.body).toMatch(/<(b|strong)>Toolbar words<\/(b|strong)>/);
+      expect(row.body).toContain('<h2>Our team</h2>');
+      expect(row.body).toContain('<li>Point one</li>');
+      expect(row.body).not.toMatch(/script|onclick|onerror|window\.bad/);
+      await expect(page).toHaveURL(new RegExp(`/admin/pages/${row.id}$`));
+
+      // The page on the site.
+      expect((await page.request.get(`/${slug}`)).status()).toBe(200);
+      await page.goto(pageHref(info, slug));
+      await expect(page.locator('.page-doc h1')).toHaveText(title);
+      await expect(page.locator('.page-doc .page-body h2')).toHaveText('Our team');
+      expect(await page.evaluate(() => (window as any).bad)).toBeUndefined();
+
+      // Taken addresses are refused: a category's, a reserved name, another page's.
+      for (const [taken, words] of [['land', 'A category already uses the address /land'], ['admin', 'is kept for the site'], ['contact', 'Another page already uses the address /contact']]) {
+        await page.goto(`/admin/pages/${row.id}`);
+        await page.locator('#page-form[data-ready]').waitFor();
+        await page.fill('#pg-slug', taken);
+        await page.locator('#page-form button[type="submit"]').click();
+        await expect(page.locator('.a-error')).toContainText(words);
+        expect(sql(info, 'SELECT slug FROM pages WHERE id = ?', row.id)[0].slug).toBe(slug);
+      }
+
+      // A footer link to it follows a new address.
+      const col = footerBefore.find((r) => r.parent_id === null)!;
+      sql(info, "INSERT INTO menu_items (menu_id, parent_id, position, type, label, target) SELECT menu_id, ?, 99, 'page', 'Test link', ? FROM menu_items WHERE id = ?", col.id, slug, col.id);
+      await page.goto('/');
+      await expect(page.locator('.site-footer a', { hasText: 'Test link' })).toHaveAttribute('href', pageHref(info, slug));
+      const slug2 = `${slug}-new`;
+      await page.goto(`/admin/pages/${row.id}`);
+      await page.locator('#page-form[data-ready]').waitFor();
+      await page.fill('#pg-slug', slug2);
+      await page.locator('#page-form button[type="submit"]').click();
+      await expect(page.locator('.a-flash')).toHaveText('Page saved. The site shows it now.');
+      expect(sql(info, "SELECT target FROM menu_items WHERE label = 'Test link'")[0].target).toBe(slug2);
+      await page.goto('/');
+      await expect(page.locator('.site-footer a', { hasText: 'Test link' })).toHaveAttribute('href', pageHref(info, slug2));
+
+      // Delete (after the confirm): the page is gone and the footer no longer links to it.
+      await page.goto(`/admin/pages/${row.id}`);
+      await page.locator('#page-form[data-ready]').waitFor();
+      await page.locator('.page-delete button').click();
+      await expect(page.locator('.a-flash')).toHaveText(`Page ${title} deleted.`);
+      expect(sql(info, 'SELECT id FROM pages WHERE id = ?', row.id)).toEqual([]);
+      expect((await page.request.get(`/${slug2}`)).status()).toBe(404);
+      await page.goto('/');
+      await expect(page.locator('.site-footer a', { hasText: 'Test link' })).toHaveCount(0);
+    } finally {
+      sql(info, "DELETE FROM menu_items WHERE label = 'Test link'");
+      sql(info, 'DELETE FROM pages WHERE slug LIKE ?', `${slug}%`);
+    }
+  });
+});
+
+test('footer menu: a new column with a link to a page in the menu builder; social links in Settings show their icons; put back', async ({ page }, info) => {
+  test.setTimeout(180_000);
+  page.on('dialog', (d) => d.accept());
+  await inLine(info, 'menu', async () => {
+    const before = footerItems(info);
+    const headerCount = headerItems(info).length;
+    const insta = sql(info, "SELECT value FROM settings WHERE name = 'social_instagram'")[0]?.value ?? null;
+    const col = `Follow ${letters()}`;
+    const link = `Write ${letters()}`;
+    try {
+      await login(page, users.admin);
+      await page.goto('/admin/menu?m=footer');
+      await page.locator('.mb-list[data-ready]').waitFor();
+      await expect(page.locator('.a-head h1')).toHaveText('Footer menu');
+      await expect(page.locator('.mb-tabs a[aria-current="page"]')).toHaveText('Footer menu');
+      await expect(page.locator('.mb-list > li[data-key]')).toHaveCount(before.length);
+      const form = page.locator('.mb-form');
+      // A column title (no link).
+      await page.click('.mb-add');
+      await form.locator('#mb-type').selectOption('text');
+      await form.locator('#mb-label').fill(col);
+      await done(page);
+      // A link to the Contact Us page, inside that column.
+      await page.click('.mb-add');
+      await form.locator('#mb-type').selectOption('page');
+      await form.locator('#mb-target').selectOption('contact');
+      await form.locator('#mb-label').fill(link);
+      await form.locator('#mb-parent').selectOption({ label: col });
+      await done(page);
+      await page.click('.mb-save');
+      await expect(page.locator('.mb-status')).toContainText('The footer shows the new menu now.');
+      await expect(page.locator('#a-toast')).toContainText('Footer menu saved');
+      const after = footerItems(info);
+      expect(after.length).toBe(before.length + 2);
+      const colRow = after.find((r) => r.label === col)!;
+      expect(colRow).toMatchObject({ type: 'text', target: '', parent_id: null });
+      expect(after.find((r) => r.label === link)).toMatchObject({ type: 'page', target: 'contact', parent_id: colRow.id });
+      expect(headerItems(info).length, 'the header menu is not touched').toBe(headerCount);
+      await page.goto('/');
+      await expect(page.locator('.site-footer .footer-col h2', { hasText: col })).toHaveCount(1);
+      await expect(page.locator('.site-footer a', { hasText: link })).toHaveAttribute('href', pageHref(info, 'contact'));
+      await noSidewaysScroll(page, 'footer with four columns');
+
+      // Social links: a wrong address is refused; an https address shows the icon under the first column.
+      await page.goto('/admin/settings');
+      await page.evaluate(() => { for (const el of document.querySelectorAll('.site-form input[type="url"]')) el.setAttribute('type', 'text'); });
+      await page.fill('#s-social-instagram', 'javascript:alert(1)');
+      await page.locator('.site-form button[type="submit"]').click();
+      await expect(page.locator('.a-flash.warn')).toContainText('The Instagram address must start with https://');
+      await page.goto('/admin/settings');
+      await page.fill('#s-social-instagram', 'https://www.instagram.com/gap.test');
+      await page.locator('.site-form button[type="submit"]').click();
+      await expect(page.locator('.a-flash')).toHaveText('Site settings saved. The page cache was cleared.');
+      expect(sql(info, "SELECT value FROM settings WHERE name = 'social_instagram'")[0].value).toBe('https://www.instagram.com/gap.test');
+      await page.goto('/');
+      const icon = page.locator('.footer-col').first().locator('.footer-social a');
+      await expect(icon).toHaveAttribute('href', 'https://www.instagram.com/gap.test');
+      await expect(icon).toHaveAttribute('aria-label', /Instagram/);
+      await expect(icon.locator('svg')).toBeVisible();
+    } finally {
+      const ids = before.map((r) => Number(r.id));
+      for (const r of footerItems(info)) if (!ids.includes(Number(r.id))) sql(info, 'DELETE FROM menu_items WHERE id = ?', r.id);
+      if (insta === null) sql(info, "DELETE FROM settings WHERE name = 'social_instagram'");
+      else sql(info, "UPDATE settings SET value = ? WHERE name = 'social_instagram'", insta);
     }
   });
 });

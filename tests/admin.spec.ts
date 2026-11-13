@@ -104,7 +104,7 @@ test('roles: an editor writes stories but cannot open users or the homepage buil
   await login(page, users.editor);
   await page.goto('/admin/stories');
   await expect(page.locator('h1')).toHaveText('Stories');
-  for (const path of ['/admin/users', '/admin/homepage', '/admin/settings']) {
+  for (const path of ['/admin/users', '/admin/homepage', '/admin/settings', '/admin/pages', '/admin/pages/new']) {
     const res = await page.goto(path);
     expect(res!.status(), path).toBe(403);
     await expect(page.locator('main')).toContainText('Only admins can open this page.');

@@ -245,16 +245,41 @@ main{min-height:50vh;padding-top:24px;padding-bottom:48px}
 .empty{color:var(--mute)}
 
 /* Footer */
-.site-footer{border-top:1px solid var(--line);margin-top:24px;padding-top:28px}
-.footer-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr);gap:32px}
-.logo-footer img{width:200px}
-.footer-about p{color:var(--mute);font-size:14px;max-width:36ch}
-.footer-cats h2{font:600 18px var(--serif);margin:0 0 8px}
-.footer-cats ul{list-style:none;margin:0;padding:0;columns:3 160px;column-gap:24px}
-.footer-cats a{display:inline-block;text-decoration:none;font-size:14px;padding:6px 0}
-.footer-cats a:hover{text-decoration:underline}
-.footer-base{color:var(--mute);font-size:13px;padding-top:18px;padding-bottom:28px}
-@media (max-width:767.98px){.footer-grid{grid-template-columns:1fr;gap:16px}}
+/* Footer (task F24, owner 2026-11-14): a dark band on every page, the footer menu's columns (title + links), social
+   icons under the first column, then the copyright bar (a darker band). Desktop and tablet: side by side; phones: one under the other. Same in dark mode. */
+:root{--foot-bg:#121620;--foot-bottom:#181c25;--foot-ink:#fff;--foot-link:#c3c8d1;--foot-line:#262b36}
+.site-footer{background:var(--foot-bg);color:var(--foot-ink);margin-top:40px;padding:56px 0 0}
+.footer-cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:32px 40px}
+.footer-col{min-width:0}
+.footer-col h2{font:700 26px/1.2 var(--serif);margin:0 0 22px;color:var(--foot-ink)}
+.footer-col h2 a{color:inherit;text-decoration:none}
+.footer-col ul{list-style:none;margin:0;padding:0}
+.footer-col li a,.footer-col li>span{display:inline-block;color:var(--foot-link);text-decoration:none;font-size:18px;line-height:1.3;padding:8px 0}
+@media (max-width:1099.98px){.footer-col li a,.footer-col li>span{display:inline-flex;align-items:center;min-height:44px;padding:0}} /* touch: 44 px rows */
+.footer-col li a:hover,.footer-col li a:focus-visible{color:var(--foot-ink);text-decoration:underline;text-underline-offset:4px}
+.footer-col .footer-social{display:flex;flex-wrap:wrap;gap:4px;margin:12px 0 0 -11px}
+.footer-col .footer-social a{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;padding:0;color:var(--foot-link)}
+.footer-social a:hover,.footer-social a:focus-visible{color:var(--foot-ink)}
+.footer-social svg{width:22px;height:22px}
+.footer-bottom{background:var(--foot-bottom);margin-top:56px;padding:22px 0}
+.footer-bottom p{margin:0;color:var(--foot-link);font-size:16px}
+.footer-brand{color:var(--red);font-weight:700}
+@media (max-width:767.98px){
+  .site-footer{padding-top:36px}
+  .footer-cols{grid-template-columns:1fr;gap:0}
+  .footer-col{padding:20px 0;border-top:1px solid var(--foot-line)}
+  .footer-col:first-child{border-top:0;padding-top:0}
+  .footer-col h2{font-size:22px;margin-bottom:10px}
+  .footer-col li a,.footer-col li>span{font-size:17px;padding:10px 0}
+  .footer-bottom{margin-top:24px;padding:18px 0}
+  .footer-bottom p{font-size:14px}
+}
+/* Pages (About Us, Terms …): the story page's type, a readable width. */
+.page-doc .page-body ul,.page-doc .page-body ol{padding-left:24px}
+.page-doc .page-body li{margin:4px 0}
+.page-doc .page-body a{color:var(--red);text-decoration-thickness:1px;text-underline-offset:3px}
+.menu .menu-text{display:block;color:var(--ink);font-weight:500;font-size:17px;padding:12px 10px;line-height:1.2;white-space:nowrap}
+@media (max-width:1099.98px){.menu>li>.menu-text{flex:1;padding:14px 16px}}
 
 /* Red back-to-top button, shown after scrolling */
 .to-top{position:fixed;right:16px;bottom:16px;width:48px;height:48px;border:0;border-radius:10px;background:var(--red);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.2);z-index:30}

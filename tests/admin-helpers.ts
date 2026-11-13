@@ -23,6 +23,21 @@ export const sheetBottom = async (page: Page, selector: string) => {
 /** A name unique to this test project and moment. */
 export const uniq = (info: TestInfo, word: string) => `${word} ${info.project.name.replace(/-/g, ' ')} ${Date.now().toString(36)}`;
 
+/**
+ * Run the server command that makes admin accounts (app/cli/create-admin.php, task B22) on the test copy, with the
+ * password piped in. Returns its exit code and output.
+ */
+export function createAdminCli(info: TestInfo, args: string[], password: string): { code: number; out: string } {
+  const s = serverInfo(info);
+  const cli = join(s.backend ?? s.docroot, 'app', 'cli', 'create-admin.php');
+  try {
+    const out = execFileSync(process.env.PHP_BIN || 'php', [...s.ext, cli, ...args], { input: password + '\n', env: { ...process.env, GAP_CONFIG: s.config }, stdio: ['pipe', 'pipe', 'pipe'] });
+    return { code: 0, out: out.toString() };
+  } catch (e: any) {
+    return { code: e.status ?? 1, out: `${e.stdout ?? ''}${e.stderr ?? ''}` };
+  }
+}
+
 /** Run SQL on the test copy's real database (through the site's own PHP code). */
 export function sql(info: TestInfo, query: string, ...params: (string | number)[]): any {
   const s = serverInfo(info);

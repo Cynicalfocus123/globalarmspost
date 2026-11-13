@@ -7,6 +7,7 @@
     "test": "playwright test",
     "preview": "node tests/serve.mjs live 8091 --demo-admin",
     "site": "node tests/serve.mjs local 8092",
+    "admin": "node scripts/create-admin-local.mjs",
     "zips": "python scripts/make-zips.py",
     "build:logo": "node scripts/build-logo.mjs",
     "demo-images": "node scripts/make-demo-images.mjs",

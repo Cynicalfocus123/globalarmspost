@@ -12,24 +12,36 @@ declare(strict_types=1);
 
 /* ---------- Menu builder (F5) ---------- */
 
-/** The header menu's id (made when it is missing). */
-function header_menu_id(): int
+/** The menus the builder edits (task F24 added the footer). @return array<string, string> location => name */
+function menu_locations(): array
 {
-    $row = q_one('SELECT id FROM menus WHERE location = ?', ['header']);
+    return ['header' => 'Header menu', 'footer' => 'Footer menu'];
+}
+
+/** A menu's id (made when it is missing). */
+function menu_id(string $location = 'header'): int
+{
+    $location = isset(menu_locations()[$location]) ? $location : 'header';
+    $row = q_one('SELECT id FROM menus WHERE location = ?', [$location]);
     if ($row !== null) {
         return (int) $row['id'];
     }
-    q('INSERT INTO menus (location) VALUES (?)', ['header']);
+    q('INSERT INTO menus (location) VALUES (?)', [$location]);
     return (int) db()->lastInsertId();
 }
 
+function header_menu_id(): int
+{
+    return menu_id('header');
+}
+
 /**
- * Every header menu item in order, flat, with its depth (for the builder).
+ * Every item of a menu in order, flat, with its depth (for the builder).
  * @return list<array<string, mixed>>
  */
-function menu_items_for_builder(): array
+function menu_items_for_builder(string $location = 'header'): array
 {
-    $rows = q_all('SELECT id, parent_id, type, label, target, new_tab, hidden FROM menu_items WHERE menu_id = ? ORDER BY position, id', [header_menu_id()]);
+    $rows = q_all('SELECT id, parent_id, type, label, target, new_tab, hidden FROM menu_items WHERE menu_id = ? ORDER BY position, id', [menu_id($location)]);
     $byParent = [];
     $ids = array_map(static fn (array $r): int => (int) $r['id'], $rows);
     foreach ($rows as $r) {
@@ -57,6 +69,10 @@ function menu_items_for_builder(): array
  */
 function menu_save(array $in): array
 {
+    $location = (string) ($in['location'] ?? 'header');
+    if (!isset(menu_locations()[$location])) {
+        throw new InputError('Unknown menu. Please reload the page.');
+    }
     $list = array_values(array_filter((array) ($in['items'] ?? []), 'is_array'));
     if (count($list) > 200) {
         throw new InputError('A menu can have at most 200 items.');
@@ -83,7 +99,8 @@ function menu_save(array $in): array
             'tag' => in_array($raw, $tagSlugs, true) ? $raw : throw new InputError($where . ': please choose a tag.'),
             'story' => (int) $raw > 0 && q_one('SELECT id FROM posts WHERE id = ?', [(int) $raw]) !== null ? (string) (int) $raw
                 : throw new InputError($where . ': please choose a story.'),
-            'page' => slugify($raw) !== '' ? slugify($raw) : throw new InputError($where . ': please type the page name (like contact).'),
+            'page' => isset(page_slugs()[$raw]) ? $raw : throw new InputError($where . ': please choose a page.'),
+            'text' => '',
             'url' => safe_url($raw) !== '#' ? safe_url($raw)
                 : throw new InputError($where . ': a web address must start with https://, http://, / or mailto:'),
             default => throw new InputError($where . ': unknown kind of link.'),
@@ -100,8 +117,8 @@ function menu_save(array $in): array
         $clean[] = ['key' => $key, 'id' => (int) ($it['id'] ?? 0), 'parent' => $parentKey, 'type' => $type, 'label' => $label,
                     'target' => $target, 'new_tab' => !empty($it['new_tab']) ? 1 : 0, 'hidden' => !empty($it['hidden']) ? 1 : 0];
     }
-    $ids = db_atomic(static function () use ($clean): array {
-        $menu = header_menu_id();
+    $ids = db_atomic(static function () use ($clean, $location): array {
+        $menu = menu_id($location);
         $existing = array_map('intval', array_column(q_all('SELECT id FROM menu_items WHERE menu_id = ?', [$menu]), 'id'));
         $ids = [];
         foreach ($clean as $pos => $it) {
@@ -121,8 +138,8 @@ function menu_save(array $in): array
         }
         return $ids;
     });
-    audit('menu.save', count($clean) . ' items');
-    cache_clear(); // the header is on every page
+    audit('menu.save', $location . ': ' . count($clean) . ' items');
+    cache_clear(); // the header and the footer are on every page
     return ['ids' => $ids, 'saved' => true];
 }
 
@@ -198,6 +215,9 @@ function category_update(int $id, array $in, bool $menuAllowed = false): array
     }
     if (q_one('SELECT id FROM categories WHERE slug = ? AND id <> ?', [$slug, $id]) !== null) {
         throw new InputError('Another category already uses the address /' . $slug . '.');
+    }
+    if (page_by_slug($slug) !== null) {
+        throw new InputError('A page already uses the address /' . $slug . '. Please choose another one.');
     }
     $parentId = (int) ($in['parent_id'] ?? 0);
     if ($parentId > 0) {
@@ -517,8 +537,28 @@ function site_settings_save(array $in): void
     if ($per < 5 || $per > 50) {
         throw new InputError('Stories per category page must be between 5 and 50.');
     }
-    db_atomic(static function () use ($name, $tagline, $about, $url, $tz, $per): void {
-        foreach (['site_name' => $name, 'tagline' => $tagline, 'about' => $about, 'site_url' => $url, 'timezone' => $tz, 'category_per_page' => (string) $per] as $k => $v) {
+    // Social links (task F24): shown as icons in the footer; empty = no icon. Only https addresses.
+    $social = [];
+    foreach (social_networks() as $key => $label) {
+        $v = clean_text($in['social_' . $key] ?? '', 300);
+        if ($v !== '' && (preg_match('~^https://[^\s/]+\.[^\s]+$~i', $v) !== 1 || filter_var($v, FILTER_VALIDATE_URL) === false)) {
+            throw new InputError('The ' . $label . ' address must start with https:// (like https://www.instagram.com/globalarmspost).');
+        }
+        $social['social_' . $key] = $v;
+    }
+    // The copyright line under the footer (owner, 2026-11-14).
+    $copyName = clean_text($in['copyright_name'] ?? '', 80);
+    $copyFrom = (int) ($in['copyright_from'] ?? 0);
+    if ($copyName === '') {
+        throw new InputError('Please type the name for the copyright line.');
+    }
+    if ($copyFrom < 1990 || $copyFrom > (int) gmdate('Y')) {
+        throw new InputError('The first year of the copyright line must be between 1990 and this year.');
+    }
+    $social['copyright_name'] = $copyName;
+    $social['copyright_from'] = (string) $copyFrom;
+    db_atomic(static function () use ($name, $tagline, $about, $url, $tz, $per, $social): void {
+        foreach (['site_name' => $name, 'tagline' => $tagline, 'about' => $about, 'site_url' => $url, 'timezone' => $tz, 'category_per_page' => (string) $per] + $social as $k => $v) {
             setting_save($k, $v);
         }
     });
@@ -679,4 +719,74 @@ function backup_create(): array
     $bytes = (int) filesize($dir . '/' . $name);
     audit('backup.create', $name . ' (' . count($tables) . ' tables, ' . $rows . ' rows, ' . $files . ' files)');
     return ['name' => $name, 'bytes' => $bytes, 'tables' => count($tables), 'rows' => $rows, 'files' => $files];
+}
+
+/* ---------- Pages (F24) ---------- */
+
+/**
+ * Add or change a page: title, address (/about-us) and text. The address is never a reserved name, a category's or
+ * another page's. The text goes through the same allow-list as a story's (clean_html()).
+ * @param array<string, mixed> $in
+ * @return array<string, mixed> the saved page
+ */
+function page_save(array $in, int $id = 0): array
+{
+    $old = $id > 0 ? q_one('SELECT id, slug FROM pages WHERE id = ?', [$id]) : null;
+    if ($id > 0 && $old === null) {
+        throw new InputError('This page does not exist.');
+    }
+    $title = clean_text($in['title'] ?? '', 200);
+    if ($title === '') {
+        throw new InputError('Please type the page title.');
+    }
+    $slug = slugify(clean_text($in['slug'] ?? '', 120));
+    if ($slug === '') {
+        $slug = slugify($title);
+    }
+    if ($slug === '') {
+        throw new InputError('Please type the page address with letters or numbers (like about-us).');
+    }
+    if (in_array($slug, reserved_slugs(), true)) {
+        throw new InputError('The address /' . $slug . ' is kept for the site\'s own pages. Please choose another one.');
+    }
+    if (q_one('SELECT id FROM categories WHERE slug = ?', [$slug]) !== null) {
+        throw new InputError('A category already uses the address /' . $slug . '. Please choose another one.');
+    }
+    if (q_one('SELECT id FROM pages WHERE slug = ? AND id <> ?', [$slug, $id]) !== null) {
+        throw new InputError('Another page already uses the address /' . $slug . '.');
+    }
+    $raw = (string) ($in['body'] ?? '');
+    if (strlen($raw) > 500000) {
+        throw new InputError('The page text is too long.');
+    }
+    $body = clean_html($raw);
+    $now = now_utc();
+    $id = db_atomic(static function () use ($id, $old, $title, $slug, $body, $now): int {
+        if ($id > 0) {
+            q('UPDATE pages SET title = ?, slug = ?, body = ?, updated_at = ? WHERE id = ?', [$title, $slug, $body, $now, $id]);
+            // Menu links follow a new address.
+            if ($old !== null && (string) $old['slug'] !== $slug) {
+                q("UPDATE menu_items SET target = ? WHERE type = 'page' AND target = ?", [$slug, (string) $old['slug']]);
+            }
+            return $id;
+        }
+        q('INSERT INTO pages (title, slug, body, created_at, updated_at) VALUES (?, ?, ?, ?, ?)', [$title, $slug, $body, $now, $now]);
+        return (int) db()->lastInsertId();
+    });
+    audit($old === null ? 'page.create' : 'page.update', $title);
+    cache_clear(); // the page, and the menus that link to it
+    return (array) q_one('SELECT id, title, slug, body, updated_at FROM pages WHERE id = ?', [$id]);
+}
+
+/** Delete a page (the admin confirms first). Menu links to it are no longer shown. */
+function page_delete(int $id): string
+{
+    $row = q_one('SELECT title FROM pages WHERE id = ?', [$id]);
+    if ($row === null) {
+        throw new InputError('This page does not exist.');
+    }
+    q('DELETE FROM pages WHERE id = ?', [$id]);
+    audit('page.delete', (string) $row['title']);
+    cache_clear();
+    return (string) $row['title'];
 }

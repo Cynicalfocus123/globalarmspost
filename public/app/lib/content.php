@@ -265,7 +265,7 @@ function category_create(string $name, int $parentId): array
         return ['id' => (int) $found['id'], 'name' => (string) $found['name'], 'slug' => (string) $found['slug'], 'parent_id' => $found['parent_id'] === null ? null : (int) $found['parent_id'], 'created' => false];
     }
     // live/ puts categories at the top level (/asia), so reserved names get a suffix.
-    $slug = in_array($base, reserved_slugs(), true) ? $base . '-news' : $base;
+    $slug = in_array($base, reserved_slugs(), true) || page_by_slug($base) !== null ? $base . '-news' : $base;
     $slug = unique_slug('categories', $slug);
     $pos = (int) (q_one('SELECT MAX(position) AS n FROM categories')['n'] ?? 0) + 1;
     q('INSERT INTO categories (parent_id, name, slug, position, created_at) VALUES (?, ?, ?, ?, ?)', [$parentId > 0 ? $parentId : null, $name, $slug, $pos, now_utc()]);

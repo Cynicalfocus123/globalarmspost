@@ -7,13 +7,16 @@ $items = function (array $list, int $depth) use (&$items): string {
     $html = '';
     foreach ($list as $i => $item) {
         $target = $item['new_tab'] ? ' target="_blank" rel="noopener"' : '';
+        // A title with no link ('text' item): plain text that opens its submenu.
+        $label = $item['href'] === '' ? '<span class="menu-text">' . e($item['label']) . '</span>'
+            : '<a href="' . e($item['href']) . '"' . $target . '>' . e($item['label']) . '</a>';
         if ($item['children'] === []) {
-            $html .= '<li><a href="' . e($item['href']) . '"' . $target . '>' . e($item['label']) . '</a></li>';
+            $html .= '<li>' . $label . '</li>';
             continue;
         }
         $id = 'sub-' . $depth . '-' . $i . '-' . substr(md5($item['label']), 0, 6);
         $html .= '<li class="has-sub">'
-            . '<a href="' . e($item['href']) . '"' . $target . '>' . e($item['label']) . '</a>'
+            . $label
             . '<button class="sub-toggle" type="button" aria-expanded="false" aria-controls="' . e($id) . '" aria-label="Open ' . e($item['label']) . ' menu">'
             . '<svg viewBox="0 0 12 12" width="14" height="14" aria-hidden="true"><path d="M2.5 4.5 6 8l3.5-3.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>'
             . '<ul class="submenu" id="' . e($id) . '">' . $items($item['children'], $depth + 1) . '</ul></li>';

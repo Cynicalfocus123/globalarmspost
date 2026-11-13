@@ -917,6 +917,59 @@ h2.sec{font:600 20px/1.3 Georgia,serif;margin:40px 0 4px}
 <div></div>
 </div>
 
+<h2 class="sec">10. Footer, copyright bar and pages, 2026-11-14 (task F24)</h2>
+<p class="sub">Owner's design of 2026-11-14: a dark footer on every page with three columns. The columns are the footer menu (Admin → Menu → Footer menu): each top-level item is a column title, the items under it are links. The pages are written in Admin → Pages.</p>
+
+<div class="row">
+<div><div class="lb">10a. Footer, desktop and tablet (columns side by side)</div>
+<div class="pg" style="padding:0">
+  <div style="background:#121620;color:#fff;padding:22px 20px 10px;border-radius:6px">
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px">
+      <div><b style="font:700 17px Georgia,serif;display:block;margin-bottom:10px">About Us</b><div style="color:#c3c8d1;font-size:12px;line-height:2">About Us</div><div style="color:#c3c8d1;font-size:14px;margin-top:6px">◎ <span style="font-size:10px">(Instagram, when set in Settings)</span></div></div>
+      <div><b style="font:700 17px Georgia,serif;display:block;margin-bottom:10px">Term of Use</b><div style="color:#c3c8d1;font-size:12px;line-height:2">Terms Of Use<br>Privacy Policy</div></div>
+      <div><b style="font:700 17px Georgia,serif;display:block;margin-bottom:10px">Contact Us</b><div style="color:#c3c8d1;font-size:12px;line-height:2">Advertise<br>Contact Us</div></div>
+    </div>
+  </div>
+  <div style="background:#181c25;color:#c3c8d1;padding:10px 20px;font-size:11px;border-radius:0 0 6px 6px"><b style="color:#C8102E">GlobalArmsPost</b> @2024-2026. All Rights Reserved.</div>
+  <span class="note" style="display:block;padding:8px">Column titles: serif, white. Links: light grey, white + underline on hover. Tablets (768 px) keep the three columns.</span>
+</div></div>
+<div><div class="lb">10b. Footer, phone (one column under the other)</div>
+<div class="pg" style="padding:0;max-width:220px">
+  <div style="background:#121620;color:#fff;padding:16px 14px 8px;border-radius:6px">
+    <b style="font:700 15px Georgia,serif;display:block">About Us</b><div style="color:#c3c8d1;font-size:12px;line-height:2.2">About Us</div><div style="color:#c3c8d1">◎</div>
+    <div style="border-top:1px solid #262b36;margin:8px 0"></div>
+    <b style="font:700 15px Georgia,serif;display:block">Term of Use</b><div style="color:#c3c8d1;font-size:12px;line-height:2.2">Terms Of Use<br>Privacy Policy</div>
+    <div style="border-top:1px solid #262b36;margin:8px 0"></div>
+    <b style="font:700 15px Georgia,serif;display:block">Contact Us</b><div style="color:#c3c8d1;font-size:12px;line-height:2.2">Advertise<br>Contact Us</div>
+  </div>
+  <div style="background:#181c25;color:#c3c8d1;padding:8px 14px;font-size:10px"><b style="color:#C8102E">GlobalArmsPost</b> @2024-2026. All Rights Reserved.</div>
+  <span class="note" style="display:block;padding:8px">Every link is a 44 px row for the thumb.</span>
+</div></div>
+</div>
+
+<div class="row" style="margin-top:18px">
+<div><div class="lb">10c. A page (/about-us, /terms-of-service, /privacy-policy, /advertise, /contact)</div>
+<div class="pg">
+  <div style="font-size:10px;color:#888">Home › About Us</div>
+  <div style="font:600 22px Georgia,serif;margin:4px 0">About Us</div>
+  <div style="font-size:10px;color:#888;margin-bottom:8px">Updated 2 April 2026</div>
+  <div style="font:12px/1.6 Georgia,serif">Founded in 2024, Global Arms Post is the authoritative, independent news source…<br><b>Our coverage includes:</b><br>• Defense policies, politics and legislation<br>• Worldwide market developments and trends</div>
+  <span class="note">The story page's type and width; subheads, lists, links (emails open the mail app). In the sitemap.</span>
+</div></div>
+<div><div class="lb">10d. Admin → Pages, and the menu builder's Footer menu</div>
+<div class="pg">
+  <div class="a-box"><div class="a-h">Pages <span style="float:right;color:var(--red)">+ New page</span></div>
+    <div style="font-size:11px;line-height:2">About Us · /about-us<br>Advertise With Us · /advertise<br>Contact Us · /contact<br>Privacy Policy · /privacy-policy<br>Terms of Service · /terms-of-service</div></div>
+  <div class="a-box" style="margin-top:8px"><div class="a-h">Edit page</div>
+    <div class="a-lbl">Title</div><div class="a-in"></div><div class="a-lbl">Address</div><div class="a-in"></div>
+    <div style="font-size:10px;background:#f6f6f6;border-radius:6px;padding:4px 6px;margin:6px 0">B I H2 H3 • List 1. List 🔗</div><div class="a-in" style="height:40px"></div>
+    <span style="color:var(--red);font-size:11px">Delete page</span></div>
+  <div class="a-box" style="margin-top:8px"><div class="a-h"><span style="border:1px solid #ddd;border-radius:999px;padding:2px 8px">Header menu</span> <span style="background:#151515;color:#fff;border-radius:999px;padding:2px 8px">Footer menu</span></div>
+    <div style="font-size:11px;line-height:1.9">⋮⋮ <b>About Us</b> <span style="color:#888">title only</span><br>&nbsp;&nbsp;&nbsp;⋮⋮ About Us <span style="color:#888">page</span><br>⋮⋮ <b>Term of Use</b><br>&nbsp;&nbsp;&nbsp;⋮⋮ Terms Of Use · ⋮⋮ Privacy Policy<br>⋮⋮ <b>Contact Us</b><br>&nbsp;&nbsp;&nbsp;⋮⋮ Advertise · ⋮⋮ Contact Us</div></div>
+  <span class="note">Links to: home, category, tag, story, page (picked from the list), web address, or "Title only (no link)". Social icons: Settings → Social links (Instagram, Facebook, X, YouTube, LinkedIn; empty = no icon).</span>
+</div></div>
+</div>
+
 </main>
 </body>
 </html>

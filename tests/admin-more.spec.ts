@@ -192,7 +192,7 @@ test('the new admin pages fit phones, tablets and desktops (no sideways scroll, 
   for (const width of widths) {
     await page.setViewportSize({ width, height: own.height });
     for (const path of ['/admin/menu', '/admin/categories', `/admin/categories/${asia}`, '/admin/tags', '/admin/pictures', `/admin/pictures/${pic}`,
-      '/admin/settings', '/admin/backup', '/admin/stories?tab=trash', '/admin/homepage']) {
+      '/admin/settings', '/admin/backup', '/admin/stories?tab=trash', '/admin/homepage', '/admin/menu?m=footer', '/admin/pages', '/admin/pages/1']) {
       await page.goto(path);
       await page.locator('html[data-ui="ready"]').waitFor();
       await noSidewaysScroll(page, `${path} at ${width} px`);

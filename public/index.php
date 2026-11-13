@@ -145,6 +145,11 @@ if (count($parts) === 1 && !in_array($parts[0], reserved_slugs(), true)) {
         $send((string) $category['name'], view('category', ['category' => $category, 'page' => $page]), 200, 0,
             seo_page_meta(public_url('category', ['slug' => (string) $category['slug'], 'page' => (string) $page]), (string) $category['name'] . ': ' . setting('tagline')));
     }
+    // A page (task F24): /about-us, /contact … (a page never takes a category's address, and the other way round).
+    $pg = page_by_slug($parts[0]);
+    if ($pg !== null) {
+        $send((string) $pg['title'], view('page', ['pg' => $pg]), 200, 0, seo_page_meta(public_url('page', ['slug' => (string) $pg['slug']]), page_description($pg)));
+    }
 }
 
 // Story: /{category}/{slug} in live/, /news/{slug} for the git/ copy's '#news/{slug}' links.

@@ -357,3 +357,15 @@ details.hb-field summary{cursor:pointer;min-height:40px;display:flex;align-items
 
 /* Touch screens: small buttons are still 44 px tall (step 5 pages: categories, tags, menu, backups). */
 @media (pointer:coarse){.a-btn.sm,.a-btn2.sm{min-height:44px}}
+
+/* Pages (task F24): the page text editor uses the story editor's toolbar and text styles. */
+.page-form .ed-tool{top:0}
+.page-ed-body{border:1px solid var(--line);border-radius:10px;padding:12px 14px;min-height:320px}
+.page-ed-body ul,.page-ed-body ol{padding-left:24px}
+.page-ed-body a{color:var(--red)}
+.page-delete{margin-top:16px}
+.a-h3{font-size:15px;font-weight:600;margin:22px 0 4px}
+/* Menu builder: Header menu | Footer menu (task F24) */
+.mb-tabs{display:flex;gap:6px;margin:0 0 12px;flex-wrap:wrap}
+.mb-tabs a{display:inline-flex;align-items:center;min-height:40px;padding:0 16px;border-radius:999px;border:1px solid var(--line);text-decoration:none;color:inherit;font-weight:600}
+.mb-tabs a[aria-current="page"]{background:var(--ink, #151515);border-color:var(--ink, #151515);color:#fff}

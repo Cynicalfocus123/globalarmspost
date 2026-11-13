@@ -8,7 +8,7 @@
 //           the database is live/backend/storage/site.sqlite and the pictures are in live/frontend/uploads, so
 //           every story added there is kept and goes into the deploy ZIPs (scripts/make-zips.py). Its config is
 //           test-data/local-site/config.php (made once, never inside live/). No sample stories, no demo admin:
-//           the first account made at /admin/setup is the real admin that goes to Hostinger with the database.
+//           the admin is made with npm run admin (no setup page on the web) and goes to Hostinger with the database.
 // git and live: each start makes a new SQLite database and runs the real migrations.
 // GAP_DB=mysql: a new MySQL 8.4 server instead (task P15), with its own data folder in
 // test-data/<run>/<copy>/mysql-data and port 33000 + (port % 1000) (8190 -> 33190, 8191 -> 33191).
@@ -92,7 +92,7 @@ execFileSync(PHP, [...ext, join(backend, 'app', 'cli', 'migrate.php')], { env, s
 // Never on the local site: its database is the real one.
 if (!LOCAL) execFileSync(PHP, [...ext, join(ROOT, 'tests', 'seed-demo.php'), backend, docroot], { env, stdio: 'inherit' });
 // Local preview only (.claude/launch.json passes --demo-admin): a demo admin to sign in with at /admin.
-// The test runs never pass it, because their first test makes the first admin through the real setup step.
+// The test runs never pass it, because their first test makes the first admin with app/cli/create-admin.php.
 if (process.argv.includes('--demo-admin') && !LOCAL) execFileSync(PHP, [...ext, join(ROOT, 'tests', 'seed-admin.php'), backend], { env, stdio: 'inherit' });
 
 if (!existsSync(docroot)) process.exit(1);

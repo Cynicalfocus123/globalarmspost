@@ -89,3 +89,4 @@ if ($('#editor')) import('./editor.js');
 if ($('#builder-data')) import('./builder.js');
 if ($('#menu-data')) import('./menu.js');
 if ($('.cat-list')) import('./cats.js');
+if ($('#page-form')) import('./pages.js');

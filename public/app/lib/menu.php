@@ -4,7 +4,7 @@ declare(strict_types=1);
 /**
  * The menu for a location as a tree: each item has label, href, new_tab, children.
  * Hidden items (menu builder, task F5) and everything under them are left out, and so is a link to a story that is
- * not public (yet).
+ * not public (yet) or to a page that is gone. Locations: 'header' and 'footer' (task F24).
  * @return list<array{label: string, href: string, new_tab: bool, children: list<array<string, mixed>>}>
  */
 function menu_tree(string $location): array
@@ -35,11 +35,13 @@ function menu_tree(string $location): array
             'home' => site_link('home'),
             'category' => site_link('category', ['slug' => $target, 'parent' => $parents[$target] ?? '']),
             'tag' => site_link('tag', ['slug' => $target]),
-            'page' => site_link('page', ['slug' => $target]),
+            'page' => isset(page_slugs()[$target]) ? site_link('page', ['slug' => $target]) : '',
             'story' => $stories[(int) $target] ?? '',
+            'text' => '',
             default => safe_url($target),
         };
-        if ((int) $r['hidden'] === 1 || $href === '') {
+        // A 'text' item is a title with no link (a footer column's title, or a header item that only opens its submenu).
+        if ((int) $r['hidden'] === 1 || ($href === '' && $r['type'] !== 'text')) {
             $hidden[$id] = true;
         }
         $items[$id] = [

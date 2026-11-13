@@ -1,6 +1,6 @@
 <?php
 declare(strict_types=1);
-/** @var string $mode login | setup | two_step | message */
+/** @var string $mode login | two_step | message */
 /** @var string $title */
 $error ??= '';
 $site = setting('site_name', 'Global Arms Post');
@@ -37,16 +37,6 @@ $site = setting('site_name', 'Global Arms Post');
     <label for="code">6-digit code from your authenticator app</label>
     <input id="code" name="code" inputmode="numeric" maxlength="7" autocomplete="one-time-code" required>
     <button class="a-btn wide" type="submit">Continue</button>
-  </form>
-  <?php elseif ($mode === 'setup'): ?>
-  <p class="a-small">No account exists yet. This first account is an admin. Choose a strong password (10 characters or more).</p>
-  <form method="post" action="/admin/setup" class="a-form">
-    <?= csrf_field() ?>
-    <label for="name">Your name</label><input id="name" name="name" required maxlength="120" value="<?= e($old['name']) ?>" autocomplete="name">
-    <label for="email">Email</label><input id="email" name="email" type="email" required value="<?= e($old['email']) ?>" autocomplete="username">
-    <label for="password">Password</label><input id="password" name="password" type="password" required minlength="10" autocomplete="new-password">
-    <label for="password2">Password again</label><input id="password2" name="password2" type="password" required minlength="10" autocomplete="new-password">
-    <button class="a-btn wide" type="submit">Create admin account</button>
   </form>
   <?php else: ?>
   <p><?= e($message) ?></p>

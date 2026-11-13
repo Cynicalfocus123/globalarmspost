@@ -11,7 +11,7 @@ $site = setting('site_name', 'Global Arms Post');
 $items = [
     ['dashboard', '/admin', 'Dashboard', true], ['stories', '/admin/stories', 'Stories', true], ['homepage', '/admin/homepage', 'Homepage', $isAdmin],
     ['categories', '/admin/categories', 'Categories', true], ['tags', '/admin/tags', 'Tags', true], ['authors', '/admin/authors', 'Authors', true],
-    ['pictures', '/admin/pictures', 'Pictures', true], ['menu', '/admin/menu', 'Menu', $isAdmin], ['users', '/admin/users', 'Users', $isAdmin],
+    ['pictures', '/admin/pictures', 'Pictures', true], ['menu', '/admin/menu', 'Menu', $isAdmin], ['pages', '/admin/pages', 'Pages', $isAdmin], ['users', '/admin/users', 'Users', $isAdmin],
     ['settings', '/admin/settings', 'Settings', $isAdmin], ['backup', '/admin/backup', 'Backup', $isAdmin],
 ];
 $links = function () use ($items, $nav): string {

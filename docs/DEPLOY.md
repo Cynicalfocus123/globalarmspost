@@ -31,7 +31,7 @@ On Hostinger the two sit side by side, for example:
 - `globalarmspost-frontend-<commit>.zip`: unzip it **inside** `public_html` (code files, assets and `uploads/` with every picture).
 - `globalarmspost-backend-<commit>.zip`: unzip it **next to** `public_html` (it holds the folder `backend/`: the code and `storage/site.sqlite`, the database with every story, category, tag, author and the admin account made on the local site).
 
-They are the content of `live/`, so they always carry the latest stories (owner's hard rule, 2026-11-14). With the ZIPs the site runs on **SQLite**: in step 4 keep the SQLite part of `config.sample.php` (the database is already in `backend/storage/site.sqlite`), and skip step 2 and step 7 (the admin is already in the database). Moving the stories into MySQL instead is not built yet.
+They are the content of `live/`, so they always carry the latest stories (owner's hard rule, 2026-11-14). With the ZIPs the site runs on **SQLite**: in step 4 keep the SQLite part of `config.sample.php` (the database is already in `backend/storage/site.sqlite`), and skip step 2 and step 7 (the admin you made with `npm run admin` is already in the database). Moving the stories into MySQL instead is not built yet.
 
 ## Steps
 
@@ -45,7 +45,7 @@ They are the content of `live/`, so they always carry the latest stories (owner'
    - with SSH: `php ~/domains/globalarmspost.com/backend/app/cli/migrate.php` (it says which migrations ran);
    - without SSH: hPanel → Advanced → Cron Jobs → a "PHP" job with the same path, set to run once in the next minute; remove the cron job after it ran.
 6. **HTTPS**: hPanel → Security → SSL: turn on the free certificate. `.htaccess` already sends every visitor to https.
-7. **First admin**: open `https://globalarmspost.com/admin`. With no account yet it shows the setup step: the first account you make is the admin.
+7. **First admin**: there is no setup page on the web (nobody on the internet can make an admin). With the ZIPs the admin you made on the local site (`npm run admin`) is already in the database. Otherwise make it on the server: with SSH `php ~/domains/globalarmspost.com/backend/app/cli/create-admin.php you@example.com "Your Name"` (type a password of 10+ characters, or press Enter for a strong one shown once); `--reset` gives an account a new password. Then sign in at `https://globalarmspost.com/admin`.
 8. **Settings** (`/admin/settings`): set the **Site address** to exactly the form you want people and Google to see (`https://www.globalarmspost.com` or `https://globalarmspost.com`; point the other one at it in hPanel → Domains → Redirects), the site name, tagline and time zone.
 9. **Check**: the admin dashboard's server check must show every line green (PHP, Database (MySQL), Uploads folder, Storage folder, GD, HTTPS).
 10. **Backup**: after the stories are in, `/admin/backup` → "Make a backup now" → Download, and keep the file somewhere private (it holds the user accounts).

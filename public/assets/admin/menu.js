@@ -15,7 +15,8 @@ const items = data.items.map((i) => ({ ...i, key: `m${i.id}`, auto: false }));
 let selected = items[0]?.key || null;
 let newKeys = 0;
 const phone = () => matchMedia('(max-width: 899px)').matches;
-const TYPES = { home: 'Home page', category: 'Category', tag: 'Tag', story: 'Story', page: 'Page (like contact)', url: 'Web address' };
+const TYPES = { home: 'Home page', category: 'Category', tag: 'Tag', story: 'Story', page: 'Page (About Us, Contact …)', url: 'Web address', text: 'Title only (no link)' };
+const WHERE = data.location === 'footer' ? 'footer' : 'header'; // which menu this is (task F24)
 const MAX_DEPTH = 8;
 
 const indexOf = (key) => items.findIndex((i) => i.key === key);
@@ -41,7 +42,7 @@ function targetText(it) {
     case 'category': return data.categories.find((c) => c.slug === it.target)?.name || 'choose a category';
     case 'tag': return data.tags.find((t) => t.slug === it.target)?.name || 'choose a tag';
     case 'story': return stories.get(String(it.target)) || 'choose a story';
-    case 'page': return `/${it.target}`;
+    case 'page': return data.pages.find((p) => p.slug === it.target)?.title || 'choose a page';
     case 'url': return it.target || 'type an address';
     default: return '';
   }
@@ -200,7 +201,11 @@ function targetField(it) {
         <p class="a-small mb-story-chosen">${it.target ? 'Chosen: ' + esc(stories.get(String(it.target)) || '#' + it.target) : 'No story chosen yet.'} A story that is not public yet stays out of the header until it is.</p>
         <div class="mb-story-list" role="listbox" aria-label="Matching stories"></div>`;
     case 'page':
-      return `<label class="a-lbl" for="mb-target">Page name (the address after /, like contact)</label><input id="mb-target" data-f="target" maxlength="120" value="${esc(it.target)}">`;
+      return data.pages.length
+        ? `<label class="a-lbl" for="mb-target">Page</label><select id="mb-target" data-f="target">${data.pages.map((p) => `<option value="${esc(p.slug)}"${p.slug === it.target ? ' selected' : ''}>${esc(p.title)} (/${esc(p.slug)})</option>`).join('')}</select>`
+        : '<p class="a-mute">No pages yet. Add one in Admin → Pages.</p>';
+    case 'text':
+      return '<p class="a-small">Only the text, with no link: a footer column title, or a header item that opens the items under it.</p>';
     case 'url':
       return `<label class="a-lbl" for="mb-target">Web address (https://…, /path or mailto:)</label><input id="mb-target" data-f="target" maxlength="500" inputmode="url" value="${esc(it.target)}">`;
     default:
@@ -223,7 +228,7 @@ function renderForm() {
     <label class="a-lbl" for="mb-parent">Inside</label>
     <select id="mb-parent" data-f="parent"><option value="">— Top level —</option>${parents.map((p) => `<option value="${p.key}"${parent && parent.key === p.key ? ' selected' : ''}>${'— '.repeat(p.depth)}${esc(p.label)}</option>`).join('')}</select>
     <label class="a-check"><input type="checkbox" data-f="new_tab"${it.new_tab ? ' checked' : ''}> Open in a new tab</label>
-    <label class="a-check"><input type="checkbox" data-f="show"${it.hidden ? '' : ' checked'}> Show in the header</label>
+    <label class="a-check"><input type="checkbox" data-f="show"${it.hidden ? '' : ' checked'}> Show in the ${WHERE}</label>
     <div class="a-row"><button type="button" class="a-btn2 danger mb-remove">Remove${end - i > 1 ? ` (with ${end - i - 1} under it)` : ''}</button>
     <button type="button" class="a-btn mb-done show-phone">Done</button></div>`;
   if (it.type === 'story') findStories('');
@@ -257,7 +262,7 @@ form.addEventListener('change', (e) => {
   const f = e.target.dataset.f;
   if (f === 'type') {
     it.type = e.target.value;
-    it.target = it.type === 'category' ? (data.categories[0]?.slug || '') : it.type === 'tag' ? (data.tags[0]?.slug || '') : '';
+    it.target = it.type === 'category' ? (data.categories[0]?.slug || '') : it.type === 'tag' ? (data.tags[0]?.slug || '') : it.type === 'page' ? (data.pages[0]?.slug || '') : '';
     if (it.auto || it.label === '') { it.label = ''; it.auto = true; }
     autoLabel(it);
     renderForm();
@@ -342,12 +347,13 @@ $('.mb-save').addEventListener('click', async () => {
   statusLine.textContent = 'Saving…';
   try {
     const res = await api('/admin/api/menu', {
+      location: WHERE,
       items: items.map((it, i) => ({ key: it.key, id: it.id, parent: parentOf(i)?.key || '', type: it.type, label: it.label, target: String(it.target ?? ''), new_tab: it.new_tab, hidden: it.hidden })),
     });
     for (const it of items) if (res.ids[it.key]) it.id = res.ids[it.key];
-    statusLine.textContent = `Saved ${new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}. The header shows the new menu now.`;
+    statusLine.textContent = `Saved ${new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}. The ${WHERE} shows the new menu now.`;
     statusLine.dataset.saved = '1';
-    notify(true, 'Menu saved', 'The header shows the new menu now.');
+    notify(true, WHERE === 'footer' ? 'Footer menu saved' : 'Menu saved', `The ${WHERE} shows the new menu now.`);
   } catch (err) {
     statusLine.textContent = err.message;
     notify(false, 'Not saved', err.message);

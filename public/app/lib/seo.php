@@ -205,6 +205,9 @@ function sitemap_xml(): string
         $last = max((string) $p['published_at'], (string) $p['updated_at']);
         $out .= $url(public_url('article', ['category' => (string) $p['cat_slug'], 'slug' => (string) $p['slug']]), min($last, $now));
     }
+    foreach (q_all('SELECT slug, updated_at FROM pages ORDER BY slug') as $pg) {
+        $out .= $url(public_url('page', ['slug' => (string) $pg['slug']]), min((string) $pg['updated_at'], $now));
+    }
     $tags = q_all("SELECT t.slug, MAX(p.published_at) AS at FROM tags t JOIN post_tags pt ON pt.tag_id = t.id JOIN posts p ON p.id = pt.post_id
                     WHERE p.status = 'published' AND p.published_at <= ? GROUP BY t.id, t.slug ORDER BY t.slug", [$now]);
     foreach ($tags as $t) {

@@ -18,12 +18,19 @@ $tz = setting('timezone', 'UTC');
     <h2 class="a-h">Site</h2>
     <label for="s-name">Site name</label><input id="s-name" name="site_name" maxlength="120" required value="<?= e(setting('site_name', 'Global Arms Post')) ?>">
     <label for="s-tagline">Tagline (the description search engines show for pages without their own)</label><input id="s-tagline" name="tagline" maxlength="200" value="<?= e(setting('tagline')) ?>">
-    <label for="s-about">About text (footer)</label><textarea id="s-about" name="about" rows="2" maxlength="600"><?= e(setting('about')) ?></textarea>
+    <label for="s-about">About text (a short description of the site)</label><textarea id="s-about" name="about" rows="2" maxlength="600"><?= e(setting('about')) ?></textarea>
     <label for="s-url">Site address (for share links, the sitemap and search engines)</label><input id="s-url" name="site_url" type="url" inputmode="url" maxlength="200" placeholder="https://globalarmspost.com" value="<?= e(setting('site_url')) ?>" aria-describedby="s-url-help">
     <span class="a-small" id="s-url-help">Empty = the address the visitor used. Set it on the real site.</span>
     <label for="s-tz">Time zone (dates on the site and in the admin)</label>
     <select id="s-tz" name="timezone"><?php foreach (DateTimeZone::listIdentifiers() as $zone): ?><option value="<?= e($zone) ?>"<?= $zone === $tz ? ' selected' : '' ?>><?= e($zone) ?></option><?php endforeach; ?></select>
     <label for="s-per">Stories per category page</label><input id="s-per" name="category_per_page" type="number" inputmode="numeric" min="5" max="50" value="<?= e(setting('category_per_page', '20')) ?>">
+    <h3 class="a-h3">Copyright line (under the footer)</h3>
+    <label for="s-copy-name">Name (shown in red)</label><input id="s-copy-name" name="copyright_name" maxlength="80" value="<?= e(setting('copyright_name', 'GlobalArmsPost')) ?>">
+    <label for="s-copy-from">First year</label><input id="s-copy-from" name="copyright_from" type="number" inputmode="numeric" min="1990" max="2100" value="<?= e(setting('copyright_from', '2024')) ?>">
+    <h3 class="a-h3">Social links (icons in the footer; leave empty for no icon)</h3>
+    <?php foreach (social_networks() as $key => $label): ?>
+    <label for="s-social-<?= e($key) ?>"><?= e($label) ?> address</label><input id="s-social-<?= e($key) ?>" name="social_<?= e($key) ?>" type="url" inputmode="url" maxlength="300" placeholder="https://" value="<?= e(setting('social_' . $key)) ?>">
+    <?php endforeach; ?>
     <button class="a-btn" type="submit">Save site settings</button>
   </section>
 </form>
