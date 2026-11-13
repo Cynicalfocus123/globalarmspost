@@ -1,9 +1,15 @@
 // Test server for one copy of the site. Started by Playwright (webServer) and stopped by it after the run.
-// Usage: node tests/serve.mjs <git|live> <port> [--demo-admin]
-//   git  = public/ as it is ('#' links)
-//   live = a fresh copy of public/ in test-data/<run>/live/site with link_mode 'path' (proper addresses),
-//          made the same way scripts/build-live.mjs makes live/
-// Each start makes a new SQLite database and runs the real migrations.
+// Usage: node tests/serve.mjs <git|live|local> <port> [--demo-admin]
+//   git   = public/ as it is ('#' links)
+//   live  = a fresh copy of public/ in test-data/<run>/live/site with link_mode 'path' (proper addresses),
+//           made the same way scripts/build-live.mjs makes live/
+//   local = the owner's local site (hard rule, owner 2026-11-14): runs straight from the real live/ folder
+//           (live/frontend + live/backend, built by npm run build:live). Nothing is copied and nothing is reset:
+//           the database is live/backend/storage/site.sqlite and the pictures are in live/frontend/uploads, so
+//           every story added there is kept and goes into the deploy ZIPs (scripts/make-zips.py). Its config is
+//           test-data/local-site/config.php (made once, never inside live/). No sample stories, no demo admin:
+//           the first account made at /admin/setup is the real admin that goes to Hostinger with the database.
+// git and live: each start makes a new SQLite database and runs the real migrations.
 // GAP_DB=mysql: a new MySQL 8.4 server instead (task P15), with its own data folder in
 // test-data/<run>/<copy>/mysql-data and port 33000 + (port % 1000) (8190 -> 33190, 8191 -> 33191).
 // mysqld runs with --no-defaults, so it never reads the owner's my.ini or touches D:/codex system/mysql-data,
@@ -14,12 +20,14 @@ import { spawn, execFileSync, spawnSync } from 'node:child_process';
 import http from 'node:http';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { MAIN, LIVE } from '../scripts/live-lib.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const [copy, port] = process.argv.slice(2);
 // A new folder per run (never deletes anything): test-data/<run>/<copy>
 const RUN = process.env.GAP_RUN || String(Date.now());
-const TMP = join(ROOT, 'test-data', RUN, copy);
+// local: one fixed folder for its config and sessions, in the main checkout (also when started from a worktree).
+const TMP = copy === 'local' ? join(MAIN, 'test-data', 'local-site') : join(ROOT, 'test-data', RUN, copy);
 const PHP = process.env.PHP_BIN || 'php';
 
 // Load pdo_sqlite, gd and fileinfo when the local php.ini does not. GD makes pictures on the server
@@ -48,6 +56,16 @@ if (copy === 'live') {
   writeFileSync(join(backend, 'app', 'build.php'), "<?php\ndeclare(strict_types=1);\n\nreturn ['link_mode' => 'path', 'commit' => 'test'];\n");
 }
 
+const LOCAL = copy === 'local';
+if (LOCAL) {
+  if (USE_MYSQL) { console.error('The local site uses SQLite (live/backend/storage/site.sqlite); GAP_DB=mysql is for test runs only.'); process.exit(1); }
+  docroot = join(LIVE, 'frontend');
+  backend = join(LIVE, 'backend');
+  if (!existsSync(join(backend, 'app', 'bootstrap.php'))) { console.error('live/ is not built yet: run npm run build:live first.'); process.exit(1); }
+  mkdirSync(join(backend, 'storage'), { recursive: true });
+  mkdirSync(join(docroot, 'uploads'), { recursive: true });
+}
+
 const config = join(TMP, 'config.php');
 const db = join(TMP, 'site.sqlite').replaceAll('\\', '/');
 const sessions = join(TMP, 'sessions').replaceAll('\\', '/');
@@ -57,17 +75,25 @@ mkdirSync(sessions, { recursive: true });
 let mysqld = null;
 let stopping = false;
 const dbConfig = USE_MYSQL ? await startMysql() : `['driver' => 'sqlite', 'path' => '${db}']`;
-writeFileSync(config, `<?php\nreturn ['db' => ${dbConfig}, 'debug' => true, 'session_path' => '${sessions}', 'login_ip_limit' => 100000, 'suggest_limit' => 100000, 'api_limit' => 100000];\n`);
+// local: the database is live/backend/storage/site.sqlite (the same place app/config.sample.php uses on the server),
+// limits as on the real site. The config is written once and then left alone.
+if (LOCAL) {
+  if (!existsSync(config)) {
+    const liveDb = join(backend, 'storage', 'site.sqlite').replaceAll('\\', '/');
+    writeFileSync(config, `<?php\nreturn ['db' => ['driver' => 'sqlite', 'path' => '${liveDb}'], 'debug' => true, 'session_path' => '${sessions}'];\n`);
+  }
+} else writeFileSync(config, `<?php\nreturn ['db' => ${dbConfig}, 'debug' => true, 'session_path' => '${sessions}', 'login_ip_limit' => 100000, 'suggest_limit' => 100000, 'api_limit' => 100000];\n`);
 // One note per server (copy + port), so the preview and the tests never read each other's database.
 writeFileSync(join(ROOT, 'test-data', `${copy}-${port}.json`), JSON.stringify({ config, docroot, backend, ext }));
 
 const env = { ...process.env, GAP_CONFIG: config };
 execFileSync(PHP, [...ext, join(backend, 'app', 'cli', 'migrate.php')], { env, stdio: 'inherit' });
 // Sample stories and photos (test database only; photos go to <docroot>/uploads/demo, which git ignores).
-execFileSync(PHP, [...ext, join(ROOT, 'tests', 'seed-demo.php'), backend, docroot], { env, stdio: 'inherit' });
+// Never on the local site: its database is the real one.
+if (!LOCAL) execFileSync(PHP, [...ext, join(ROOT, 'tests', 'seed-demo.php'), backend, docroot], { env, stdio: 'inherit' });
 // Local preview only (.claude/launch.json passes --demo-admin): a demo admin to sign in with at /admin.
 // The test runs never pass it, because their first test makes the first admin through the real setup step.
-if (process.argv.includes('--demo-admin')) execFileSync(PHP, [...ext, join(ROOT, 'tests', 'seed-admin.php'), backend], { env, stdio: 'inherit' });
+if (process.argv.includes('--demo-admin') && !LOCAL) execFileSync(PHP, [...ext, join(ROOT, 'tests', 'seed-admin.php'), backend], { env, stdio: 'inherit' });
 
 if (!existsSync(docroot)) process.exit(1);
 

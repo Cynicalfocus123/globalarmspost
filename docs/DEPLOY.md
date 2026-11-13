@@ -24,6 +24,15 @@ On Hostinger the two sit side by side, for example:
 
 `public_html/index.php` finds the code in `../backend/`, so the folder must be called `backend` and sit next to `public_html`. Visitors can only reach `public_html`: the code, `config.php` (database password), backups and sessions can never be downloaded.
 
+## The ZIPs (the easy way)
+
+`npm run zips` (in `git/`, after `npm run build:live`) writes two files to `Claude outputs/`:
+
+- `globalarmspost-frontend-<commit>.zip`: unzip it **inside** `public_html` (code files, assets and `uploads/` with every picture).
+- `globalarmspost-backend-<commit>.zip`: unzip it **next to** `public_html` (it holds the folder `backend/`: the code and `storage/site.sqlite`, the database with every story, category, tag, author and the admin account made on the local site).
+
+They are the content of `live/`, so they always carry the latest stories (owner's hard rule, 2026-11-14). With the ZIPs the site runs on **SQLite**: in step 4 keep the SQLite part of `config.sample.php` (the database is already in `backend/storage/site.sqlite`), and skip step 2 and step 7 (the admin is already in the database). Moving the stories into MySQL instead is not built yet.
+
 ## Steps
 
 1. **PHP**: hPanel → Advanced → PHP Configuration: PHP 8.1 or newer, with the extensions `pdo_mysql`, `gd`, `zip`, `mbstring`, `dom`, `fileinfo` (Hostinger has them on by default).
@@ -43,4 +52,4 @@ On Hostinger the two sit side by side, for example:
 
 ## Updating later
 
-Build and check `live/` from the new commit, then upload `live/frontend/` over `public_html/` and `live/backend/` over `backend/`. Never overwrite the server's own data: `backend/app/config.php`, `backend/storage/` and `public_html/uploads/`. Run step 5 (migrations) again when a commit adds a migration; the PROJECT_LOG entry says so.
+Build and check `live/` from the new commit, then upload `live/frontend/` over `public_html/` and `live/backend/` over `backend/`. Never overwrite the server's own data: `backend/app/config.php`, `backend/storage/` and `public_html/uploads/`. After launch, stories are added in the real admin on the server; a later backend ZIP is uploaded **without** `storage/site.sqlite` (that would replace the server's database with the local one). Run step 5 (migrations) again when a commit adds a migration; the PROJECT_LOG entry says so.

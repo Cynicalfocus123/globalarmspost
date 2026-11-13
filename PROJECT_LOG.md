@@ -33,6 +33,7 @@ Newest entry first. Wireframes: [docs/wireframes.html](docs/wireframes.html)
     - **Tests:** every change is tested on phone, tablet and desktop, in Chromium, Firefox and WebKit (Safari's engine). A change that breaks on any of them is not done.
     - **The admin is desktop-first** (owner's decision, 2026-11-11): admins work on desktops and laptops, so the admin on desktop and laptop must never fail. Phones and tablets are not needed for the admin: an admin test that fails only on a phone or tablet is skipped there with that written reason. The public site (readers) still has to work on phones, tablets and desktops.
 11. **Build first, then test** (owner's hard rule, 2026-11-05). No trial or partial test runs while building. Finish all the code of the step first; only then run the tests: one full run of the live copy, and if it is good, stop (owner, 2026-11-10/11: no repeat runs; only `live/` is tested because it is what goes to the real server).
+12. **The site's content is kept in `live/` for good; nothing is reset** (owner's hard rule, 2026-11-14). Every story, picture, category, tag, author and admin account is saved through the site's own backend (the same `story_save()` the admin's Save uses) into the real `live/` folder: the database is `live/backend/storage/site.sqlite`, the pictures are in `live/frontend/uploads/`. The local site (`npm run site` or `.claude/launch.json` "local-site", http://localhost:8092) runs straight from `live/`, so nothing is copied and nothing starts empty. Builds never touch these folders (they are server data, rule 2). Every deploy ZIP (`npm run zips`, `scripts/make-zips.py`) carries the latest database and every picture. The throwaway preview (8091) and the test runs are only for testing.
 
 ## Folder layout
 ```
@@ -179,6 +180,17 @@ Every change must keep the code:
 ---
 
 ## Change log
+
+### 2026-11-14 — Hard rule 12: the content is kept in live/ for good; Space and Naval added
+
+The owner's Land/Air/Naval stories were in the throwaway preview, which starts with an empty database on every start. New hard rule 12 (owner): content is saved through the site's own backend into the real `live/` folder and never reset; the ZIPs always carry it.
+
+- **Local site** (`npm run site`, `.claude/launch.json` "local-site", http://localhost:8092): `tests/serve.mjs local` runs straight from `live/frontend` + `live/backend`. Database `live/backend/storage/site.sqlite` (the place `config.sample.php` uses on the server), pictures `live/frontend/uploads/`; config `test-data/local-site/config.php` in the main checkout (written once, never in `live/`). No sample stories, no demo admin: the first account made at `/admin/setup` is the real admin. Builds never touch these folders (server data, rule 2).
+- `scripts/live-lib.mjs`: `MAIN` = the main checkout, so `live/` is the one folder next to `git/` also when a script runs from a Claude worktree.
+- **ZIPs** (`npm run zips`, `scripts/make-zips.py`): frontend ZIP with `uploads/`; backend ZIP with `backend/app` (no `config.php`) and `backend/storage/site.sqlite` (copied with SQLite's backup, so it is whole while the site runs). Never sessions, cache, backups. `docs/DEPLOY.md`: with the ZIPs the site runs on SQLite; the admin and stories are already in it.
+- **Old stories (B18)** imported into `live/`: Land 50, Air 49, Naval 50, Space 37 (186 stories, 220 pictures, 139 extra-category links), original UTC dates. Checked on the local site: `/space`, `/naval`, the homepage, a Space story with a body picture on a phone (every picture loads, no sideways scroll); after stopping and starting the site again all 186 stories are still there.
+- `public/` (the site code) did not change, so no full test run (rule 11); `live/` rebuilt and verified.
+- Task list v28: new P17 Pending; B18 updated.
 
 ### 2026-11-13 — Owner's admin requests: extra categories, big Saved message, section names (tested on MySQL, approved by the owner 2026-11-13)
 

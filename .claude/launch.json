@@ -2,15 +2,35 @@
   "version": "0.0.1",
   "configurations": [
     {
+      "name": "local-site",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "tests/serve.mjs",
+        "local",
+        "8092"
+      ],
+      "port": 8092
+    },
+    {
       "name": "live-copy",
       "runtimeExecutable": "node",
-      "runtimeArgs": ["tests/serve.mjs", "live", "8091", "--demo-admin"],
+      "runtimeArgs": [
+        "tests/serve.mjs",
+        "live",
+        "8091",
+        "--demo-admin"
+      ],
       "port": 8091
     },
     {
       "name": "git-copy",
       "runtimeExecutable": "node",
-      "runtimeArgs": ["tests/serve.mjs", "git", "8090", "--demo-admin"],
+      "runtimeArgs": [
+        "tests/serve.mjs",
+        "git",
+        "8090",
+        "--demo-admin"
+      ],
       "port": 8090
     }
   ]

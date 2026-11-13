@@ -43,6 +43,9 @@ Starts the real PHP server with a fresh SQLite database for both copies (git/ wi
 A passing run is **912 passed, 34 skipped, 0 failed** (MySQL, 2026-11-13). The page cache is on in the tests, as on the real site. The 34 skips are by design (a database check or a scheduled-story test that runs once, tests for the phone menu or the desktop columns only, and the homepage builder drag on phones: the admin is desktop-first) and every report lists them by name.
 
 ## Look at the site locally
+**The local site** (`npm run site`, or `.claude/launch.json` "local-site") runs at http://localhost:8092/ straight from `live/`: its database is `live/backend/storage/site.sqlite` and its pictures are in `live/frontend/uploads/`, so everything added there (the old site's stories, admin posts, settings) is kept between starts and goes into the deploy ZIPs (`npm run zips`). It has no sample stories and no demo admin: the first account made at http://localhost:8092/admin/setup is the real admin and goes to Hostinger with the database.
+
+The throwaway preview:
 The Claude app's preview (`.claude/launch.json`, "live-copy") or `npm run preview` serves the live copy with sample stories at http://127.0.0.1:8091/. The admin is at http://127.0.0.1:8091/admin: sign in with the demo admin from `tests/fixtures/test-users.json` ("demo_admin"). It exists only in the preview's own test database (`tests/seed-admin.php`), never in `live/`.
 
 ## Update live/

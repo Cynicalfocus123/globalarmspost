@@ -7,11 +7,21 @@
 //                      config.php) and storage/ (cache, sign-in sessions, backups). No images or assets.
 // git/public/ keeps everything in one folder; this file decides where each file of it goes.
 import { readdirSync, statSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
 import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 export const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
-export const LIVE = join(ROOT, '..', 'live');
+// The main checkout (git/), also when this runs from a Claude worktree in git/.claude/worktrees/…:
+// there is only one live/ folder, next to git/.
+const mainRoot = () => {
+  try {
+    const common = execFileSync('git', ['rev-parse', '--path-format=absolute', '--git-common-dir'], { cwd: ROOT }).toString().trim();
+    return dirname(common);
+  } catch { return ROOT; }
+};
+export const MAIN = mainRoot();
+export const LIVE = join(MAIN, '..', 'live');
 export const FRONTEND = 'frontend';
 export const BACKEND = 'backend';
 
