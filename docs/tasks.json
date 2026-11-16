@@ -586,8 +586,8 @@
       "side": "Frontend",
       "status": "Pending",
       "task": "Featured section: the big top-left homepage section (hero + cards) shows only stories an admin ticks 'Featured (homepage top section)' in the story editor; separate from the Top stories / Latest list (still the newest stories). Add the 6 articles of 16 Nov as Featured.",
-      "why": "Owner 2026-11-16: the section showed the newest stories, the same as Top stories / Latest. Built: migration 011 (posts.featured; hero sections get featured_only), editor checkbox under 'Pin to top', homepage builder 'Featured stories only', scripts/import-articles.php --featured.",
-      "next": "Owner: review on the local site and approve"
+      "why": "Owner 2026-11-16: the section showed the newest stories, the same as Top stories / Latest. Built: migration 011 (posts.featured; hero sections get featured_only), editor checkbox under 'Pin to top', homepage builder 'Featured stories only', scripts/import-articles.php --featured. Tested 2026-11-16 (short run, live copy, 9 projects): 262 tests, 238 passed, 20 skipped by design, 4 admin failures on Firefox phone/tablet only (skipped: admin is desktop-first). The 6 articles of 16 Nov are in live/ as Featured (#393-#398); the section shows the newest 4 (its count). Waiting for your approval.",
+      "next": "You: check the homepage on the local site; say if the Featured section should show more than 4; approve"
     }
   ]
 }
