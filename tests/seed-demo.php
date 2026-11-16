@@ -107,6 +107,9 @@ foreach ($stories as $i => [$slugCat, $title, $live, $sticky, $tags]) {
         $authors[$i % 5], $authorId[$authors[$i % 5]], $cat[$slugCat], $media[$i % 12], 'published', $sticky, $live, (97 * ($i + 3)) % 1000, $published, $updated, $published,
     ]);
     $id = (int) db()->lastInsertId();
+    if ($i < 4) { // the homepage's top section shows Featured stories only (2026-11-16)
+        q('UPDATE posts SET featured = 1 WHERE id = ?', [$id]);
+    }
     foreach ($tags as $t) {
         q('INSERT INTO post_tags (post_id, tag_id) VALUES (?, ?)', [$id, $tag[$t]]);
     }

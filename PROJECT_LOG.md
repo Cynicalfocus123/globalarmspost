@@ -182,6 +182,16 @@ Every change must keep the code:
 
 ## Change log
 
+### 2026-11-16 — Featured section: only stories ticked "Featured" (task F25)
+
+The owner: the big top-left homepage section showed the newest stories, the same as the Top stories / Latest list next to it; it must show only the stories an admin selects as featured. The Top stories / Latest list stays separate (the newest stories).
+- **Story editor** (Publish box, under "Pin to top"): checkbox **Featured (homepage top section)** → `posts.featured` (0/1).
+- **Migration `011_featured_stories`:** adds `posts.featured`; the saved `hero` / `hero_grid` sections get the setting `featured_only = true`. Run `php backend/app/cli/migrate.php` on Hostinger.
+- **Homepage builder:** "Featured stories only (ticked "Featured" in the story editor)" per section, on by default for hero layouts (`section_layouts()`), off for every other layout. `posts_query()` option `featured_only`. Newest Featured stories first; no Featured story = the section is hidden.
+- **Import tool:** `scripts/import-articles.php <list> --featured` ticks Featured on every article of the list (also on ones already here).
+- **The owner's 6 articles of 16 Nov** (France 24, TVP World, The Journal, A News, Janes, Malay Mail) imported as Featured into `live/`; list `D:\gap-scratcheatured-articles-2026-11-16.md`, log `D:\gap-scratch\import-featured.log`.
+- **Tests:** `stories.spec.ts` "the Featured section shows only stories ticked as Featured; Top stories / Latest stay the newest"; `admin.spec.ts` editor test ticks Featured and checks `posts.featured = 1` and the box after reopening; `tests/seed-demo.php` marks the first 4 sample stories Featured.
+
 ### 2026-11-16 — Deploy build: live/ updated, new ZIPs
 
 The owner: make live/ completely up to date before the frontend and backend ZIPs. Done in this order:

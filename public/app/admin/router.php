@@ -327,6 +327,7 @@ function admin_editor(array $user, int $id): never
             'excerpt' => (string) $story['excerpt'], 'summary' => (string) $story['summary'], 'credits' => (string) $story['credits'],
             'status' => $story['status'], 'state' => story_state((string) $story['status'], $story['published_at']),
             'published_local' => utc_to_local_input($story['published_at']), 'sticky' => (int) $story['sticky'] === 1,
+            'featured' => (int) ($story['featured'] ?? 0) === 1,
             'live_label' => (int) $story['live_label'] === 1, 'category_id' => (int) $story['category_id'],
             'extra_category_ids' => array_map(fn ($c) => $c['id'], $story['extra_categories']),
             'author_id' => (int) ($story['author_id'] ?? 0), 'tag_ids' => array_map(fn ($t) => (int) $t['id'], $story['tags']),

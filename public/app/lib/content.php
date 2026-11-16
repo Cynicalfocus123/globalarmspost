@@ -130,6 +130,7 @@ function story_save(array $in, int $userId): array
         'featured_credit' => clean_text($in['featured_credit'] ?? '', 200),
         'status' => $status,
         'sticky' => !empty($in['sticky']) ? 1 : 0,
+        'featured' => !empty($in['featured']) ? 1 : 0,
         'live_label' => !empty($in['live_label']) ? 1 : 0,
         'published_at' => $publishedAt,
         'updated_at' => $now,

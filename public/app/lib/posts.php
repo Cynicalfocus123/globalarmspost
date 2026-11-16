@@ -14,6 +14,7 @@ declare(strict_types=1);
  *   count, skip         how many, and how many to skip first (works with page numbers)
  *   page                1, 2, ... (page × count is added to skip)
  *   sticky_first        sticky stories before the rest
+ *   featured_only       only stories an admin ticked as Featured (the homepage's top section)
  *   exclude_ids         story ids already shown (avoid duplicates)
  *
  * @param array<string, mixed> $o
@@ -53,7 +54,7 @@ function posts_select(): string
     // The author comes from the authors table (B19); author_name is the fallback for stories without one.
     // The main photo's caption and credit are the story's own, else the picture's.
     return "SELECT p.id, p.title, p.slug, p.excerpt, p.summary, p.body, p.credits, COALESCE(a.name, p.author_name) AS author_name,
-                   p.author_id, p.sticky, p.live_label, p.views, p.published_at, p.updated_at,
+                   p.author_id, p.sticky, p.featured, p.live_label, p.views, p.published_at, p.updated_at,
                    c.slug AS cat_slug, c.name AS cat_name, pc.slug AS cat_parent, pc.name AS cat_parent_name,
                    m.path AS m_path, m.widths AS m_widths, m.has_avif AS m_has_avif, m.width AS m_width, m.height AS m_height, m.alt AS m_alt,
                    CASE WHEN COALESCE(p.featured_caption, '') <> '' THEN p.featured_caption ELSE m.caption END AS m_caption,
@@ -92,6 +93,9 @@ function posts_where(array $o): array
         $where[] = 'p.id IN (SELECT pt.post_id FROM post_tags pt JOIN tags t ON t.id = pt.tag_id WHERE t.slug IN ('
             . implode(',', array_fill(0, count($tags), '?')) . '))';
         array_push($params, ...$tags);
+    }
+    if (!empty($o['featured_only'])) {
+        $where[] = 'p.featured = 1';
     }
     $exclude = array_values(array_filter(array_map('intval', (array) ($o['exclude_ids'] ?? []))));
     if ($exclude !== []) {

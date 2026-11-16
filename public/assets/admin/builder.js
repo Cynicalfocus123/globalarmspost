@@ -165,6 +165,7 @@ function renderForm() {
     <label class="a-lbl" for="hb-order">Order</label><select id="hb-order" data-key="order_by">${Object.entries(order).map(([k, v]) => `<option value="${k}"${set.order_by === k ? ' selected' : ''}>${v}</option>`).join('')}</select>
     <label class="a-lbl" for="hb-dir">Direction</label><select id="hb-dir" data-key="dir"><option value="desc"${set.dir !== 'asc' ? ' selected' : ''}>Descending</option><option value="asc"${set.dir === 'asc' ? ' selected' : ''}>Ascending</option></select>
     <label class="a-lbl" for="hb-skip">Skip first</label><input id="hb-skip" type="number" inputmode="numeric" min="0" max="100" data-key="skip" value="${set.skip}">
+    <label class="a-check"><input type="checkbox" data-key="featured_only"${set.featured_only ? ' checked' : ''}> Featured stories only (ticked "Featured" in the story editor)</label>
     <label class="a-check"><input type="checkbox" data-key="sticky_first"${set.sticky_first ? ' checked' : ''}> Pinned stories first</label>
     <label class="a-check"><input type="checkbox" data-key="avoid_duplicates"${set.avoid_duplicates ? ' checked' : ''}> Avoid duplicates (skip stories shown higher up; off = always the newest stories)</label>
     <label class="a-check"><input type="checkbox" data-top="active"${s.active ? ' checked' : ''}> Show on the homepage</label>

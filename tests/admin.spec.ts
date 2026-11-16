@@ -354,6 +354,7 @@ test('story editor: headline, toolbar, tags and authors added on the spot (no re
   await page.locator('#ed-author-list .a-opt', { hasText: authorName }).click();
 
   await page.check('#ed-sticky');
+  await page.check('#ed-featured'); // a draft: it never reaches the homepage's Featured section
   await page.check('#ed-live');
   await expect(page.locator('.seo-title')).toHaveText(title);
   await page.click('.ed-save');
@@ -362,8 +363,8 @@ test('story editor: headline, toolbar, tags and authors added on the spot (no re
   expect(loads, 'tags, author and saving happened without a page reload').toBe(0);
 
   const id = page.url().split('/').pop()!;
-  const row = sql(info, 'SELECT p.title, p.status, p.summary, p.excerpt, p.credits, p.sticky, p.live_label, p.body, c.slug AS cat, p.author_id FROM posts p JOIN categories c ON c.id = p.category_id WHERE p.id = ?', id)[0];
-  expect(row).toMatchObject({ title, status: 'draft', summary: 'Key point one\nKey point two', excerpt: 'Short card text for the editor test.', credits: 'Reporting by Test; Editing by Test', sticky: 1, live_label: 1, cat: 'asia', author_id: author[0].id });
+  const row = sql(info, 'SELECT p.title, p.status, p.summary, p.excerpt, p.credits, p.sticky, p.featured, p.live_label, p.body, c.slug AS cat, p.author_id FROM posts p JOIN categories c ON c.id = p.category_id WHERE p.id = ?', id)[0];
+  expect(row).toMatchObject({ title, status: 'draft', summary: 'Key point one\nKey point two', excerpt: 'Short card text for the editor test.', credits: 'Reporting by Test; Editing by Test', sticky: 1, featured: 1, live_label: 1, cat: 'asia', author_id: author[0].id });
   expect(row.body).toContain('<strong>bold words</strong>');
   expect(row.body).toContain('<h2>A subhead</h2>');
   expect(row.body).toContain('<li>Point one</li>');
@@ -374,6 +375,7 @@ test('story editor: headline, toolbar, tags and authors added on the spot (no re
   await page.reload();
   await page.locator('#editor[data-ready]').waitFor();
   await expect(page.locator('#ed-title')).toHaveValue(title);
+  await expect(page.locator('#ed-featured')).toBeChecked();
   await expect(page.locator('#ed-body strong')).toHaveText('bold words'); // stored and opened again as <strong>
   await part(page, 'details');
   await expect(page.locator('.ed-chips .chip')).toHaveCount(2);

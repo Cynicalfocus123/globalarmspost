@@ -191,6 +191,20 @@ test('category page: Older stories opens the next page', async ({ page }, info) 
   expect(second.filter((t) => firstPage.includes(t))).toEqual([]);
 });
 
+test('the Featured section shows only stories ticked as Featured; Top stories / Latest stay the newest', async ({ page }, info) => {
+  await page.goto('/');
+  const slugs = (sel: string) => page.locator(sel).evaluateAll((as) => as.map((a) => a.getAttribute('href')!.split('/').pop()!));
+  const shown = await slugs('.hs-hero-grid .card-title a');
+  expect(shown.length, 'hero + cards').toBeGreaterThan(0);
+  const featured = new Set(sql(dbKey(info), "SELECT slug FROM posts WHERE featured = 1 AND status = 'published'").map((r: any) => r.slug));
+  for (const slug of shown) expect(featured.has(slug), `${slug} is Featured`).toBe(true);
+  const set = JSON.parse(sql(dbKey(info), "SELECT settings FROM home_sections WHERE layout = 'hero_grid' AND active = 1")[0].settings);
+  expect(set.featured_only, 'saved section setting').toBe(true);
+  // The tabbed list is separate: not limited to Featured stories.
+  const list = JSON.parse(sql(dbKey(info), "SELECT settings FROM home_sections WHERE layout = 'list' AND active = 1 ORDER BY position")[0].settings);
+  expect(list.featured_only ?? false).toBe(false);
+});
+
 test('story page opens from the homepage and counts the view', async ({ page }, info) => {
   await page.goto('/');
   // A sample story: another test's "timed" story can be the newest for a moment and is then moved to the trash.

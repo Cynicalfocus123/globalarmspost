@@ -7,8 +7,8 @@ declare(strict_types=1);
  * the publisher's page, saved as a published story in the category of its list heading, with the publisher in the
  * credits line and a link to the original at the end of the text.
  *
- * Usage (in git/):
- *   php -d extension=pdo_sqlite -d extension=gd scripts/import-articles.php "D:/mstar companies/bot system/out/articles.md" [--dry-run]
+ * Usage (in git/); --featured also ticks "Featured" (the homepage's top section) on every article of the list:
+ *   php -d extension=pdo_sqlite -d extension=gd scripts/import-articles.php "D:/mstar companies/bot system/out/articles.md" [--dry-run] [--featured]
  *
  * Saves into the local site in live/ (hard rule 12) through the site's own code: story_save(), tag-free;
  * media_store_source() for the picture (WebP + AVIF); clean_html() for the text. Safe to run again: an article whose
@@ -32,9 +32,10 @@ const LIST_TZ = 'Asia/Bangkok'; // the newsbot list writes its times in +07
 
 $args = array_slice($argv, 1);
 $dry = in_array('--dry-run', $args, true);
+$featured = in_array('--featured', $args, true); // tick "Featured": the homepage's top section (2026-11-16)
 $listFile = (string) (array_values(array_filter($args, fn ($a) => !str_starts_with($a, '--')))[0] ?? '');
 if ($listFile === '' || !is_file($listFile)) {
-    fwrite(STDERR, "Usage: php scripts/import-articles.php <articles.md> [--dry-run]\n");
+    fwrite(STDERR, "Usage: php scripts/import-articles.php <articles.md> [--dry-run] [--featured]\n");
     exit(2);
 }
 
@@ -323,6 +324,10 @@ foreach ($items as $it) {
                 $note = ', picture added';
             }
         }
+        if ($featured && !$dry) {
+            q('UPDATE posts SET featured = 1 WHERE id = ?', [(int) $have['id']]);
+            $note .= ', featured';
+        }
         echo "  skip (already here as #{$have['id']}$note): $title\n";
         $skipped++;
         continue;
@@ -404,7 +409,7 @@ foreach ($ready as $r) {
         $saved = story_save([
             'title' => $title, 'slug' => $slug, 'excerpt' => mb_substr($excerpt, 0, 1000), 'body' => implode("\n", $blocks),
             'credits' => 'Source: ' . $source, 'category_id' => $cats[$it['cat']], 'extra_category_ids' => $extraIds, 'author_id' => $authorId, 'media_id' => $mediaId,
-            'featured_credit' => $mediaId > 0 ? $source : '', 'status' => 'published',
+            'featured_credit' => $mediaId > 0 ? $source : '', 'status' => 'published', 'featured' => $featured,
             'published_local' => utc_to_local_input($published ?? now_utc()),
         ], 0);
     } catch (Throwable $e) {

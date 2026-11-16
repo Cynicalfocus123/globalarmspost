@@ -59,6 +59,7 @@ $json = json_encode($data, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HE
           <input id="ed-date" type="datetime-local" step="60">
           <p class="a-small ed-state" aria-live="polite"></p>
           <label class="a-check"><input type="checkbox" id="ed-sticky"> Pin to top (sticky)</label>
+          <label class="a-check"><input type="checkbox" id="ed-featured"> Featured (homepage top section)</label>
           <label class="a-check"><input type="checkbox" id="ed-live"> Show "Live updates" label</label>
           <button type="button" class="a-linkbtn danger ed-trash"<?= $s === null ? ' hidden' : '' ?>>Move to trash</button>
         </section>

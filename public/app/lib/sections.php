@@ -12,14 +12,15 @@ function section_layouts(): array
     // name: what the admin's homepage builder calls the section (never shown on the site); empty = a name from
     // the layout and categories (assets/admin/builder.js sectionName()).
     $common = ['name' => '', 'categories' => [], 'exclude_categories' => [], 'tags' => [], 'order_by' => 'date', 'dir' => 'desc',
-               'skip' => 0, 'sticky_first' => false, 'avoid_duplicates' => false, // repeats allowed (owner, 2026-11-16)
+               'skip' => 0, 'sticky_first' => false, 'featured_only' => false, 'avoid_duplicates' => false, // repeats allowed (owner, 2026-11-16)
                // Picture sizes (task F16), steps 1-5 (3 = the standard look): photo_height = the shape of the big
                // photos (1 wide and low ... 5 square), thumb_size = the small photo in title rows (1 small ... 5 big).
                // Steps, not free numbers: they are CSS classes, because the strict CSP allows no inline styles.
                'photo_height' => 3, 'thumb_size' => 3];
     return [
-        'hero' => ['label' => 'Hero: dark text panel, photo right', 'settings' => $common + ['count' => 1]],
-        'hero_grid' => ['label' => 'Hero, then cards under it', 'settings' => $common + ['count' => 4, 'columns' => 3]],
+        // Hero layouts show the Featured stories only (owner, 2026-11-16); the admin can turn that off per section.
+        'hero' => ['label' => 'Hero: dark text panel, photo right', 'settings' => ['featured_only' => true] + $common + ['count' => 1]],
+        'hero_grid' => ['label' => 'Hero, then cards under it', 'settings' => ['featured_only' => true] + $common + ['count' => 4, 'columns' => 3]],
         'list' => ['label' => 'Photo + title rows, optional tabs', 'settings' => $common + ['count' => 5, 'tabs' => false]],
         'grid' => ['label' => 'Cards, columns x rows', 'settings' => $common + ['count' => 4, 'columns' => 4]],
         'overlay_list' => ['label' => 'Photo with title on it, then rows', 'settings' => $common + ['count' => 4]],

@@ -22,7 +22,7 @@ const state = {
 };
 const els = {
   title: $('#ed-title'), summary: $('#ed-summary'), excerpt: $('#ed-excerpt'), credits: $('#ed-credits'), date: $('#ed-date'),
-  sticky: $('#ed-sticky'), live: $('#ed-live'), slug: $('#ed-slug'), saved: $('.ed-saved', form), save: $('.ed-save', form),
+  sticky: $('#ed-sticky'), featured: $('#ed-featured'), live: $('#ed-live'), slug: $('#ed-slug'), saved: $('.ed-saved', form), save: $('.ed-save', form),
   error: $('.ed-error', form), convert: $('.ed-convert', form), stateText: $('.ed-state', form),
 };
 
@@ -34,6 +34,7 @@ if (data.story) {
   els.credits.value = st.credits || '';
   els.date.value = st.published_local || '';
   els.sticky.checked = !!st.sticky;
+  els.featured.checked = !!st.featured;
   els.live.checked = !!st.live_label;
   els.slug.value = st.slug || '';
   $(`input[name="status"][value="${st.status === 'published' ? 'published' : 'draft'}"]`, form).checked = true;
@@ -711,7 +712,7 @@ async function save() {
   try {
     const res = await api('/admin/api/story', {
       id: state.id, title: els.title.value, body: bodyHtml(), excerpt: els.excerpt.value, summary: els.summary.value,
-      credits: els.credits.value, status: status(), published_local: els.date.value, sticky: els.sticky.checked,
+      credits: els.credits.value, status: status(), published_local: els.date.value, sticky: els.sticky.checked, featured: els.featured.checked,
       live_label: els.live.checked, category_id: state.categoryId,
       extra_category_ids: [...state.extraIds].filter((id) => id !== state.categoryId), author_id: state.authorId, tag_ids: [...state.tagIds],
       media_id: state.mediaId, featured_caption: photoCaption.value, featured_credit: photoCredit.value,
