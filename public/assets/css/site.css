@@ -125,6 +125,8 @@ button{font:inherit;color:inherit}
 .v-hero .card-title{font-size:clamp(22px,2.4vw,30px);color:#fff}
 .v-hero .card-excerpt,.v-hero .card-meta{color:#c9c9c9}
 .v-hero .live{color:#ff6b7f}
+.kicker{color:var(--red);font:700 12px var(--sans);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}
+.v-hero .kicker{color:#ff6b7f}
 /* overlay: photo with the title on it over a dark fade */
 .v-overlay .card-media{aspect-ratio:16/10}
 .v-overlay .card-media::after{content:"";position:absolute;inset:auto 0 0 0;height:60%;background:linear-gradient(transparent,rgba(0,0,0,.78));border-radius:0 0 10px 10px;pointer-events:none}

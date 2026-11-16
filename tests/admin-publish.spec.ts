@@ -263,7 +263,7 @@ test('homepage builder: picture size sliders and the live preview (beside on des
       const landId = original.find((r: any) => r.title === 'Land').id;
       expect(JSON.parse(sql(info, 'SELECT settings FROM home_sections WHERE id = ?', landId)[0].settings).photo_height ?? 3).toBe(3);
 
-      // The "Top stories" list: small photos size 5.
+      // The "Latest news" list: small photos size 5.
       const rows = page.locator('.hb-list > li').filter({ hasText: 'Photo + title rows' }).first();
       await rows.locator('.hb-open').click();
       seq = await loaded();
@@ -397,7 +397,7 @@ test('extra categories: main Land, also in Air; the story shows in both and the 
   expect(flashLook.size).toBeGreaterThanOrEqual(18);
 });
 
-test('homepage builder: the two top sections are called Featured and Latest and top stories; an admin name is saved', async ({ page }, info) => {
+test('homepage builder: the two top sections are called Breaking news and Latest news; an admin name is saved', async ({ page }, info) => {
   test.setTimeout(150_000);
   await inLine(info, 'homepage', async () => {
     const original = sql(info, 'SELECT id, position, layout, title, span, settings, active FROM home_sections ORDER BY id');
@@ -406,7 +406,7 @@ test('homepage builder: the two top sections are called Featured and Latest and 
       await page.goto('/admin/homepage');
       await page.locator('.hb-list[data-ready]').waitFor();
       const names = await page.locator('.hb-list > li .hb-open b').allTextContents();
-      expect(names.slice(0, 2)).toEqual(['Featured', 'Latest and top stories']);
+      expect(names.slice(0, 2)).toEqual(['Breaking news', 'Latest news']);
       expect(names.filter((n) => n === 'Latest stories'), 'no two sections with the same made-up name').toHaveLength(0);
       // A name of its own: shown in the list at once, saved in the section's settings, never on the site.
       await page.locator('.hb-list > li').first().locator('.hb-open').click();

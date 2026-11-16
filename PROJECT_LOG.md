@@ -182,6 +182,15 @@ Every change must keep the code:
 
 ## Change log
 
+### 2026-11-16 — Breaking news, one Latest news list, Trending row on phones (task F25)
+
+The owner (iPhone 16 Pro Max screenshots): the "TRENDING" word was cut off at the left edge; the homepage showed the same stories over and over (the top section, then Top stories, then Latest); the top section is for **breaking news**, and the editor's checkbox must say so.
+- **Trending row** (`reader.css`): it sat outside the page width with no side padding, so on phones it started at the screen edge. Now `max-width: var(--wrap)`, centred, side padding `var(--gutter)`: it lines up with the stories under it on every width.
+- **Breaking news:** the story editor's checkbox is **Breaking news (homepage top section)** (same column `posts.featured`); every story in that section shows a red **BREAKING NEWS** label (`.kicker`, card option `breaking`); in the homepage builder the section is called **Breaking news** and its option "Breaking news only".
+- **One Latest news list** (migration `012_breaking_latest`): the tabbed list loses its tabs and becomes "Latest news" (section title) with "avoid duplicates" on, so it shows the newest stories that are not already in Breaking news. The "Top stories / Latest tabs" option and the tab code are gone from `render_home_sections()`, the `list` view and the builder. Run `php ~/domains/globalarmspost.com/backend/app/cli/migrate.php` on Hostinger.
+- **Tests:** `stories.spec.ts` "Latest news: one list, no tabs, the newest stories that are not already in Breaking news" (in place of the tabs test) and "the Breaking news section shows only stories ticked Breaking news, each with the red label"; section titles now start with "Latest news"; `reader.spec.ts` trending test checks the "Trending" word starts inside the screen, lined up with the stories; `admin-publish.spec.ts` builder names "Breaking news", "Latest news".
+- **Short run** (live copy, SQLite, 9 projects). Part 1 (`admin-setup`, `stories`, `reader`): 190 tests, 168 passed, 20 skipped, 2 failed: "Latest news …" on Chromium desktop (another test's scheduled "timed" story turned public between the page and the database check: the test now leaves those out and checks again on a fresh page) and on Firefox phone (the Firefox worker crashed). That test again on all 9: **10 passed** (with setup). Part 2 (`PUBLISH_ONLY=1`, `admin-setup`, `admin-publish`): **70 passed, 3 skipped, 0 failed**. Skipped by design: "a scheduled story appears at its time" 8× (changes the database: Chromium desktop only), "desktop: section layouts use their columns" 6× (phones and tablets), "phones: each section is one big story …" 6× (tablets and desktops), the homepage-builder drag test 3× (phones: the admin is desktop-first).
+
 ### 2026-11-16 — Stories from the local site to the server (the six Featured articles)
 
 The owner did not see the six articles on the real site: they are in the local database only, and the server keeps its own database (with the owner's admin sign-in), so the backend ZIP has no database.

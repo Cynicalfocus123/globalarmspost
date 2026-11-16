@@ -18,10 +18,11 @@ function section_layouts(): array
                // Steps, not free numbers: they are CSS classes, because the strict CSP allows no inline styles.
                'photo_height' => 3, 'thumb_size' => 3];
     return [
-        // Hero layouts show the Featured stories only (owner, 2026-11-16); the admin can turn that off per section.
+        // Hero layouts show the Breaking news stories only (owner, 2026-11-16: ticked "Breaking news" in the story editor,
+        // posts.featured); the admin can turn that off per section.
         'hero' => ['label' => 'Hero: dark text panel, photo right', 'settings' => ['featured_only' => true] + $common + ['count' => 1]],
         'hero_grid' => ['label' => 'Hero, then cards under it', 'settings' => ['featured_only' => true] + $common + ['count' => 4, 'columns' => 3]],
-        'list' => ['label' => 'Photo + title rows, optional tabs', 'settings' => $common + ['count' => 5, 'tabs' => false]],
+        'list' => ['label' => 'Photo + title rows', 'settings' => $common + ['count' => 5]],
         'grid' => ['label' => 'Cards, columns x rows', 'settings' => $common + ['count' => 4, 'columns' => 4]],
         'overlay_list' => ['label' => 'Photo with title on it, then rows', 'settings' => $common + ['count' => 4]],
         'lead_grid' => ['label' => 'Lead story left, 2 x 2 cards right', 'settings' => $common + ['count' => 5]],
@@ -57,15 +58,9 @@ function render_home_sections(?array $rows = null): string
             $query['exclude_ids'] = $shown;
         }
         $posts = posts_query($query);
+        // No "Top stories / Latest" tabs any more (owner, 2026-11-16: the same stories twice confused readers);
+        // the list is one "Latest news" list (migration 012).
         $tabs = [];
-        if ($layout === 'list' && !empty($s['tabs'])) {
-            // "Top stories" = sticky first, then newest; "Latest" = newest. Both are real queries.
-            $tabs = [
-                'Top stories' => posts_query(['sticky_first' => true] + $query),
-                'Latest' => posts_query(['sticky_first' => false, 'exclude_ids' => []] + $query),
-            ];
-            $posts = $tabs['Top stories'];
-        }
         if ($posts === []) {
             continue;
         }

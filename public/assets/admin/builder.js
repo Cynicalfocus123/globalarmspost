@@ -25,8 +25,9 @@ function sectionName(s) {
   if ((s.title || '').trim()) return s.title.trim();
   const cats = (set.categories || []).map((slug) => data.categories.find((c) => c.slug === slug)?.name).filter(Boolean);
   if (cats.length) return cats.join(', ');
+  if (['hero', 'hero_grid'].includes(s.layout) && set.featured_only) return 'Breaking news';
   if (['hero', 'hero_grid', 'lead_grid', 'lead_list', 'overlay_list'].includes(s.layout)) return 'Featured';
-  if (s.layout === 'list') return set.tabs ? 'Latest and top stories' : 'Latest stories';
+  if (s.layout === 'list') return 'Latest news';
   if (s.layout === 'headlines') return 'Headlines';
   return 'Latest stories';
 }
@@ -158,14 +159,13 @@ function renderForm() {
     ${'columns' in set ? range('columns', 'Columns', set.columns, 1, 6) : ''}
     ${'photo_height' in set ? range('photo_height', 'Photo height (1 low and wide … 5 square)', set.photo_height, 1, 5) : ''}
     ${'thumb_size' in set ? range('thumb_size', 'Small photo size in rows (1 small … 5 big)', set.thumb_size, 1, 5) : ''}
-    ${'tabs' in set ? `<label class="a-check"><input type="checkbox" data-key="tabs"${set.tabs ? ' checked' : ''}> Top stories / Latest tabs</label>` : ''}
     ${catBox('categories', 'Show stories from', set.categories || [], true)}
     ${catBox('exclude_categories', 'Leave out', set.exclude_categories || [], (set.exclude_categories || []).length > 0)}
     ${tagBox(set.tags || [])}
     <label class="a-lbl" for="hb-order">Order</label><select id="hb-order" data-key="order_by">${Object.entries(order).map(([k, v]) => `<option value="${k}"${set.order_by === k ? ' selected' : ''}>${v}</option>`).join('')}</select>
     <label class="a-lbl" for="hb-dir">Direction</label><select id="hb-dir" data-key="dir"><option value="desc"${set.dir !== 'asc' ? ' selected' : ''}>Descending</option><option value="asc"${set.dir === 'asc' ? ' selected' : ''}>Ascending</option></select>
     <label class="a-lbl" for="hb-skip">Skip first</label><input id="hb-skip" type="number" inputmode="numeric" min="0" max="100" data-key="skip" value="${set.skip}">
-    <label class="a-check"><input type="checkbox" data-key="featured_only"${set.featured_only ? ' checked' : ''}> Featured stories only (ticked "Featured" in the story editor)</label>
+    <label class="a-check"><input type="checkbox" data-key="featured_only"${set.featured_only ? ' checked' : ''}> Breaking news only (stories ticked "Breaking news" in the story editor)</label>
     <label class="a-check"><input type="checkbox" data-key="sticky_first"${set.sticky_first ? ' checked' : ''}> Pinned stories first</label>
     <label class="a-check"><input type="checkbox" data-key="avoid_duplicates"${set.avoid_duplicates ? ' checked' : ''}> Avoid duplicates (skip stories shown higher up; off = always the newest stories)</label>
     <label class="a-check"><input type="checkbox" data-top="active"${s.active ? ' checked' : ''}> Show on the homepage</label>

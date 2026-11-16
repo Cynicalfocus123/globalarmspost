@@ -128,6 +128,12 @@ test('the trending tags row shows the tags most used by recent stories', async (
   await page.goto('/');
   const row = page.locator('.trending');
   await expect(row).toBeVisible();
+  // The "Trending" word is whole on every width (it touched the screen edge on an iPhone 16 Pro Max, 2026-11-16):
+  // it starts at the page's side gutter, like the stories under it.
+  const label = (await row.locator('.trending-label').boundingBox())!;
+  const main = (await page.locator('main .hs').first().boundingBox())!;
+  expect(label.x, 'Trending label inside the screen').toBeGreaterThanOrEqual(12);
+  expect(Math.abs(label.x - main.x), 'lined up with the stories').toBeLessThanOrEqual(2);
   const chips = row.locator('.chip');
   expect(await chips.count()).toBeGreaterThan(0);
   expect((await chips.first().innerText()).trim()).toBe(String(rows[0].name));

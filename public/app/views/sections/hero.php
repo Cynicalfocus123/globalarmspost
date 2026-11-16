@@ -9,10 +9,11 @@ declare(strict_types=1);
 /** @var array<string, mixed> $s */
 /** @var string $img picture size classes from the homepage builder ('' = standard) */
 $cols = max(2, min(6, (int) ($s['columns'] ?? 4)));
+$brk = !empty($s['featured_only']); // the Breaking news section: every story gets the red label
 ?>
 <section class="hs<?= e($img ?? '') ?> hs-hero span-<?= $span ?>"<?= $title !== '' ? ' aria-label="' . e($title) . '"' : '' ?>>
 <?= view('sections/_head', ['title' => $title, 'more' => $more]) ?>
 <div class="hs-body">
-<?= card($posts[0], 'hero', ['first' => true, 'eager' => true, 'excerpt' => true, 'sizes' => '(max-width: 767px) 100vw, 60vw']) ?>
+<?= card($posts[0], 'hero', ['first' => true, 'eager' => true, 'excerpt' => true, 'breaking' => $brk, 'sizes' => '(max-width: 767px) 100vw, 60vw']) ?>
 </div>
 </section>

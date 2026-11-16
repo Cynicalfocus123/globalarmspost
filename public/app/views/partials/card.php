@@ -2,7 +2,7 @@
 declare(strict_types=1);
 /** @var array<string, mixed> $p */
 /** @var string $variant */
-/** @var array<string, mixed> $opt */
+/** @var array<string, mixed> $opt  ... breaking (bool): the red "Breaking news" label (the Breaking news section) */
 $url = post_url($p);
 $media = post_media($p);
 $showMedia = $media !== null && $variant !== 'headline'; // 'title' rows hide the photo on desktop only (CSS)
@@ -15,6 +15,7 @@ $date = (string) $p['published_at'];
   <a class="card-media" href="<?= e($url) ?>" tabindex="-1" aria-hidden="true"><?= picture($media, (string) ($opt['sizes'] ?? '(max-width: 767px) 34vw, 320px'), !empty($opt['eager'])) ?></a>
   <?php endif; ?>
   <div class="card-body">
+    <?php if (!empty($opt['breaking'])): ?><div class="kicker">Breaking news</div><?php endif; ?>
     <?php if ((int) $p['live_label'] === 1): ?><div class="live"><span class="live-dot" aria-hidden="true"></span>Live updates</div><?php endif; ?>
     <h3 class="card-title"><a href="<?= e($url) ?>"><?= e((string) $p['title']) ?></a></h3>
     <?php if (!empty($opt['excerpt']) && (string) $p['excerpt'] !== ''): ?><p class="card-excerpt"><?= e((string) $p['excerpt']) ?></p><?php endif; ?>

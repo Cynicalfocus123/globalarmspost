@@ -36,7 +36,7 @@ test('homepage shows the sections from the database, in order', async ({ page },
   await expect(page.locator('.hs')).toHaveCount(8);
   const layouts = await page.locator('.hs').evaluateAll((els) => els.map((el) => [...el.classList].find((c) => c.startsWith('hs-') && c !== 'hs')));
   expect(layouts).toEqual(['hs-hero-grid', 'hs-list', 'hs-overlay-list', 'hs-overlay-list', 'hs-lead-grid', 'hs-grid', 'hs-lead-list', 'hs-headlines']);
-  await expect(page.locator('.hs .sec-head h2')).toHaveText(['Asia', 'Middle East and Africa', 'Europe', 'Land', 'Air', 'Most read']);
+  await expect(page.locator('.hs .sec-head h2')).toHaveText(['Latest news', 'Asia', 'Middle East and Africa', 'Europe', 'Land', 'Air', 'Most read']);
   const more = await page.locator('.hs .see-more').evaluateAll((as) => as.map((a) => a.getAttribute('href')));
   expect(more).toEqual(isLive(info) ? ['/asia', '/middle-east-africa', '/europe', '/land', '/air'] : ['/#regions/asia', '/#regions/middle-east-africa', '/#regions/europe', '/#land', '/#air']);
   const rows = sql(dbKey(info), 'SELECT layout FROM home_sections WHERE active = 1 ORDER BY position');
@@ -98,19 +98,28 @@ test('homepage: every category section shows that category\'s newest stories, ne
   }).toPass({ timeout: 30_000 });
 });
 
-test('Top stories / Latest tabs switch', async ({ page }) => {
+test('Latest news: one list, no tabs, the newest stories that are not already in Breaking news', async ({ page }, info) => {
   await page.goto('/');
-  const tabs = page.locator('.hs-list [role="tab"]');
-  await expect(tabs).toHaveText(['Top stories', 'Latest']);
-  const panels = page.locator('.hs-list [role="tabpanel"]');
-  await expect(panels.nth(0)).toBeVisible();
-  await expect(panels.nth(1)).toBeHidden();
-  await tabs.nth(1).click();
-  await expect(tabs.nth(1)).toHaveAttribute('aria-selected', 'true');
-  await expect(panels.nth(1)).toBeVisible();
-  await expect(panels.nth(0)).toBeHidden();
-  await tabs.nth(1).press('ArrowLeft');
-  await expect(panels.nth(0)).toBeVisible();
+  const list = page.locator('.hs-list').first();
+  await expect(list.locator('.sec-head h2')).toHaveText('Latest news');
+  await expect(list.locator('[role="tab"], [role="tabpanel"]')).toHaveCount(0);
+  await expect(page.locator('body')).not.toContainText('Top stories');
+  const slugs = (sel: string) => page.locator(sel).evaluateAll((as) => as.map((a) => a.getAttribute('href')!.split('/').pop()!));
+  // Another test's scheduled story ("timed-…") can turn public at any moment: it is left out of both lists, and the
+  // check runs again on a fresh page if the page and the database were read on either side of that moment.
+  const own = (s: string) => !s.startsWith('timed-');
+  await expect(async () => {
+    await page.goto('/');
+    const breaking = await slugs('.hs-hero-grid .card-title a');
+    const latest = await slugs('.hs-list .card-title a');
+    expect(latest.length).toBeGreaterThan(0);
+    expect(latest.filter((s) => breaking.includes(s)), 'no story twice at the top of the page').toEqual([]);
+    // The newest public stories, newest first, leaving out the ones shown in Breaking news.
+    const mine = latest.filter(own);
+    const want = sql(dbKey(info), `SELECT slug FROM posts WHERE status = 'published' AND published_at <= ? ORDER BY published_at DESC, id DESC LIMIT 40`,
+      new Date().toISOString().slice(0, 19).replace('T', ' ')).map((r: any) => r.slug).filter((s: string) => own(s) && !breaking.includes(s)).slice(0, mine.length);
+    expect(mine).toEqual(want);
+  }).toPass({ timeout: 30_000 });
 });
 
 test('phones: each section is one big story, then rows with the photo on the right', async ({ page }) => {
@@ -191,16 +200,18 @@ test('category page: Older stories opens the next page', async ({ page }, info) 
   expect(second.filter((t) => firstPage.includes(t))).toEqual([]);
 });
 
-test('the Featured section shows only stories ticked as Featured; Top stories / Latest stay the newest', async ({ page }, info) => {
+test('the Breaking news section shows only stories ticked Breaking news, each with the red label', async ({ page }, info) => {
   await page.goto('/');
   const slugs = (sel: string) => page.locator(sel).evaluateAll((as) => as.map((a) => a.getAttribute('href')!.split('/').pop()!));
   const shown = await slugs('.hs-hero-grid .card-title a');
   expect(shown.length, 'hero + cards').toBeGreaterThan(0);
   const featured = new Set(sql(dbKey(info), "SELECT slug FROM posts WHERE featured = 1 AND status = 'published'").map((r: any) => r.slug));
-  for (const slug of shown) expect(featured.has(slug), `${slug} is Featured`).toBe(true);
+  for (const slug of shown) expect(featured.has(slug), `${slug} is Breaking news`).toBe(true);
   const set = JSON.parse(sql(dbKey(info), "SELECT settings FROM home_sections WHERE layout = 'hero_grid' AND active = 1")[0].settings);
   expect(set.featured_only, 'saved section setting').toBe(true);
-  // The tabbed list is separate: not limited to Featured stories.
+  await expect(page.locator('.hs-hero-grid .kicker')).toHaveCount(shown.length);
+  await expect(page.locator('.hs-hero-grid .kicker').first()).toHaveText(/breaking news/i);
+  // The Latest news list is separate: not limited to Breaking news stories.
   const list = JSON.parse(sql(dbKey(info), "SELECT settings FROM home_sections WHERE layout = 'list' AND active = 1 ORDER BY position")[0].settings);
   expect(list.featured_only ?? false).toBe(false);
 });

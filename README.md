@@ -26,7 +26,7 @@ History, rules and design notes: [PROJECT_LOG.md](PROJECT_LOG.md). Wireframes: [
 - **Trash**: "Delete for good" (admins, with a confirm).
 - **Homepage builder**: picture size sliders per section and a live preview drawn by the site itself (beside the builder from 1280 px, under it below that).
 - **JSON API** (read-only, public stories only, no cookies, rate limited, cached): `GET /api/posts?category=&tag=&page=&per=` (per: up to 50), `/api/posts/{slug}`, `/api/categories`.
-- **2026-11-16:** the homepage's top section (**Featured**) shows only stories ticked **Featured (homepage top section)** in the story editor; the Top stories / Latest list is separate and keeps the newest stories.
+- **2026-11-16:** the homepage's top section is **Breaking news**: only stories ticked **Breaking news (homepage top section)** in the story editor, each with a red label. Next to it one **Latest news** list (no Top stories / Latest tabs), without the stories already in Breaking news. The Trending row no longer touches the screen edge on phones.
 - **2026-11-13 (owner's requests):** a story can show in **extra categories** besides its main one (editor: "Also show in"); every admin save shows a **big green "Saved" box** (red when it was not saved); homepage builder sections have a **Name in the admin** (the two top ones are "Featured" and "Latest and top stories").
 - **Backup** at `/admin/backup` (admins): a ZIP with every table as JSON and the pictures, kept in `storage/backups` (never served), downloaded through the admin. Restore comes later.
 - **GitHub Actions** (`.github/workflows/check.yml`): PHPStan level 6 (`phpstan.neon`) on every push. The Playwright suite runs on the owner's PC (it needs the Windows test tools).
