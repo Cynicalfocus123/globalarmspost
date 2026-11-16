@@ -182,6 +182,14 @@ Every change must keep the code:
 
 ## Change log
 
+### 2026-11-16 — Deployed to Hostinger (F25); extract only inside backend/ and public_html/
+
+The owner uploaded commit `ccd4446` to Hostinger, keeping the server's own database and admin sign-in.
+- **The 403 was not the ZIP's permissions:** with Linux-style entries Hostinger's File Manager still answered **403 Forbidden** for any extract in the folder that holds `public_html` and `backend` (the one with Hostinger's `DO_NOT_UPLOAD_HERE`), with "Overwrite existing files" ticked too. Extracting **inside** `backend/` works. A backend ZIP with `app/` and `storage/` at its top (made by hand from the no-database ZIP) was uploaded into `backend/` and extracted there (destination `/files/backend/`, Overwrite ticked); the frontend ZIP inside `public_html/`.
+- **`npm run zips:no-db` now makes that layout** (no outer `backend/` folder); the full backend ZIP (`npm run zips`) keeps `backend/`. `docs/DEPLOY.md` updated.
+- **Migration on the server** over SSH: `php ~/domains/globalarmspost.com/backend/app/cli/migrate.php` → `Ran: 011_featured_stories`.
+- **Checked:** `https://globalarmspost.com/` 200 with the homepage sections and no error, `/admin` 303 to sign-in, `/feed` 200. The Featured section is hidden on the server until a story there is ticked "Featured" (the six articles of 16 Nov are only in the local database; the server keeps its own).
+
 ### 2026-11-16 — Deploy ZIPs: "403 Forbidden" on extract fixed; backend ZIP without the database
 
 The owner: Hostinger's File Manager answered **403 Forbidden** when extracting the backend ZIP; the owner has an admin account on the server that must never be touched.

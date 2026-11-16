@@ -4,6 +4,9 @@ Usage: python scripts/make-zips.py                 (npm run zips)
        python scripts/make-zips.py --no-database   backend ZIP without storage/site.sqlite, for a server that already
                                                    has its own database and admin (owner, 2026-11-16: never touch the
                                                    server's sign-in): globalarmspost-backend-<commit>-no-database.zip
+                                                   It holds app/ and storage/ with no outer backend/ folder: it is
+                                                   extracted INSIDE the server's backend/ folder (Hostinger's File
+                                                   Manager answers 403 to any extract in the folder above public_html).
 
 Every entry is written as on Linux (owner, 2026-11-16: Hostinger's File Manager answered "403 Forbidden" when
 extracting the ZIPs made with Windows defaults: files 0666, no folder entries): files 0644, folders 0755 with their
@@ -32,6 +35,7 @@ LIVE = os.path.join(os.path.dirname(MAIN), 'live')
 OUT = os.path.join(os.path.dirname(MAIN), 'Claude outputs')
 TMP = 'D:/dev/tmp/gap-zips'
 NO_DB = '--no-database' in sys.argv[1:]
+PREFIX = '' if NO_DB else 'backend/'  # the no-database ZIP is extracted inside backend/ (see above)
 
 build = open(os.path.join(LIVE, 'backend', 'app', 'build.php'), encoding='utf-8').read()
 m = re.search(r"'commit' => '([0-9a-f]{7,40})'", build)
@@ -110,11 +114,11 @@ with UnixZip(back) as z:
     for full, rel in walk(os.path.join(LIVE, 'backend', 'app')):
         if rel == 'config.php':
             continue
-        z.add(full, 'backend/app/' + rel)
+        z.add(full, PREFIX + 'app/' + rel)
         n += 1
     ht = os.path.join(LIVE, 'backend', 'storage', '.htaccess')
     if os.path.exists(ht):
-        z.add(ht, 'backend/storage/.htaccess')
+        z.add(ht, PREFIX + 'storage/.htaccess')
         n += 1
     if os.path.exists(db) and not NO_DB:
         copy = os.path.join(TMP, f'site-{sha}.sqlite')
