@@ -182,6 +182,13 @@ Every change must keep the code:
 
 ## Change log
 
+### 2026-11-16 — Stories from the local site to the server (the six Featured articles)
+
+The owner did not see the six articles on the real site: they are in the local database only, and the server keeps its own database (with the owner's admin sign-in), so the backend ZIP has no database.
+- **`scripts/export-stories.php`** (on the PC): `--featured` or story numbers → `Claude outputs/stories-<date>.json` (text, categories by address, extra categories, tags, author, times, Featured, main picture and gallery picture rows; the picture files go up with the frontend ZIP).
+- **`app/cli/import-stories.php <file> [--dry-run]`** (on the server, SSH): adds each story through `story_save()`, with its original times; a story whose address is already there is left as it is (only ticked Featured when the file says so); a picture row is added once per file address and a missing picture file is reported. Never touches accounts, settings or other stories. The web answers 404.
+- **Tested** on a copy of the local database from before the import (`site-before-featured-011.sqlite`, migration 011 run on it): dry run 6 "would add", then 6 added (#393–#398) with their pictures (no file missing), main and extra categories and times; a second run added nothing ("Already here: 6"). `docs/DEPLOY.md` has the steps.
+
 ### 2026-11-16 — Deployed to Hostinger (F25); extract only inside backend/ and public_html/
 
 The owner uploaded commit `ccd4446` to Hostinger, keeping the server's own database and admin sign-in.
