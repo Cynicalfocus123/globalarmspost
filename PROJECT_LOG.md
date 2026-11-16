@@ -182,6 +182,14 @@ Every change must keep the code:
 
 ## Change log
 
+### 2026-11-16 — Deploy ZIPs: "403 Forbidden" on extract fixed; backend ZIP without the database
+
+The owner: Hostinger's File Manager answered **403 Forbidden** when extracting the backend ZIP; the owner has an admin account on the server that must never be touched.
+- **Cause:** `scripts/make-zips.py` wrote every entry with Windows defaults: files with permission 0666 (writable by anyone), no folder entries, "made by" MS-DOS. Hostinger refuses files writable by others.
+- **Fix:** every entry is written as on Linux: files 0644, folders 0755 with their own entries, Unix "made by", forward slashes; `check()` stops the build if any entry is writable by others or has a backslash.
+- **`npm run zips:no-db`** (`--no-database`): `globalarmspost-backend-<commit>-no-database.zip` without `storage/site.sqlite`, so the server keeps its own database and admin sign-in. `docs/DEPLOY.md` says where each ZIP is extracted.
+- Every old ZIP in `Claude outputs/` deleted (owner's word: "delete all zip file"); new frontend ZIP and backend ZIP without the database made from this commit. On the server: `php ~/domains/globalarmspost.com/backend/app/cli/migrate.php` after the upload (migration 011).
+
 ### 2026-11-16 — Featured section: only stories ticked "Featured" (task F25)
 
 The owner: the big top-left homepage section showed the newest stories, the same as the Top stories / Latest list next to it; it must show only the stories an admin selects as featured. The Top stories / Latest list stays separate (the newest stories).

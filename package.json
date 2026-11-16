@@ -9,6 +9,7 @@
     "site": "node tests/serve.mjs local 8092",
     "admin": "node scripts/create-admin-local.mjs",
     "zips": "python scripts/make-zips.py",
+    "zips:no-db": "python scripts/make-zips.py --no-database",
     "build:logo": "node scripts/build-logo.mjs",
     "demo-images": "node scripts/make-demo-images.mjs",
     "fonts": "node scripts/copy-fonts.mjs",
