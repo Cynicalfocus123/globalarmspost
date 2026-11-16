@@ -27,11 +27,13 @@ $link = static fn (array $item): string => '<a href="' . e($item['href']) . '"' 
         <?php endforeach; ?>
       </ul>
       <?php endif; ?>
-      <?php if ($n === 0 && $social !== []): ?>
+      <?php if ($n === 0): ?>
       <ul class="footer-social" aria-label="Follow us">
         <?php foreach ($social as $s): ?>
         <li><a href="<?= e($s['url']) ?>" target="_blank" rel="noopener me" aria-label="<?= e($site . ' on ' . $s['label']) ?>"><?= social_icon($s['key']) ?></a></li>
         <?php endforeach; ?>
+        <?php /* RSS (owner, 2026-11-16): every news site has one; always shown, opens /feed (the newest stories). */ ?>
+        <li><a href="/feed" class="footer-rss" type="application/rss+xml" aria-label="<?= e($site . ' RSS feed') ?>" title="RSS feed"><?= social_icon('rss') ?></a></li>
       </ul>
       <?php endif; ?>
     </section>

@@ -166,7 +166,7 @@ function renderForm() {
     <label class="a-lbl" for="hb-dir">Direction</label><select id="hb-dir" data-key="dir"><option value="desc"${set.dir !== 'asc' ? ' selected' : ''}>Descending</option><option value="asc"${set.dir === 'asc' ? ' selected' : ''}>Ascending</option></select>
     <label class="a-lbl" for="hb-skip">Skip first</label><input id="hb-skip" type="number" inputmode="numeric" min="0" max="100" data-key="skip" value="${set.skip}">
     <label class="a-check"><input type="checkbox" data-key="sticky_first"${set.sticky_first ? ' checked' : ''}> Pinned stories first</label>
-    <label class="a-check"><input type="checkbox" data-key="avoid_duplicates"${set.avoid_duplicates ? ' checked' : ''}> Avoid duplicates (skip stories shown higher up)</label>
+    <label class="a-check"><input type="checkbox" data-key="avoid_duplicates"${set.avoid_duplicates ? ' checked' : ''}> Avoid duplicates (skip stories shown higher up; off = always the newest stories)</label>
     <label class="a-check"><input type="checkbox" data-top="active"${s.active ? ' checked' : ''}> Show on the homepage</label>
     <button type="button" class="a-btn wide hb-done show-phone">Done</button>`;
   for (const name of ['categories', 'exclude_categories']) chosenText(name);

@@ -144,6 +144,44 @@ async function sitemapMatches(page: Page, info: TestInfo) {
   }
 }
 
+test('RSS /feed: the newest 50 public stories, newest first, with links, dates, pictures; never drafts or scheduled', async ({ page }, info) => {
+  // Other tests publish or change stories meanwhile: the feed and the database are read again then.
+  await expect(async () => {
+    const now = nowSql();
+    const res = await page.request.get('/feed');
+    expect(res.status()).toBe(200);
+    expect(res.headers()['content-type']).toContain('application/xml');
+    const xml = await res.text();
+    expect(xml.startsWith('<?xml version="1.0" encoding="UTF-8"?>')).toBe(true);
+    expect(xml).toContain('<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:media="http://search.yahoo.com/mrss/"');
+    const o = origin(info);
+    expect(xml).toContain(`<atom:link href="${o}/feed" rel="self" type="application/rss+xml"/>`);
+    expect(xml).toContain(`<link>${o}/</link>`);
+    const want = sql(info, `SELECT p.slug, c.slug AS cat, p.published_at, p.media_id FROM posts p JOIN categories c ON c.id = p.category_id
+                             WHERE p.status = 'published' AND p.published_at <= ? ORDER BY p.published_at DESC, p.id DESC LIMIT 50`, now);
+    const items = [...xml.matchAll(/<item>([\s\S]*?)<\/item>/g)].map((m) => m[1]);
+    expect(items.length).toBe(want.length);
+    items.forEach((it, i) => {
+      const w = want[i];
+      expect(it, `item ${i}`).toContain(`<link>${o}/${w.cat}/${w.slug}</link>`);
+      expect(it).toContain(`<guid isPermaLink="true">${o}/${w.cat}/${w.slug}</guid>`);
+      const pub = it.match(/<pubDate>([^<]+)<\/pubDate>/)![1];
+      expect(new Date(pub).toISOString().slice(0, 19).replace('T', ' ')).toBe(w.published_at);
+      expect(it).toMatch(/<title>[^<]+<\/title>/);
+      if (w.media_id) expect(it).toMatch(new RegExp(`<media:content url="${o}/uploads/[^"]+\.webp" medium="image" type="image/webp"`));
+    });
+    // Newest first, and the oldest public stories are left out once there are more than 50.
+    const dates = items.map((it) => Date.parse(it.match(/<pubDate>([^<]+)<\/pubDate>/)![1]));
+    expect([...dates].sort((a, b) => b - a)).toEqual(dates);
+    for (const h of sql(info, "SELECT slug FROM posts WHERE slug IN ('scheduled-sample-story-for-later', 'draft-sample-story')")) expect(xml).not.toContain(h.slug);
+    expect(xml).not.toMatch(/\/#|\/admin/);
+  }).toPass({ timeout: 30_000 });
+  // The old WordPress address /feed/ gives the same feed; every page tells feed readers where it is.
+  expect((await page.request.get('/feed/')).status()).toBe(200);
+  await page.goto('/');
+  await expect(page.locator('link[rel="alternate"][type="application/rss+xml"]')).toHaveAttribute('href', `${origin(info)}/feed`);
+});
+
 test('the sitemap is kept in the page cache, so it is not rebuilt on every request', async ({ page }) => {
   // A save elsewhere may clear the cache between the two requests: then again.
   await expect(async () => {

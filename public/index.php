@@ -34,19 +34,22 @@ if (($parts[0] ?? '') === 'api') {
 }
 
 // SEO (task F12): the sitemap and robots.txt (reserved names), and 301s from the old WordPress addresses.
-if ($parts === ['sitemap.xml']) {
+// /feed (RSS, task F12, 2026-11-16; also the old WordPress /feed/): sent as XML, so a click shows the feed in the
+// browser instead of downloading it; feed readers take it the same way.
+$isFeed = $parts === ['feed'] || $parts === ['feed', ''];
+if ($parts === ['sitemap.xml'] || $isFeed) {
     header('Content-Type: application/xml; charset=utf-8');
     header('Cache-Control: public, max-age=300');
     // Kept in the page cache like the pages (security review, step 5): building it reads every public story, so
     // it must not be rebuilt on every request. A save clears it; it expires at the next scheduled story.
-    $key = cache_enabled() ? sha1('sitemap|' . cache_generation() . '|' . (string) json_encode(config()['db'] ?? []) . '|' . request_host()) : null;
+    $key = cache_enabled() ? sha1(($isFeed ? 'feed' : 'sitemap') . '|' . cache_generation() . '|' . (string) json_encode(config()['db'] ?? []) . '|' . request_host()) : null;
     $hit = $key === null ? null : cache_read($key);
     if ($hit !== null) {
         header('X-Cache: HIT');
         echo $hit['html'];
         exit;
     }
-    $xml = sitemap_xml();
+    $xml = $isFeed ? rss_xml() : sitemap_xml();
     if ($key !== null) {
         header('X-Cache: MISS');
         cache_store($key, $xml);

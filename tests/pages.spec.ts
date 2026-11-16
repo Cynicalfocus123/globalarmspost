@@ -22,7 +22,9 @@ test('footer: the three columns and their links on every kind of page, side by s
     const footer = page.locator('.site-footer');
     await footer.scrollIntoViewIfNeeded();
     await expect(footer.locator('.footer-col h2'), `footer on ${path}`).toHaveText(COLUMNS);
-    await expect(footer.locator('.footer-col li a'), `footer links on ${path}`).toHaveText(LINKS);
+    await expect(footer.locator('.footer-col > ul:not(.footer-social) li a'), `footer links on ${path}`).toHaveText(LINKS);
+    // RSS (owner, 2026-11-16): the button is on every page and points at /feed.
+    await expect(footer.locator('a.footer-rss'), `RSS button on ${path}`).toHaveAttribute('href', '/feed');
     await noSidewaysScroll(page, `footer on ${path}`);
   }
   // A dark band with white column titles.
@@ -33,7 +35,7 @@ test('footer: the three columns and their links on every kind of page, side by s
   if (device(info) === 'phone') expect(tops[0]).toBeLessThan(tops[1]);
   else expect(new Set(tops).size, 'the three columns start on one line').toBe(1);
   // Every link is big enough to tap (44 px rows on phones and tablets).
-  const heights = await page.locator('.footer-col li a').evaluateAll((as) => as.map((a) => a.getBoundingClientRect().height));
+  const heights = await page.locator('.footer-col > ul:not(.footer-social) li a').evaluateAll((as) => as.map((a) => a.getBoundingClientRect().height));
   for (const h of heights) expect(h).toBeGreaterThanOrEqual(device(info) === 'desktop' ? 30 : 44);
   // The copyright bar under the footer: the name in red, the years up to this year.
   const bottom = page.locator('.footer-bottom p');
@@ -62,4 +64,21 @@ test('pages: every footer link opens its page with title, date and text; unknown
   expect((await page.request.get('/not-a-page-at-all')).status()).toBe(404);
   const map = await (await page.request.get('/sitemap.xml')).text();
   for (const r of rows) expect(map).toContain(`/${r.slug}</loc>`);
+});
+
+test('footer RSS button: tapping it opens the feed of the newest stories (shown, not downloaded)', async ({ page }) => {
+  await page.goto('/about-us');
+  const rss = page.locator('.site-footer a.footer-rss');
+  await rss.scrollIntoViewIfNeeded();
+  await expect(rss).toBeVisible();
+  await expect(rss).toHaveAttribute('aria-label', /RSS feed$/);
+  const box = (await rss.boundingBox())!;
+  expect(box.width).toBeGreaterThanOrEqual(44);
+  expect(box.height).toBeGreaterThanOrEqual(44);
+  const [res] = await Promise.all([page.waitForResponse((r) => new URL(r.url()).pathname === '/feed'), rss.click()]);
+  expect(res.status()).toBe(200);
+  expect(res.headers()['content-type']).toContain('application/xml');
+  expect(res.headers()['content-disposition'] ?? '').not.toContain('attachment');
+  expect(await res.text()).toContain('<rss version="2.0"');
+  await expect(page).toHaveURL(/\/feed$/);
 });

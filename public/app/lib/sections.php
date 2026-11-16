@@ -12,7 +12,7 @@ function section_layouts(): array
     // name: what the admin's homepage builder calls the section (never shown on the site); empty = a name from
     // the layout and categories (assets/admin/builder.js sectionName()).
     $common = ['name' => '', 'categories' => [], 'exclude_categories' => [], 'tags' => [], 'order_by' => 'date', 'dir' => 'desc',
-               'skip' => 0, 'sticky_first' => false, 'avoid_duplicates' => true,
+               'skip' => 0, 'sticky_first' => false, 'avoid_duplicates' => false, // repeats allowed (owner, 2026-11-16)
                // Picture sizes (task F16), steps 1-5 (3 = the standard look): photo_height = the shape of the big
                // photos (1 wide and low ... 5 square), thumb_size = the small photo in title rows (1 small ... 5 big).
                // Steps, not free numbers: they are CSS classes, because the strict CSP allows no inline styles.
@@ -30,7 +30,8 @@ function section_layouts(): array
 }
 
 /**
- * All active homepage sections, rendered in order. Stories shown higher up are skipped below ("avoid duplicates").
+ * All active homepage sections, rendered in order, each with its newest stories. A section with "avoid duplicates"
+ * on (the admin's choice, off by default since 2026-11-16) skips stories shown higher up.
  * $rows: the sections to draw instead of the saved ones (the homepage builder's live preview, task F16), each with
  * layout, title, span, active and settings (an array); null = the saved homepage.
  * @param list<array<string, mixed>>|null $rows
@@ -49,6 +50,8 @@ function render_home_sections(?array $rows = null): string
         $saved = is_array($row['settings']) ? $row['settings'] : json_decode((string) $row['settings'], true);
         $s = (is_array($saved) ? $saved : []) + $layouts[$layout]['settings'];
         $query = $s;
+        // Repeats are allowed (owner, 2026-11-16): a section shows its newest stories by date, and a story with several
+        // categories shows in each of their sections. "Avoid duplicates" is the admin's choice per section.
         if (!empty($s['avoid_duplicates'])) {
             $query['exclude_ids'] = $shown;
         }

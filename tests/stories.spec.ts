@@ -73,12 +73,29 @@ test('a scheduled story appears at its time (saved in the database)', async ({ p
   sql(copy, "UPDATE posts SET status = 'trash' WHERE slug = ?", slug); // out of the way of other tests
 });
 
-test('no story shows twice on the homepage (avoid duplicates)', async ({ page }) => {
-  await page.goto('/');
-  // Visible cards outside "Most read" (that section allows repeats) and outside hidden tab panels.
-  const hrefs = await page.locator('.hs:not(.hs-headlines) .hs-body:not([hidden]) .card-title a').evaluateAll((as) => as.map((a) => a.getAttribute('href')));
-  expect(hrefs.length).toBeGreaterThan(20);
-  expect(new Set(hrefs).size).toBe(hrefs.length);
+test('homepage: every category section shows that category\'s newest stories, newest first; repeats allowed (owner, 2026-11-16)', async ({ page }, info) => {
+  // "Avoid duplicates" is off in every section (migration 010; the admin turns it on per section when wanted), so a
+  // story the top sections show also shows in its category's section, and a story with extra categories in each.
+  const copy = dbKey(info);
+  // Other tests publish stories meanwhile: the page and the database are read again then.
+  await expect(async () => {
+    await page.goto('/');
+    const sections = page.locator('.hs:has(.see-more)');
+    const n = await sections.count();
+    expect(n, 'category sections on the homepage').toBeGreaterThan(2);
+    for (let i = 0; i < n; i++) {
+      const sec = sections.nth(i);
+      const more = (await sec.locator('.see-more').getAttribute('href'))!;
+      const slug = more.replace(/^\/#?/, '').split('/').pop()!;
+      const shown = await sec.locator('.hs-body:not([hidden]) .card-title a').evaluateAll((as) => as.map((a) => a.getAttribute('href')!.split('/').pop()));
+      // The category's newest public stories (main or extra category, its sub-categories too), as many as shown.
+      const want = sql(copy, `SELECT p.slug FROM posts p WHERE p.status = 'published' AND p.published_at <= ?
+                               AND (p.category_id IN (SELECT id FROM categories WHERE slug = ? OR parent_id = (SELECT id FROM categories WHERE slug = ?))
+                                    OR p.id IN (SELECT pc.post_id FROM post_categories pc JOIN categories c ON c.id = pc.category_id WHERE c.slug = ? OR c.parent_id = (SELECT id FROM categories WHERE slug = ?)))
+                               ORDER BY p.published_at DESC, p.id DESC LIMIT ${shown.length}`, new Date().toISOString().slice(0, 19).replace('T', ' '), slug, slug, slug, slug).map((r: any) => r.slug);
+      expect(shown, `section "${await sec.getAttribute('aria-label')}" (${slug})`).toEqual(want);
+    }
+  }).toPass({ timeout: 30_000 });
 });
 
 test('Top stories / Latest tabs switch', async ({ page }) => {

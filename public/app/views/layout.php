@@ -12,6 +12,7 @@ $L = '/assets/img/logo/';
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <?= seo_head($title, $meta ?? []) ?>
+<link rel="alternate" type="application/rss+xml" title="<?= e(setting('site_name', 'Global Arms Post')) ?>" href="<?= e(absolute_url('/feed')) ?>">
 <meta name="theme-color" content="#C8102E">
 <link rel="preload" as="image" type="image/avif" imagesrcset="<?= e($L) ?>logo-1x.avif 1x, <?= e($L) ?>logo-2x.avif 2x" fetchpriority="high">
 <link rel="preload" as="font" type="font/woff2" href="/assets/fonts/inter-latin-wght-normal.woff2" crossorigin>

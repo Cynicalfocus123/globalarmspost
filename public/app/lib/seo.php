@@ -216,6 +216,83 @@ function sitemap_xml(): string
     return $out . '</urlset>' . "\n";
 }
 
+/** How many stories /feed lists: only the newest ones (owner, 2026-11-16: the latest articles, not old dates). */
+const RSS_ITEMS = 50;
+
+/**
+ * /feed: RSS 2.0 of the newest public stories, newest first (task F12, owner 2026-11-16), with the Media RSS
+ * picture tags news sites use (media:thumbnail, media:content). Never drafts or scheduled stories. Every text is
+ * escaped for XML (no CDATA, so no text can end a section early). The old WordPress feed was /feed/ too, so
+ * readers that follow the old site keep working.
+ */
+function rss_xml(): string
+{
+    $x = static fn (string $s): string => htmlspecialchars($s, ENT_XML1 | ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+    $date = static fn (string $utc): string => (new DateTimeImmutable($utc, new DateTimeZone('UTC')))->format(DATE_RSS);
+    $now = now_utc();
+    $site = setting('site_name', 'Global Arms Post');
+    $rows = q_all("SELECT p.id, p.title, p.slug, p.excerpt, p.summary, p.body, p.author_name, p.published_at, p.updated_at,
+                          c.slug AS cat_slug, c.name AS cat_name,
+                          m.path AS m_path, m.widths AS m_widths, m.has_avif AS m_has_avif, m.width AS m_width, m.height AS m_height, m.alt AS m_alt
+                     FROM posts p JOIN categories c ON c.id = p.category_id LEFT JOIN media m ON m.id = p.media_id
+                    WHERE p.status = 'published' AND p.published_at <= ?
+                    ORDER BY p.published_at DESC, p.id DESC LIMIT " . RSS_ITEMS, [$now]);
+    $self = absolute_url('/feed');
+    $out = '<?xml version="1.0" encoding="UTF-8"?>' . "\n"
+        . '<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:media="http://search.yahoo.com/mrss/" xmlns:dc="http://purl.org/dc/elements/1.1/">' . "\n"
+        . "<channel>\n"
+        . '<title>' . $x($site) . "</title>\n"
+        . '<link>' . $x(absolute_url('/')) . "</link>\n"
+        . '<description>' . $x(seo_text(setting('tagline')) ?: $site) . "</description>\n"
+        . '<atom:link href="' . $x($self) . '" rel="self" type="application/rss+xml"/>' . "\n"
+        . '<language>en</language>' . "\n"
+        . '<lastBuildDate>' . $x($date($rows === [] ? $now : (string) $rows[0]['published_at'])) . "</lastBuildDate>\n"
+        . "<docs>https://www.rssboard.org/rss-specification</docs>\n"
+        . "<ttl>15</ttl>\n"
+        . '<image><url>' . $x(absolute_url('/assets/img/logo/logo.png')) . '</url><title>' . $x($site) . '</title><link>' . $x(absolute_url('/')) . "</link></image>\n";
+    $extra = [];
+    if ($rows !== []) {
+        $ids = implode(',', array_map(static fn (array $r): int => (int) $r['id'], $rows));
+        foreach (q_all("SELECT pc.post_id, c.name FROM post_categories pc JOIN categories c ON c.id = pc.category_id WHERE pc.post_id IN ($ids)") as $e) {
+            $extra[(int) $e['post_id']][] = (string) $e['name'];
+        }
+    }
+    foreach ($rows as $p) {
+        $url = public_url('article', ['category' => (string) $p['cat_slug'], 'slug' => (string) $p['slug']]);
+        // The whole short text (as news feeds give it), else the summary, else the start of the story.
+        $plain = static fn (string $s): string => trim((string) preg_replace('/\s+/u', ' ', html_entity_decode(strip_tags($s), ENT_QUOTES | ENT_HTML5, 'UTF-8')));
+        $about = $plain((string) $p['excerpt']) ?: $plain((string) $p['summary']);
+        if ($about === '') {
+            $body = $plain(str_replace('</p>', '</p> ', (string) $p['body']));
+            $about = mb_strlen($body) > 400 ? rtrim(mb_substr($body, 0, (int) (mb_strrpos(mb_substr($body, 0, 400), ' ') ?: 400))) . '…' : $body;
+        }
+        $out .= "<item>\n"
+            . '<title>' . $x((string) $p['title']) . "</title>\n"
+            . '<link>' . $x($url) . "</link>\n"
+            . '<guid isPermaLink="true">' . $x($url) . "</guid>\n"
+            . '<pubDate>' . $x($date((string) $p['published_at'])) . "</pubDate>\n"
+            . ((string) $p['author_name'] !== '' ? '<dc:creator>' . $x((string) $p['author_name']) . "</dc:creator>\n" : '')
+            . '<category>' . $x((string) $p['cat_name']) . "</category>\n";
+        foreach (array_unique($extra[(int) $p['id']] ?? []) as $name) {
+            $out .= '<category>' . $x($name) . "</category>\n";
+        }
+        $out .= '<description>' . $x($about) . "</description>\n";
+        $m = post_media($p);
+        $widths = $m === null ? [] : array_values(array_filter(array_map('intval', explode(',', (string) $m['widths']))));
+        if ($m !== null && $widths !== []) {
+            sort($widths);
+            $file = static fn (int $w): string => absolute_url('/' . ltrim((string) $m['path'], '/') . '-' . $w . '.webp');
+            $height = static fn (int $w): int => (int) $m['width'] > 0 ? (int) round((int) $m['height'] * $w / (int) $m['width']) : 0;
+            $small = $widths[0];
+            $big = max($widths);
+            $out .= '<media:thumbnail url="' . $x($file($small)) . '" width="' . $small . '" height="' . $height($small) . '"/>' . "\n"
+                . '<media:content url="' . $x($file($big)) . '" medium="image" type="image/webp" width="' . $big . '" height="' . $height($big) . '"/>' . "\n";
+        }
+        $out .= "</item>\n";
+    }
+    return $out . "</channel>\n</rss>\n";
+}
+
 /** /robots.txt: everything but the admin, and where the sitemap is. */
 function robots_txt(): string
 {
