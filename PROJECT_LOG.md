@@ -182,6 +182,16 @@ Every change must keep the code:
 
 ## Change log
 
+### 2026-11-16 — Deploy build: live/ updated, new ZIPs
+
+The owner: make live/ completely up to date before the frontend and backend ZIPs. Done in this order:
+1. Commit `484e446` (RSS feed, homepage sections, import tools, docs) fast-forwarded on `main` and pushed.
+2. `npm run build:live` (9 files written) and `npm run verify:live`: live/ matches the commit (proper addresses).
+3. The local site's database (`live/backend/storage/site.sqlite`; copy first: `D:\gap-scratch\db-backups\site-before-migration-010.sqlite`): `php backend/app/cli/migrate.php` ran `010_sections_show_newest`; every homepage section now has "avoid duplicates" off. Checked on the local site (8092): the Asia section leads with the newest Asia stories of 16 Nov; `/feed` answers 200 `application/xml` with 50 stories.
+4. This log entry is its own commit; live/ was built and verified again from it, then `npm run zips` made the two ZIPs in `Claude outputs/` (named after this last commit).
+
+Checked by listing the ZIPs: the frontend ZIP holds `index.php`, `.htaccess`, `assets/`, the icons and `uploads/` with 1490 pictures, and no code folder, no `storage/`, no `config.php`; the backend ZIP holds the folder `backend/` (`app/` with migration 010 and `build.php` of the commit with proper addresses, `storage/site.sqlite` with 392 stories, migrations up to 010, and `storage/.htaccess`), and no picture, CSS, JS, font or `config.php`. The database has **no admin account yet**: make it on the server with `php backend/app/cli/create-admin.php you@example.com "Your Name"`.
+
 ### 2026-11-16 — Homepage: every category section shows its newest stories (task F8)
 
 The owner: new stories did not show in their category's homepage section (the newest Asia story, "URI Governor …" of 16 Nov, was missing from Asia, which led with a story of 6 Jul); "all new articles or latest posts always show up based on latest date".
