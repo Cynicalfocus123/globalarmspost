@@ -126,8 +126,11 @@ body.addEventListener('paste', (e) => {
   const html = e.clipboardData?.getData('text/html');
   const text = e.clipboardData?.getData('text/plain') || '';
   e.preventDefault();
-  if (html) document.execCommand('insertHTML', false, cleanPaste(html));
-  else document.execCommand('insertText', false, text);
+  if (html) {
+    const pics = [];
+    document.execCommand('insertHTML', false, cleanPaste(html, pics));
+    placePastedPictures(pics);
+  } else document.execCommand('insertText', false, text);
 });
 for (const target of [body, $('.ed-drop', form)]) {
   target.addEventListener('dragover', (e) => {
@@ -151,22 +154,141 @@ for (const target of [body, $('.ed-drop', form)]) {
   });
 }
 
-/** Paste from other sites keeps only simple formatting (the server cleans again). */
-function cleanPaste(html) {
+/** The best address of a pasted picture: the widest in srcset, then the lazy-loading attributes, then src. */
+function pastedSrc(img) {
+  let best = '';
+  let bestW = 0;
+  for (const set of [img.getAttribute('data-srcset'), img.getAttribute('srcset'), img.closest('picture')?.querySelector('source')?.getAttribute('srcset')]) {
+    for (const part of (set || '').split(/,\s+/)) {
+      const [u, d] = part.trim().split(/\s+/);
+      const w = parseFloat(d) || 1;
+      if (u && w > bestW) { best = u; bestW = w; }
+    }
+  }
+  const src = best || img.getAttribute('data-src') || img.getAttribute('data-lazy-src') || img.getAttribute('data-original') || img.getAttribute('src') || '';
+  if (/^data:/i.test(src)) return /^data:image\/(jpeg|png|webp|gif);base64,/i.test(src) && src.length > 2000 ? src : '';
+  try {
+    const u = new URL(src, document.baseURI);
+    return ['http:', 'https:'].includes(u.protocol) ? u.href : '';
+  } catch {
+    return '';
+  }
+}
+
+/**
+ * Paste from other sites keeps simple formatting and, since 2026-11-17 (owner: paste an article with its pictures,
+ * as in WordPress), the pictures: each becomes a placeholder <img data-paste="n"> with no address (nothing loads),
+ * and its address and caption (the <figcaption> around it) go into pics[n]; placePastedPictures() makes them real
+ * pictures. The server cleans the text again on save.
+ */
+function cleanPaste(html, pics = []) {
   const doc = new DOMParser().parseFromString(html, 'text/html');
   const keep = new Set(['P', 'BR', 'B', 'STRONG', 'I', 'EM', 'U', 'H2', 'H3', 'UL', 'OL', 'LI', 'BLOCKQUOTE', 'A']);
+  const seen = new Set();
   const walk = (node) => {
     for (const child of [...node.childNodes]) {
       if (child.nodeType === 1) {
+        if (child.nodeName === 'IMG') {
+          const url = pastedSrc(child);
+          if (url && !seen.has(url) && pics.length < 30) {
+            seen.add(url);
+            const cap = child.closest('figure')?.querySelector('figcaption')?.textContent.replace(/\s+/g, ' ').trim() || '';
+            pics.push({ url, caption: cap.slice(0, 600) });
+            const ph = doc.createElement('img');
+            ph.setAttribute('data-paste', String(pics.length - 1));
+            // WebKit's insertHTML drops an <img> with no address: a 1-pixel inline GIF (nothing is loaded).
+            ph.setAttribute('src', 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7');
+            child.replaceWith(ph);
+          } else child.remove();
+          continue;
+        }
+        if (['FIGCAPTION', 'SOURCE'].includes(child.nodeName)) { child.remove(); continue; } // the caption is kept with its picture
         walk(child);
-        if (['SCRIPT', 'STYLE', 'IMG', 'IFRAME', 'svg', 'META', 'LINK'].includes(child.nodeName)) child.remove();
+        if (['SCRIPT', 'STYLE', 'IFRAME', 'svg', 'META', 'LINK', 'NOSCRIPT', 'BUTTON', 'FORM', 'INPUT'].includes(child.nodeName)) child.remove();
+        else if (child.nodeName === 'A' && child.querySelector('img[data-paste]')) child.replaceWith(...child.childNodes); // a picture is never a link
         else if (!keep.has(child.nodeName)) child.replaceWith(...child.childNodes);
         else for (const a of [...child.attributes]) if (!(child.nodeName === 'A' && a.name === 'href')) child.removeAttribute(a.name);
       } else if (child.nodeType !== 3) child.remove();
     }
   };
   walk(doc.body);
+  // WebKit's insertHTML drops a picture that stands on its own between paragraphs (a <figure> was unwrapped above):
+  // each such picture gets a paragraph of its own.
+  for (const ph of [...doc.body.querySelectorAll('img[data-paste]')]) {
+    if (ph.parentNode === doc.body) {
+      const p = doc.createElement('p');
+      ph.replaceWith(p);
+      p.append(ph);
+    }
+  }
   return doc.body.innerHTML;
+}
+
+/** The placeholders of a paste become picture boxes where they were, each fetched and uploaded as AVIF + WebP. */
+function placePastedPictures(pics) {
+  for (const ph of $$('img[data-paste]', body)) {
+    const pic = pics[Number(ph.dataset.paste)];
+    const block = topBlock(ph);
+    if (!pic || !block) { ph.remove(); continue; }
+    const fig = hydrateFigure(document.createElement('figure'), '');
+    fig.dataset.media = '';
+    $('.ed-cap', fig).value = pic.caption;
+    if (block === ph) block.replaceWith(fig);
+    else {
+      // The text before the picture stays in its block; the text after it moves to a block under the picture.
+      const r = document.createRange();
+      r.setStartAfter(ph);
+      r.setEnd(block, block.childNodes.length);
+      const rest = r.extractContents();
+      ph.remove();
+      if (block.textContent.trim() === '' && !block.querySelector('img')) block.replaceWith(fig);
+      else block.after(fig);
+      const tail = block.cloneNode(false);
+      tail.append(rest);
+      if (tail.textContent.trim() !== '' || tail.querySelector('img')) fig.after(tail);
+    }
+    fetchInto(fig, pic);
+  }
+  if (body.lastElementChild?.nodeName === 'FIGURE') body.append(Object.assign(document.createElement('p'), { innerHTML: '<br>' }));
+  changed();
+}
+
+/** One pasted picture: a data: picture straight away, another site's through the server; then uploaded as usual. */
+async function fetchInto(fig, pic) {
+  const status = $('.ed-fig-status', fig);
+  fig.dataset.uploading = '1';
+  status.hidden = false;
+  status.textContent = 'Getting the picture from the other site…';
+  busy(+1);
+  try {
+    // The admin's CSP allows fetch() to this site only, so a data: picture is decoded here, not fetched.
+    const r = pic.url.startsWith('data:')
+      ? { type: pic.url.slice(5, pic.url.indexOf(';')), data: pic.url.slice(pic.url.indexOf(',') + 1) }
+      : await api('/admin/api/picture-fetch', { url: pic.url });
+    const bin = atob(r.data);
+    const bytes = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    const blob = new Blob([bytes], { type: r.type });
+    // Icons, share buttons and tracking pixels are not story pictures: left out.
+    const bmp = await createImageBitmap(blob);
+    const small = bmp.width < 120 || bmp.height < 80;
+    bmp.close?.();
+    if (small) {
+      fig.remove();
+      changed();
+      return;
+    }
+    const name = (pic.url.startsWith('data:') ? '' : new URL(pic.url).pathname.split('/').pop()) || 'picture';
+    delete fig.dataset.uploading;
+    await uploadInto(fig, new File([blob], name, { type: blob.type }));
+  } catch (err) {
+    const why = err.message || 'This picture could not be fetched.';
+    status.textContent = why.includes('Replace') ? why : `${why} Use Replace to add it from your computer.`;
+    fig.dataset.failed = '1';
+    delete fig.dataset.uploading;
+  } finally {
+    busy(-1);
+  }
 }
 
 /** The top-level block of the body that holds a node. */
@@ -264,6 +386,7 @@ async function uploadInto(fig, file) {
   let img = $('img', holder);
   if (!img) holder.prepend(img = Object.assign(document.createElement('img'), { alt: '' }));
   img.src = preview;
+  delete fig.dataset.failed; // Replace after a failed paste or upload
   fig.dataset.uploading = '1';
   status.hidden = false;
   busy(+1);
@@ -360,34 +483,48 @@ $('.ed-trash', form).addEventListener('click', async () => {
 });
 
 /* ---------- category: search, choose, add on the spot ---------- */
+// One list of tick boxes (owner, 2026-11-17: two lists, "main" then "also show in", were confusing). The first box
+// ticked is the main category (the story's address and breadcrumb); "Make main" on another ticked one swaps them.
+// Unticking the main one makes the next ticked one main. Saved as category_id + extra_category_ids, as before.
 const catList = $('.ed-cat-list', form);
-const extraList = $('.ed-cat-extra', form);
 const catSearch = $('.ed-cat-search', form);
 function renderCategories() {
   const q = catSearch.value.trim().toLowerCase();
-  const row = (c, type) => {
+  catList.innerHTML = data.categories.map((c) => {
     const parent = data.categories.find((p) => p.id === c.parent_id);
     const show = !q || c.name.toLowerCase().includes(q) || (parent && parent.name.toLowerCase().includes(q));
     const main = c.id === state.categoryId;
-    const on = type === 'radio' ? main : main || state.extraIds.has(c.id);
-    // The main category is always in: its box in "Also show in" is ticked and cannot be changed there.
-    const attrs = type === 'radio' ? `type="radio" name="category"` : `type="checkbox" name="extra_category"${main ? ' disabled' : ''}`;
-    return `<label class="a-check depth-${Math.min(3, c.depth)}"${show ? '' : ' hidden'}><input ${attrs} value="${c.id}"${on ? ' checked' : ''}> ${esc(c.name)}${parent ? ` <span class="a-mute">(${esc(parent.name)})</span>` : ''}${type !== 'radio' && main ? ' <span class="a-mute">· main</span>' : ''}</label>`;
-  };
-  catList.innerHTML = data.categories.map((c) => row(c, 'radio')).join('');
-  extraList.innerHTML = data.categories.map((c) => row(c, 'checkbox')).join('');
+    const on = main || state.extraIds.has(c.id);
+    const tail = main ? ' <span class="ed-cat-main">Main</span>'
+      : on ? ` <button type="button" class="a-linkbtn ed-cat-make" data-main="${c.id}">Make main</button>` : '';
+    return `<div class="ed-cat-row depth-${Math.min(3, c.depth)}"${show ? '' : ' hidden'}><label class="a-check"><input type="checkbox" name="category" value="${c.id}"${on ? ' checked' : ''}> ${esc(c.name)}${parent ? ` <span class="a-mute">(${esc(parent.name)})</span>` : ''}</label>${tail}</div>`;
+  }).join('');
   $('#ed-cat-parent').innerHTML = '<option value="0">Top level</option>' + data.categories.map((c) => `<option value="${c.id}">${'— '.repeat(c.depth)}${esc(c.name)}</option>`).join('');
 }
 catSearch.addEventListener('input', renderCategories);
 catList.addEventListener('change', (e) => {
-  state.categoryId = Number(e.target.value);
-  state.extraIds.delete(state.categoryId); // the main category is never an extra one too
+  const id = Number(e.target.value);
+  if (e.target.checked) {
+    if (!state.categoryId) state.categoryId = id; else state.extraIds.add(id);
+  } else if (id === state.categoryId) {
+    const next = [...state.extraIds][0] || 0; // the next ticked one becomes main
+    state.extraIds.delete(next);
+    state.categoryId = next;
+  } else {
+    state.extraIds.delete(id);
+  }
   renderCategories();
   seo();
 });
-extraList.addEventListener('change', (e) => {
-  const id = Number(e.target.value);
-  if (e.target.checked) state.extraIds.add(id); else state.extraIds.delete(id);
+catList.addEventListener('click', (e) => {
+  const btn = e.target.closest('.ed-cat-make');
+  if (!btn) return;
+  const id = Number(btn.dataset.main);
+  state.extraIds.delete(id);
+  if (state.categoryId) state.extraIds.add(state.categoryId);
+  state.categoryId = id;
+  renderCategories();
+  seo();
 });
 const catAdd = $('.ed-cat-add', form);
 $('.ed-cat-add-open', form).addEventListener('click', () => {
@@ -409,8 +546,8 @@ async function addCategory() {
       if (parent >= 0) { at = parent + 1; while (at < data.categories.length && data.categories[at].depth >= depth) at++; }
       data.categories.splice(at, 0, { ...c, depth });
     }
-    state.categoryId = c.id;
-    state.extraIds.delete(c.id);
+    // A new category is ticked: main when none is ticked yet, else one more category.
+    if (!state.categoryId) state.categoryId = c.id; else if (c.id !== state.categoryId) state.extraIds.add(c.id);
     catSearch.value = '';
     notify(true, `Category "${c.name}" ${c.created ? 'saved' : 'chosen'}`, 'Save the story to keep it on this story.');
     catAdd.hidden = true;
@@ -706,7 +843,7 @@ async function save() {
   if (state.busy) return stop('Wait until the pictures are ready.');
   showError('');
   if (!els.title.value.trim()) { form.dataset.active = 'write'; els.title.focus(); return stop('Please write a headline.'); }
-  if (!state.categoryId) return stop('Please choose a category (Details).');
+  if (!state.categoryId) return stop('Please tick a category (Details).');
   els.save.disabled = true;
   els.saved.textContent = 'Saving…';
   try {

@@ -42,7 +42,7 @@ test('publish a story with a new category, main photo, gallery and body picture;
   const cat = sql(info, catSql, catName);
   expect(cat[0].parent).toBe('regions');
   await expect(page.locator('.ed-cat-list input:checked')).toHaveValue(String(cat[0].id));
-  await expect(page.locator('.ed-cat-list label', { hasText: catName })).toHaveClass(/depth-1/);
+  await expect(page.locator('.ed-cat-row', { hasText: catName })).toHaveClass(/depth-1/);
 
   // Published, with a date in the past (so it does not push the sample stories off the homepage).
   await page.check('input[name="status"][value="published"]');
@@ -93,7 +93,7 @@ test('schedule: a future date keeps the story off the site until its time', asyn
   await newStory(page, title);
   await part(page, 'details');
   await page.fill('.ed-cat-search', 'land');
-  await page.locator('.ed-cat-list label:not([hidden]) input').first().check();
+  await page.locator('.ed-cat-row:not([hidden]) input').first().check();
   await page.check('input[name="status"][value="published"]');
   await page.fill('#ed-date', bangkokInput(Date.now() + 2 * 86400_000));
   await expect(page.locator('.ed-save')).toHaveText('Schedule');
@@ -120,7 +120,7 @@ test('move to trash from the editor takes the story off the site', async ({ page
   await newStory(page, title);
   await part(page, 'details');
   await page.fill('.ed-cat-search', 'naval');
-  await page.locator('.ed-cat-list label:not([hidden]) input').first().check();
+  await page.locator('.ed-cat-row:not([hidden]) input').first().check();
   await page.check('input[name="status"][value="published"]');
   await page.fill('#ed-date', '2026-01-12T09:00');
   await page.click('.ed-save');
@@ -342,11 +342,17 @@ test('extra categories: main Land, also in Air; the story shows in both and the 
   await part(page, 'details');
   const landId = sql(info, "SELECT id FROM categories WHERE slug = 'land'")[0].id;
   const airId = sql(info, "SELECT id FROM categories WHERE slug = 'air'")[0].id;
+  // One list of tick boxes (owner, 2026-11-17): Air ticked first is main; Land ticked next, then "Make main" on Land.
+  const rowOf = (cid: number) => page.locator('.ed-cat-row', { has: page.locator(`input[value="${cid}"]`) });
+  await expect(page.locator('.ed-cat-extra')).toHaveCount(0);
+  await page.locator(`.ed-cat-list input[value="${airId}"]`).check();
+  await expect(rowOf(airId).locator('.ed-cat-main')).toHaveText('Main');
   await page.locator(`.ed-cat-list input[value="${landId}"]`).check();
-  // The main category is ticked and locked in "Also show in"; Air is ticked as an extra one.
-  await expect(page.locator(`.ed-cat-extra input[value="${landId}"]`)).toBeChecked();
-  await expect(page.locator(`.ed-cat-extra input[value="${landId}"]`)).toBeDisabled();
-  await page.locator(`.ed-cat-extra input[value="${airId}"]`).check();
+  await expect(rowOf(landId).locator('.ed-cat-main')).toHaveCount(0);
+  await rowOf(landId).locator('.ed-cat-make').click();
+  await expect(rowOf(landId).locator('.ed-cat-main')).toHaveText('Main');
+  await expect(rowOf(airId).locator('.ed-cat-make')).toBeVisible();
+  await expect(page.locator('.ed-cat-list input:checked')).toHaveCount(2);
   await page.check('input[name="status"][value="published"]');
   await page.fill('#ed-date', '2026-01-14T09:00');
   await page.click('.ed-save');
@@ -375,8 +381,9 @@ test('extra categories: main Land, also in Air; the story shows in both and the 
   await page.goto(`/admin/stories/${id}`);
   await page.locator('#editor[data-ready]').waitFor();
   await part(page, 'details');
-  await expect(page.locator(`.ed-cat-extra input[value="${airId}"]`)).toBeChecked();
-  await page.locator(`.ed-cat-extra input[value="${airId}"]`).uncheck();
+  await expect(page.locator(`.ed-cat-list input[value="${airId}"]`)).toBeChecked();
+  await expect(rowOf(landId).locator('.ed-cat-main')).toHaveText('Main');
+  await page.locator(`.ed-cat-list input[value="${airId}"]`).uncheck();
   await page.click('.ed-save');
   await expect(page.locator('#a-toast')).toContainText('Story saved and published', { timeout: 15_000 });
   expect(sql(info, 'SELECT category_id FROM post_categories WHERE post_id = ?', id)).toEqual([]);

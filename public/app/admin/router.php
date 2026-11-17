@@ -783,6 +783,10 @@ function admin_api(array $user, string $what): never
                 admin_json(author_save(json_input()));
             case 'media':
                 admin_json(admin_upload());
+            case 'picture-fetch':
+                // A picture in text pasted from another site (2026-11-17): the browser then uploads it as usual.
+                require_once APP_DIR . '/lib/remote.php';
+                admin_json(remote_picture((string) (json_input()['url'] ?? '')));
             case 'homepage':
                 admin_need($user, 'admin');
                 admin_json(homepage_save(json_input()));

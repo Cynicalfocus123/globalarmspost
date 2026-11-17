@@ -64,12 +64,10 @@ $json = json_encode($data, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HE
           <button type="button" class="a-linkbtn danger ed-trash"<?= $s === null ? ' hidden' : '' ?>>Move to trash</button>
         </section>
         <section class="a-box" aria-labelledby="cat-h">
-          <h2 class="a-h" id="cat-h">Category</h2>
+          <h2 class="a-h" id="cat-h">Categories</h2>
+          <p class="a-mute ed-cat-help">Tick every category the story belongs in. The first one you tick is the <b>main</b> one (it gives the story's address); "Make main" changes it.</p>
           <input type="search" class="ed-cat-search" placeholder="Search categories…" aria-label="Search categories">
-          <p class="a-lbl" id="cat-main-h">Main category <span class="a-mute">(gives the story's address)</span></p>
-          <div class="ed-cat-list" role="radiogroup" aria-labelledby="cat-h cat-main-h"></div>
-          <p class="a-lbl" id="cat-extra-h">Also show in <span class="a-mute">(tick as many as you like)</span></p>
-          <div class="ed-cat-extra" role="group" aria-labelledby="cat-extra-h"></div>
+          <div class="ed-cat-list" role="group" aria-labelledby="cat-h"></div>
           <button type="button" class="a-linkbtn ed-cat-add-open">+ Add new category</button>
           <div class="ed-cat-add a-mini" hidden>
             <label class="a-lbl" for="ed-cat-name">New category name</label><input id="ed-cat-name" maxlength="120">

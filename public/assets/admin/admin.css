@@ -217,8 +217,12 @@ body.sheet-open{overflow:hidden}
 .a-seg span{display:flex;align-items:center;justify-content:center;min-height:40px;font-size:14px;font-weight:500}
 .a-seg input:checked+span{background:var(--ink);color:#fff}
 .a-seg input:focus-visible+span{outline:2px solid var(--red);outline-offset:-3px}
-.ed-cat-list,.ed-cat-extra{max-height:260px;overflow:auto;margin:6px 0}
-.ed-cat-extra{max-height:200px}
+.ed-cat-list{max-height:340px;overflow:auto;margin:6px 0}
+.ed-cat-help{font-size:13px;margin:0 0 8px}
+.ed-cat-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.ed-cat-row .a-check{flex:0 1 auto}
+.ed-cat-main{font:700 11px var(--sans);text-transform:uppercase;letter-spacing:.06em;color:#fff;background:var(--red);border-radius:999px;padding:2px 8px}
+.ed-cat-make{font-size:13px}
 .depth-1{padding-left:24px}.depth-2{padding-left:46px}.depth-3{padding-left:68px}
 .ed-chips{min-height:4px}
 .ed-main-photo img{display:block;width:100%;border-radius:8px}

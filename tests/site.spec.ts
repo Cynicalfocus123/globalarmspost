@@ -225,7 +225,8 @@ test('footer shows the three columns of the footer menu (About Us, Term of Use, 
   const footer = page.locator('.site-footer');
   await footer.scrollIntoViewIfNeeded();
   await expect(footer.locator('.footer-col h2')).toHaveText(['About Us', 'Term of Use', 'Contact Us']);
-  await expect(footer.locator('.footer-col li a')).toHaveText(['About Us', 'Terms Of Use', 'Privacy Policy', 'Advertise', 'Contact Us']);
+  // The RSS button (an icon, 2026-11-16) sits with the social icons in the first column; the menu links are the rest.
+  await expect(footer.locator('.footer-col li a:not(.footer-rss)')).toHaveText(['About Us', 'Terms Of Use', 'Privacy Policy', 'Advertise', 'Contact Us']);
 });
 
 test('pages and protected folders answer with the right status', async ({ page }, info) => {
@@ -246,7 +247,8 @@ test('database: migrations ran and a saved setting shows on the page', async ({ 
   test.skip(meta(info).device !== 'desktop' || meta(info).engine !== 'chromium', 'Server and database check: the same on every browser and device, so it runs once per copy (desktop Chromium). The other tests read this same database on every browser and device.');
   const copy = dbKey(info);
   const migrations = sql(copy, 'SELECT id FROM migrations ORDER BY id').map((r: any) => r.id);
-  expect(migrations).toEqual(['001_core', '002_starter_content', '003_content', '004_home_sections', '005_admin', '006_search', '007_step5', '008_post_categories', '009_pages']);
+  expect(migrations).toEqual(['001_core', '002_starter_content', '003_content', '004_home_sections', '005_admin', '006_search', '007_step5', '008_post_categories', '009_pages',
+    '010_sections_show_newest', '011_featured_stories', '012_breaking_latest', '013_more_home_sections']);
   expect(sql(copy, 'SELECT COUNT(*) AS n FROM categories')[0].n).toBe(11);
   const regions = sql(copy, "SELECT c.slug FROM categories c JOIN categories p ON p.id = c.parent_id WHERE p.slug = 'regions' ORDER BY c.position").map((r: any) => r.slug);
   expect(regions).toEqual(['us', 'asia', 'europe', 'middle-east-africa']);

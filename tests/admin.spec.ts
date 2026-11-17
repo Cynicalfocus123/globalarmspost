@@ -307,8 +307,8 @@ test('story editor: headline, toolbar, tags and authors added on the spot (no re
   await page.fill('#ed-credits', 'Reporting by Test; Editing by Test');
   // Category: search, then choose.
   await page.fill('.ed-cat-search', 'asi');
-  await expect(page.locator('.ed-cat-list label:not([hidden])')).toHaveCount(1);
-  await page.locator('.ed-cat-list label:not([hidden]) input').check();
+  await expect(page.locator('.ed-cat-row:not([hidden])')).toHaveCount(1);
+  await page.locator('.ed-cat-row:not([hidden]) input').check();
   // Tags: an existing one, then a new one ("Add new tag: <name>").
   const tagInput = page.locator('#ed-tag-input');
   await tagInput.fill('NAT');
@@ -588,4 +588,69 @@ test('phones and tablets: bottom tab bar, More sheet, editor tabs; desktop: side
       await noSidewaysScroll(page, `${path} at ${width}px`);
     }
   }
+});
+
+// Owner, 2026-11-17: an article copied from another site is pasted with its pictures, as in WordPress.
+test('paste: an article with pictures keeps them in place with their captions; addresses the server must never fetch are refused', async ({ page }, info) => {
+  test.setTimeout(150_000);
+  await login(page, users.admin);
+  await page.goto('/admin/stories/new');
+  await page.locator('#editor[data-ready]').waitFor();
+  await page.fill('#ed-title', uniq(info, 'Pasted article'));
+  await page.locator('#ed-body').click();
+  // A copied article: text, a picture with a caption (a big data: picture, so no other site is needed), text, a
+  // picture on this server's own address (the server must refuse it) and a tiny icon (left out).
+  await page.locator('#ed-body').evaluate((el) => {
+    const c = document.createElement('canvas');
+    c.width = 320;
+    c.height = 200;
+    const ctx = c.getContext('2d')!;
+    // Noise, so the PNG stays large in every browser (WebKit packed a simple pattern into under 2,000 characters,
+    // which the editor treats as a tiny icon).
+    const px = ctx.createImageData(320, 200);
+    for (let i = 0; i < px.data.length; i++) px.data[i] = i % 4 === 3 ? 255 : (i * 2654435761) % 251;
+    ctx.putImageData(px, 0, 0);
+    const big = c.toDataURL('image/png');
+    const html = `<p>Paragraph before the pictures.</p><figure><a href="https://example.com/"><img src="${big}" alt="x"></a><figcaption>A T-38 Talon trainer on the ground</figcaption></figure>`
+      + `<p>Paragraph after <img src="http://127.0.0.1/blocked.jpg"> the first picture.</p><p><img src="data:image/gif;base64,R0lGODlhAQABAAAAACw=">Last paragraph.</p>`;
+    const dt = new DataTransfer();
+    dt.setData('text/html', html);
+    dt.setData('text/plain', 'Paragraph before the pictures.');
+    const ev = new ClipboardEvent('paste', { clipboardData: dt, bubbles: true, cancelable: true });
+    if (!ev.clipboardData?.getData('text/html')) Object.defineProperty(ev, 'clipboardData', { value: dt });
+    el.dispatchEvent(ev);
+  });
+  const figs = page.locator('#ed-body figure');
+  await expect(figs).toHaveCount(2);
+  await expect(page.locator('#ed-body figure[data-uploading]')).toHaveCount(0, { timeout: 90_000 });
+  // The first picture is uploaded with its caption, between the two paragraphs, and is not a link.
+  const good = page.locator('#ed-body figure:not([data-failed])');
+  await expect(good).toHaveCount(1);
+  await expect(good).not.toHaveAttribute('data-media', '');
+  await expect(good.locator('.ed-cap')).toHaveValue('A T-38 Talon trainer on the ground');
+  // The second (this server's own address) is refused and says why; it is not saved.
+  const bad = page.locator('#ed-body figure[data-failed]');
+  await expect(bad.locator('.ed-fig-status')).toContainText('Replace');
+  // (Firefox keeps the editor's empty starting line after the paste: empty lines are left out here.)
+  const order = await page.locator('#ed-body').evaluate((el) => [...el.children].map((n) => (n.nodeName === 'FIGURE' ? 'FIG' : n.textContent!.trim())).filter((t) => t !== ''));
+  expect(order).toEqual(['Paragraph before the pictures.', 'FIG', 'Paragraph after', 'FIG', 'the first picture.', 'Last paragraph.']);
+  await expect(page.locator('#ed-body a figure, #ed-body img[data-paste]')).toHaveCount(0);
+
+  // The server never fetches local, private or non-web addresses.
+  const token = await csrf(page);
+  for (const url of ['http://127.0.0.1/x.jpg', 'http://localhost/x.jpg', 'http://169.254.169.254/latest/meta-data/', 'http://10.0.0.1/x.jpg', 'file:///etc/passwd', 'ftp://example.com/x.jpg', 'http://example.com:8080/x.jpg']) {
+    const res = await page.request.post('/admin/api/picture-fetch', { data: { url }, headers: { 'X-CSRF-Token': token } });
+    expect(res.status(), url).toBe(422);
+  }
+  expect((await page.request.post('/admin/api/picture-fetch', { data: { url: 'https://example.com/x.jpg' } })).status(), 'no CSRF token').toBe(403);
+
+  // Saved: the pasted picture is in the stored text with its caption; the refused one is not.
+  await part(page, 'details');
+  await page.locator('.ed-cat-list input').first().check();
+  await page.click('.ed-save');
+  await expect(page.locator('.ed-saved')).toContainText('Saved', { timeout: 15_000 });
+  const id = page.url().split('/').pop()!;
+  const body: string = sql(info, 'SELECT body FROM posts WHERE id = ?', id)[0].body;
+  expect([...body.matchAll(/<figure data-media="(\d+)"[^>]*data-caption="([^"]*)"/g)].map((m) => m[2])).toEqual(['A T-38 Talon trainer on the ground']);
+  expect(body).toContain('Last paragraph.');
 });

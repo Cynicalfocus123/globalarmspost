@@ -33,12 +33,15 @@ async function openCategory(page: Page, info: TestInfo, slug: string, parent = '
 
 test('homepage shows the sections from the database, in order', async ({ page }, info) => {
   await page.goto('/');
-  await expect(page.locator('.hs')).toHaveCount(8);
+  // Since 2026-11-17 (migration 013) also U.S., Global news, Naval, Space and Business: every category is on the homepage.
+  await expect(page.locator('.hs')).toHaveCount(13);
   const layouts = await page.locator('.hs').evaluateAll((els) => els.map((el) => [...el.classList].find((c) => c.startsWith('hs-') && c !== 'hs')));
-  expect(layouts).toEqual(['hs-hero-grid', 'hs-list', 'hs-overlay-list', 'hs-overlay-list', 'hs-lead-grid', 'hs-grid', 'hs-lead-list', 'hs-headlines']);
-  await expect(page.locator('.hs .sec-head h2')).toHaveText(['Latest news', 'Asia', 'Middle East and Africa', 'Europe', 'Land', 'Air', 'Most read']);
+  expect(layouts).toEqual(['hs-hero-grid', 'hs-list', 'hs-overlay-list', 'hs-overlay-list', 'hs-lead-grid', 'hs-grid', 'hs-lead-list', 'hs-headlines',
+    'hs-overlay-list', 'hs-overlay-list', 'hs-grid', 'hs-lead-list', 'hs-headlines']);
+  await expect(page.locator('.hs .sec-head h2')).toHaveText(['Latest news', 'Asia', 'Middle East and Africa', 'Europe', 'Land', 'Air', 'Most read', 'U.S.', 'Global news', 'Naval', 'Space', 'Business']);
   const more = await page.locator('.hs .see-more').evaluateAll((as) => as.map((a) => a.getAttribute('href')));
-  expect(more).toEqual(isLive(info) ? ['/asia', '/middle-east-africa', '/europe', '/land', '/air'] : ['/#regions/asia', '/#regions/middle-east-africa', '/#regions/europe', '/#land', '/#air']);
+  expect(more).toEqual(isLive(info) ? ['/asia', '/middle-east-africa', '/europe', '/land', '/air', '/us', '/global-news', '/naval', '/space', '/business']
+    : ['/#regions/asia', '/#regions/middle-east-africa', '/#regions/europe', '/#land', '/#air', '/#regions/us', '/#global-news', '/#naval', '/#space', '/#business']);
   const rows = sql(dbKey(info), 'SELECT layout FROM home_sections WHERE active = 1 ORDER BY position');
   expect(rows.map((r: any) => 'hs-' + r.layout.replace('_', '-'))).toEqual(layouts);
 });

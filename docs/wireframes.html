@@ -880,15 +880,13 @@ h2.sec{font:600 20px/1.3 Georgia,serif;margin:40px 0 4px}
 <div class="row">
 <div><div class="lb">9a. Story editor: Category box (Details)</div>
 <div class="pg">
-  <div class="a-box" style="max-width:340px"><div class="a-h">Category</div>
+  <div class="a-box" style="max-width:340px"><div class="a-h">Categories</div>
+    <div style="font-size:10px;color:#888;margin-bottom:4px">Tick every category the story belongs in. The first one you tick is the <b>main</b> one (it gives the story's address); "Make main" changes it.</div>
     <div class="a-in" style="font-size:10px;padding:0 6px;display:flex;align-items:center;color:#888">Search categories…</div>
-    <div class="a-lbl">Main category <span style="color:#888">(gives the story's address)</span></div>
-    <label class="a-chk">◉ Land</label><label class="a-chk">○ Air</label><label class="a-chk">○ Naval</label><label class="a-chk" style="padding-left:16px">○ Asia <span style="color:#888">(Regions)</span></label>
-    <div class="a-lbl">Also show in <span style="color:#888">(tick as many as you like)</span></div>
-    <label class="a-chk" style="opacity:.6"><span class="a-cb on"></span>Land · main</label><label class="a-chk"><span class="a-cb on"></span>Air</label><label class="a-chk"><span class="a-cb"></span>Naval</label><label class="a-chk" style="padding-left:16px"><span class="a-cb on"></span>Europe <span style="color:#888">(Regions)</span></label>
+    <label class="a-chk"><span class="a-cb on"></span>Land <span style="background:var(--red);color:#fff;border-radius:9px;padding:0 6px;font-size:8px;font-weight:700">MAIN</span></label><label class="a-chk"><span class="a-cb on"></span>Air <span style="color:var(--red);font-size:9px">Make main</span></label><label class="a-chk"><span class="a-cb"></span>Naval</label><label class="a-chk" style="padding-left:16px"><span class="a-cb on"></span>Europe <span style="color:#888">(Regions)</span> <span style="color:var(--red);font-size:9px">Make main</span></label>
     <span style="color:var(--red);font-size:11px">+ Add new category</span>
   </div>
-  <span class="note">Address stays /land/{story}. The story is also listed on /air and /europe, in their homepage sections, the search filter and the admin's Category filter.</span>
+  <span class="note"><b>2026-11-17:</b> text pasted into the story body keeps its pictures (each becomes a picture box with its caption; "Getting the picture from the other site…", then the usual AVIF + WebP upload). One list of tick boxes (was "Main category" round buttons + a second "Also show in" list). Unticking the main one makes the next ticked one main. Address stays /land/{story}. The story is also listed on /air and /europe, in their homepage sections, the search filter and the admin's Category filter.</span>
 </div></div>
 <div><div class="lb">9b. The big save message (top of the screen, every admin save)</div>
 <div class="pg">
